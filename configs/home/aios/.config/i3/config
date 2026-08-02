@@ -1,0 +1,48 @@
+set $mod Mod4
+font pango:monospace 8
+floating_modifier $mod
+
+bindsym $mod+Return exec /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green
+bindsym $mod+Shift+q kill
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+bindsym $mod+v split v
+bindsym $mod+b split h
+bindsym $mod+f fullscreen
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod=e layout toggle split
+bindsym $mod+Shift+r restart
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m Exit? -B Yes i3-msg exit"
+bindsym $mod+d exec /usr/bin/dmenu_run
+
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+
+# Fondo negro
+exec --no-startup-id /usr/bin/xsetroot -solid "#000000"
+
+# Ventana 1: terminal Matrix con AIOS Agent
+
+# Ventana 2: navegador Firefox para obtener API key del proveedor elegido
+
+# VirtualBox Guest Additions: portapapeles compartido
+exec --no-startup-id /usr/bin/VBoxClient --clipboard
+
+# AIOS autolaunch
+exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green -e /usr/local/bin/aios; fi'

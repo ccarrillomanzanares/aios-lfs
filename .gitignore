@@ -1,0 +1,5 @@
+*.iso
+*.squashfs
+*.gguf
+vmlinuz*
+initrd.img
