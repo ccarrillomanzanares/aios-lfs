@@ -403,6 +403,37 @@ Reinstalando AIOS LFS a disco, el arranque desde disco funciona correctamente: a
 
 > **Nota:** todavía se muestra el mensaje de GRUB `'Welcome to GRUB!'`. Queda pendiente pulirlo en el futuro usando `timeout_style=hidden` y `quiet_boot=1`.
 
+## Hito v12 - AIOS en hardware físico (2 Ago 2026)
+
+### Síntoma
+
+Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se detenía con un kernel panic porque el init del initrd live no encontraba el dispositivo de arranque.
+
+### Causas
+
+- El script init no esperaba a que el kernel enumerara los dispositivos de bloque, por lo que el medio USB aún no existía cuando se buscaba el sistema live.
+- La lista de dispositivos candidatos era demasiado corta y no incluía controladores modernos como NVMe ni MMC.
+- Cuando se usaba Rufus en modo ISO, la partición USB se formateaba como FAT32, mientras que el init buscaba un sistema de archivos iso9660, provocando fallo silencioso.
+
+### Solución
+
+- Se añadió un bucle de espera de hasta 30 segundos en el init del initrd live, comprobando `[ -b <dispositivo> ]` y saliendo con `break 2` al encontrarlo.
+- Se amplió la lista de dispositivos de búsqueda: `sdc`, `sdd`, discos `hd*`, `nvme*` y `mmcblk*`.
+- Se sustituyó el kernel panic por un mensaje legible: `AIOS: boot media not found`, seguido de una shell de emergencia busybox para diagnóstico.
+- Se documentó que, mientras tanto, la ISO debe grabarse con Rufus en modo DD para que el init encuentre un volumen iso9660.
+
+### Verificación
+
+- ISO escrita en USB con Rufus en modo DD.
+- Arranque live USB correcto en portátil físico con SSD SATA.
+- Instalación de AIOS LFS al disco SSD completada.
+- Reinicio y arranque desde disco con banner AIOS y prompt de login funcionando.
+
+### Pendientes
+
+- Soportar el modo ISO de Rufus (FAT32) en el script init del initrd live.
+- Preparar el kernel #5 con controladores NVMe y UAS para ampliar la compatibilidad de hardware.
+
 ## Changelog
 
 ### v10 — agosto 2026

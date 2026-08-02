@@ -46,3 +46,17 @@ exec --no-startup-id /usr/bin/VBoxClient --clipboard
 
 # AIOS autolaunch
 exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green -e /usr/local/bin/aios; fi'
+
+bar {
+    position bottom
+    colors {
+        background #000000
+        statusline #00ff00
+        separator #005500
+        focused_workspace  #000000 #00ff00 #00ff00
+        active_workspace   #000000 #004400 #00aa00
+        inactive_workspace #000000 #002200 #008800
+        urgent_workspace   #000000 #ff0000 #00ff00
+        binding_mode       #000000 #00ff00 #00ff00
+    }
+}
