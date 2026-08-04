@@ -1,9 +1,9 @@
-# AIOS LFS v10
+# AIOS LFS v11
 
 ISO live de **Linux From Scratch 13.0-systemd** con el agente **AIOS** (wargame/CTF). Diseñada para arrancar en modo silencioso desde CD/USB, ofrecer una sesión gráfica mínima (i3 + xterm) y permitir instalar el sistema a disco duro conservando el mismo look de boot.
 
-- **Versión**: v10 (agosto 2026)
-- **Kernel**: 6.18.10-lfs #4
+- **Versión**: v11 (agosto 2026)
+- **Kernel**: 6.18.10-lfs #5 (kernel de distro: wifi, DRM, NVMe, ALSA)
 - **Base**: LFS 13.0-systemd
 - **Init**: systemd
 - **Entorno gráfico**: X11 + i3 + xterm
@@ -28,6 +28,9 @@ La v10 corrige todos los problemas detectados durante el verano de 2026: colgado
 - Validación de API key en hilo con timeout de 12 s (corrige bloqueo por resolución DNS).
 - Flujo `setup.py` → `aios` automático en la misma ventana xterm.
 - Instalador a disco con opción de cambio de passwords de root y aios.
+- **Kernel de distro (#5)**: drivers wifi (iwlwifi, rtlwifi/rtl8723be, rtw88/89, ath9k/10k/11k, brcmfmac), DRM (i915/amdgpu/nouveau), NVMe, UAS, I2C_HID_ACPI, ethernet (r8169/e1000e/igb) y ALSA HDA + USB, con firmware linux-firmware integrado.
+- **Opción 5 WIFI SETUP** en el setup: escaneo de redes, wpa_supplicant, verificación de internet (urllib) y persistencia al arranque vía systemd-networkd (DHCP en wl*).
+- **Sistema operativo completo en hardware real** (HP Notebook AMD + Realtek): wifi con IP al arranque, touchpad, audio y resolución nativa (verificado 4 Ago 2026).
 - Firefox incluido para obtener la API key del proveedor elegido.
 - Cliente AIOS minimalista wargame con estilo Matrix en TTY/terminal.
 - `nokaslr` eliminado en live e instalador por seguridad.
