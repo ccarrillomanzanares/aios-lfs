@@ -392,13 +392,27 @@ def get_net_usage_block():
         return None
 
 
+def get_agent_busy_block():
+    """⏳ si el agente está trabajando (marcador /tmp/aios-agent.busy creado por agent.py)."""
+    try:
+        if os.path.isfile("/tmp/aios-agent.busy"):
+            return _item("⏳", color="#00ff00")
+    except Exception:
+        pass
+    return None
+
+
 def build_blocks():
-    items = [
+    items = []
+    busy = get_agent_busy_block()
+    if busy is not None:
+        items.append(busy)
+    items.extend([
         _item("AIOS"),
         _item(get_cpu_load()),
         _item(get_memory()),
         _item(get_disk()),
-    ]
+    ])
     items.extend(get_network_blocks())
     net_usage = get_net_usage_block()
     if net_usage is not None:
