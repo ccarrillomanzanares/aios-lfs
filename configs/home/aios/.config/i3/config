@@ -37,6 +37,14 @@ bindsym $mod+Shift+5 move container to workspace 5
 # Fondo negro
 exec --no-startup-id /usr/bin/xsetroot -solid "#000000"
 
+# Colores Matrix para ventanas (borde + título) — el azul por defecto de i3 se va
+client.focused          #00ff00 #002200 #00ff00 #00ff00
+client.focused_inactive #008800 #001100 #00aa00 #00aa00
+client.unfocused        #004400 #000000 #008800 #008800
+client.urgent           #ff0000 #220000 #00ff00 #00ff00
+client.placeholder      #004400 #000000 #008800 #008800
+client.background       #000000
+
 # Ventana 1: terminal Matrix con AIOS Agent
 
 # Ventana 2: navegador Firefox para obtener API key del proveedor elegido
@@ -49,6 +57,7 @@ exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/bin
 
 bar {
     position bottom
+    status_command python3 /home/aios/.config/i3/status.py
     colors {
         background #000000
         statusline #00ff00
