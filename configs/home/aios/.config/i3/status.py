@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import socket
+import subprocess
 import sys
 import time
 
@@ -14,9 +15,251 @@ COLOR_SEP = "#005500"
 SEPARATOR = {"full_text": " | ", "color": COLOR_SEP}
 VERSION_LINE = {"version": 1, "click_events": False}
 
+WIFI_IFACE = "wlo1"
+ETH_IFACE = "enp3s0"
+AIOS_CONFIG = "/home/aios/.aios/config.yaml"
+AIOS_SESSION_DIR = "/usr/local/bin/aios-agent/data"
 
-def _item(text):
-    return {"full_text": str(text), "color": COLOR_TEXT}
+
+def _item(text, color=None):
+    return {"full_text": str(text), "color": color if color is not None else COLOR_TEXT}
+
+
+def _read_first_line(path):
+    try:
+        with open(path, "r") as f:
+            return f.readline().strip()
+    except Exception:
+        return None
+
+
+def _iface_operstate(iface):
+    return _read_first_line(f"/sys/class/net/{iface}/operstate") == "up"
+
+
+def _iface_carrier(iface):
+    try:
+        path = f"/sys/class/net/{iface}/carrier"
+        if not os.path.exists(path):
+            return False
+        return _read_first_line(path) == "1"
+    except Exception:
+        return False
+
+
+def _iface_up(iface):
+    try:
+        return _iface_operstate(iface) and _iface_carrier(iface)
+    except Exception:
+        return False
+
+
+def _iface_ip(iface):
+    # 1) getifaddrs (falla en el python del LFS — devuelve None aunque haya IP)
+    try:
+        for entry in socket.getifaddrs():
+            if entry.interface == iface and entry.family == socket.AF_INET:
+                return entry.address[0]
+    except Exception:
+        pass
+    # 2) ip -br addr (iproute2, funciona en el LFS)
+    try:
+        result = subprocess.run(
+            ["ip", "-br", "addr", "show", iface],
+            capture_output=True, text=True, timeout=2,
+        )
+        for line in result.stdout.splitlines():
+            parts = line.split()
+            for p in parts:
+                if "/" in p and ":" not in p:
+                    return p.split("/")[0]
+    except Exception:
+        pass
+    return None
+
+
+def _get_ssid_iw(iface):
+    """SSID vía `iw dev <iface> link` (wpa_supplicant corre SIN ctrl_interface en AIOS)."""
+    try:
+        result = subprocess.run(
+            ["iw", "dev", iface, "link"],
+            capture_output=True, text=True, timeout=2,
+        )
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if line.startswith("SSID:"):
+                ssid = line.split(":", 1)[1].strip()
+                return ssid or None
+    except Exception:
+        pass
+    return None
+
+
+def _get_ssid(iface):
+    ssid = _get_ssid_iw(iface)
+    if ssid is None:
+        ssid = _get_ssid_wpa_cli(iface)  # fallback: requiere ctrl_interface configurado
+    if ssid is None:
+        ssid = _get_ssid_iwgetid(iface)  # fallback 2
+    return ssid
+
+
+def _get_ssid_wpa_cli(iface):
+    try:
+        result = subprocess.run(
+            ["wpa_cli", "-i", iface, "status"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode != 0:
+            return None
+        for line in result.stdout.splitlines():
+            if line.startswith("ssid="):
+                return line.split("=", 1)[1].strip()
+    except Exception:
+        pass
+    return None
+
+
+def _get_ssid_iwgetid(iface):
+    try:
+        if shutil.which("iwgetid"):
+            result = subprocess.run(
+                ["iwgetid", "-r", iface],
+                capture_output=True,
+                text=True,
+                timeout=2,
+            )
+            if result.returncode == 0:
+                ssid = result.stdout.strip()
+                if ssid:
+                    return ssid
+    except Exception:
+        pass
+    return None
+
+
+def get_network_blocks():
+    """Return a list of i3bar items for active WiFi and/or Ethernet."""
+    try:
+        blocks = []
+        if _iface_up(WIFI_IFACE):
+            ssid = _get_ssid(WIFI_IFACE)
+            ip = _iface_ip(WIFI_IFACE)
+            parts = ["WiFi"]
+            if ssid:
+                parts.append(ssid)
+            if ip:
+                parts.append(ip)
+            if len(parts) > 1:
+                blocks.append(_item(" ".join(parts)))
+        if _iface_up(ETH_IFACE):
+            ip = _iface_ip(ETH_IFACE)
+            if ip:
+                blocks.append(_item(f"ETH {ip}"))
+        return blocks
+    except Exception:
+        return []
+
+
+# Límites de contexto por proveedor (tabla fija, espejo de setup.py)
+PROVIDER_CONTEXT_LIMITS = {
+    "DeepSeek": 1048576,
+    "OpenAI": 128000,
+    "Anthropic": 200000,
+    "Google Gemini": 1048576,
+    "Kimi / Moonshot": 128000,
+    "Ollama Cloud": 128000,
+    "OpenRouter": 128000,
+}
+DEFAULT_CLOUD_LIMIT = 128000
+
+
+def _ram_gb():
+    """RAM total en GB (redondeado) desde /proc/meminfo."""
+    try:
+        with open("/proc/meminfo", "r") as f:
+            for line in f:
+                if line.startswith("MemTotal:"):
+                    kb = int(line.split()[1])
+                    return max(1, kb // (1024 * 1024))
+    except Exception:
+        pass
+    return 8
+
+
+def _auto_context_local(ram_gb):
+    """Auto-select context por RAM (espejo de setup.py auto_context)."""
+    if ram_gb <= 8:
+        return 8192
+    elif ram_gb <= 16:
+        return 32768
+    else:
+        return 65536
+
+
+def _read_config():
+    """Lee mode y provider del config.yaml (parser naive, sin yaml)."""
+    mode, provider = None, None
+    try:
+        with open(AIOS_CONFIG, "r") as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith("mode:"):
+                    mode = stripped.split(":", 1)[1].split("#")[0].strip()
+                elif stripped.startswith("provider:"):
+                    provider = stripped.split(":", 1)[1].split("#")[0].strip()
+    except Exception:
+        pass
+    return mode, provider
+
+
+def get_llm_context():
+    """Estima el % de contexto usado: cloud → tabla fija por proveedor; local → auto_context por RAM."""
+    try:
+        if not os.path.isfile(AIOS_CONFIG):
+            return _item("CTX --")
+
+        mode, provider = _read_config()
+
+        if mode == "cloud":
+            # Límite fijo según proveedor (no leer el context_limit del config)
+            limit = PROVIDER_CONTEXT_LIMITS.get(provider, DEFAULT_CLOUD_LIMIT)
+        elif mode == "local":
+            # Auto-context según RAM del equipo (espejo de setup.py auto_context)
+            limit = _auto_context_local(_ram_gb())
+        else:
+            return _item("CTX --")
+
+        session_path = os.path.join(AIOS_SESSION_DIR, f"session_{mode}.json")
+        if not os.path.isfile(session_path):
+            return _item("CTX --")
+
+        with open(session_path, "r") as f:
+            messages = json.load(f)
+
+        tokens = 0
+        for msg in messages:
+            try:
+                content = msg.get("content") if isinstance(msg, dict) else None
+                if isinstance(content, str):
+                    tokens += len(content) // 4
+            except Exception:
+                pass
+
+        pct = min(tokens * 100 // limit, 100)
+
+        if pct > 95:
+            color = "#ff0000"
+        elif pct > 80:
+            color = "#ff8800"
+        else:
+            color = COLOR_TEXT
+
+        return _item(f"CTX {pct}%", color=color)
+    except Exception:
+        return _item("CTX --")
 
 
 def get_cpu_load():
@@ -61,50 +304,6 @@ def get_disk():
         return "--"
 
 
-def _default_iface():
-    """Return the interface owning the default route, or None."""
-    try:
-        with open("/proc/net/route", "r") as f:
-            header = f.readline().split()
-            iface_idx = header.index("Iface")
-            dest_idx = header.index("Destination")
-            flags_idx = header.index("Flags")
-            for line in f:
-                parts = line.split()
-                if len(parts) < max(iface_idx, dest_idx, flags_idx) + 1:
-                    continue
-                if parts[dest_idx] == "00000000" and (int(parts[flags_idx], 16) & 0x0003) == 0x0003:
-                    return parts[iface_idx]
-    except Exception:
-        pass
-    return None
-
-
-def _iface_ip(iface):
-    try:
-        for entry in socket.getifaddrs():
-            if entry.interface == iface and entry.family == socket.AF_INET:
-                return entry.address[0]
-    except Exception:
-        pass
-    return None
-
-
-def get_network():
-    try:
-        iface = _default_iface()
-        ip = _iface_ip(iface)
-        if ip is None:
-            # Fallback: first non-loopback IPv4 address
-            for entry in socket.getifaddrs():
-                if entry.family == socket.AF_INET and entry.interface != "lo":
-                    ip = entry.address[0]
-                    break
-        return f"NET {ip}" if ip else "--"
-    except Exception:
-        return "--"
-
-
 def get_datetime():
     try:
         import locale
@@ -127,19 +326,23 @@ def get_datetime():
 
 
 def build_blocks():
-    return [
+    items = [
         _item("AIOS"),
-        SEPARATOR,
         _item(get_cpu_load()),
-        SEPARATOR,
         _item(get_memory()),
-        SEPARATOR,
         _item(get_disk()),
-        SEPARATOR,
-        _item(get_network()),
-        SEPARATOR,
-        _item(get_datetime()),
     ]
+    items.extend(get_network_blocks())
+    items.append(get_llm_context())
+    items.append(_item(get_datetime()))
+
+    # Place separators only between present blocks.
+    blocks = []
+    for i, it in enumerate(items):
+        blocks.append(it)
+        if i < len(items) - 1:
+            blocks.append(SEPARATOR)
+    return blocks
 
 
 def main():
