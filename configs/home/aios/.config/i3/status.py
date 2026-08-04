@@ -325,6 +325,73 @@ def get_datetime():
     return f"{dias[t.tm_wday]} {t.tm_mday:02d} {meses[t.tm_mon - 1]} {t.tm_hour:02d}:{t.tm_min:02d}"
 
 
+# Estado para medir uso de red entre muestras (el loop llama build_blocks cada 2s)
+_net_last = {}
+
+
+def _net_rate_bps(iface):
+    """Tasa RX/TX actual en bits/s (diferencia entre dos lecturas de rx_bytes/tx_bytes)."""
+    global _net_last
+    try:
+        rx = int(open(f"/sys/class/net/{iface}/statistics/rx_bytes").read().strip())
+        tx = int(open(f"/sys/class/net/{iface}/statistics/tx_bytes").read().strip())
+        now = time.time()
+        prev = _net_last.get(iface)
+        _net_last[iface] = (now, rx, tx)
+        if not prev:
+            return None  # primera muestra: sin dato todavía
+        dt = now - prev[0]
+        if dt <= 0:
+            return None
+        rx_bps = (rx - prev[1]) * 8 / dt
+        tx_bps = (tx - prev[2]) * 8 / dt
+        return rx_bps, tx_bps
+    except Exception:
+        return None
+
+
+def _iface_capacity_bps(iface):
+    """Capacidad de la interfaz: ethernet /sys/.../speed (Mbps) o wifi tx bitrate de iw."""
+    try:
+        speed = open(f"/sys/class/net/{iface}/speed").read().strip()
+        if speed.isdigit() and int(speed) > 0:
+            return int(speed) * 1_000_000
+    except Exception:
+        pass
+    try:
+        r = subprocess.run(["iw", "dev", iface, "link"],
+                           capture_output=True, text=True, timeout=2)
+        for line in r.stdout.splitlines():
+            if "tx bitrate:" in line:
+                mbit = float(line.split("tx bitrate:")[1].split()[0])
+                return int(mbit * 1_000_000)
+    except Exception:
+        pass
+    return None
+
+
+def get_net_usage_block():
+    """% de uso de red sobre la capacidad de la interfaz activa (o KB/s si no hay capacidad)."""
+    try:
+        for iface in (WIFI_IFACE, ETH_IFACE):
+            if not _iface_up(iface):
+                continue
+            rate = _net_rate_bps(iface)
+            if not rate:
+                continue  # primera muestra, aún sin dato
+            rx_bps, tx_bps = rate
+            total_bps = rx_bps + tx_bps
+            cap = _iface_capacity_bps(iface)
+            if cap:
+                pct = min(total_bps * 100 / cap, 100)
+                color = "#ff0000" if pct > 95 else ("#ff8800" if pct > 80 else COLOR_TEXT)
+                return _item(f"NET {pct:.0f}%", color=color)
+            return _item(f"NET {total_bps/1024:.0f}KB/s")
+        return None
+    except Exception:
+        return None
+
+
 def build_blocks():
     items = [
         _item("AIOS"),
@@ -333,6 +400,9 @@ def build_blocks():
         _item(get_disk()),
     ]
     items.extend(get_network_blocks())
+    net_usage = get_net_usage_block()
+    if net_usage is not None:
+        items.append(net_usage)
     items.append(get_llm_context())
     items.append(_item(get_datetime()))
 
