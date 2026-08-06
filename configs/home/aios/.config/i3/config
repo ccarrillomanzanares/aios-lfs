@@ -2,7 +2,7 @@ set $mod Mod4
 font pango:monospace 8
 floating_modifier $mod
 
-bindsym $mod+Return exec /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green
+bindsym $mod+Return exec /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg "#006400" -cr "#006400"
 bindsym $mod+Shift+q kill
 bindsym $mod+h focus left
 bindsym $mod+j focus down
@@ -38,11 +38,11 @@ bindsym $mod+Shift+5 move container to workspace 5
 exec --no-startup-id /usr/bin/xsetroot -solid "#000000"
 
 # Colores Matrix para ventanas (borde + título) — el azul por defecto de i3 se va
-client.focused          #00ff00 #002200 #00ff00 #00ff00
-client.focused_inactive #008800 #001100 #00aa00 #00aa00
-client.unfocused        #004400 #000000 #008800 #008800
-client.urgent           #ff0000 #220000 #00ff00 #00ff00
-client.placeholder      #004400 #000000 #008800 #008800
+client.focused          #006400 #002200 #006400 #006400
+client.focused_inactive #005500 #001100 #006400 #00aa00
+client.unfocused        #004400 #000000 #005500 #008800
+client.urgent           #ff0000 #220000 #006400 #006400
+client.placeholder      #004400 #000000 #005500 #008800
 client.background       #000000
 
 # Ventana 1: terminal Matrix con AIOS Agent
@@ -53,7 +53,7 @@ client.background       #000000
 exec --no-startup-id /usr/bin/VBoxClient --clipboard
 
 # AIOS autolaunch
-exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg green -cr green -e /usr/local/bin/aios; fi'
+exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg "#006400" -cr "#006400" -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg "#006400" -cr "#006400" -e /usr/local/bin/aios; fi'
 
 include /home/aios/.config/i3/volume_bindings.conf
 bar {
@@ -61,12 +61,12 @@ bar {
     status_command python3 /home/aios/.config/i3/status.py
     colors {
         background #000000
-        statusline #00ff00
-        separator #005500
-        focused_workspace  #000000 #00ff00 #00ff00
-        active_workspace   #000000 #004400 #00aa00
-        inactive_workspace #000000 #002200 #008800
-        urgent_workspace   #000000 #ff0000 #00ff00
-        binding_mode       #000000 #00ff00 #00ff00
+        statusline #006400
+        separator #003300
+        focused_workspace  #000000 #006400 #006400
+        active_workspace   #000000 #004400 #006400
+        inactive_workspace #000000 #002200 #005500
+        urgent_workspace   #000000 #ff0000 #006400
+        binding_mode       #000000 #006400 #006400
     }
 }

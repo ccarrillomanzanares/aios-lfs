@@ -10,8 +10,8 @@ import sys
 import time
 
 # i3bar Matrix color scheme
-COLOR_TEXT = "#00ff00"
-COLOR_SEP = "#005500"
+COLOR_TEXT = "#006400"
+COLOR_SEP = "#003300"
 SEPARATOR = {"full_text": " | ", "color": COLOR_SEP}
 VERSION_LINE = {"version": 1, "click_events": False}
 
@@ -396,7 +396,7 @@ def get_agent_busy_block():
     """⏳ si el agente está trabajando (marcador /tmp/aios-agent.busy creado por agent.py)."""
     try:
         if os.path.isfile("/tmp/aios-agent.busy"):
-            return _item("⏳", color="#00ff00")
+            return _item("⏳", color="#006400")
     except Exception:
         pass
     return None
@@ -430,7 +430,7 @@ def get_volume_block():
         elif pct > 80:
             color = "#ff8800"
         else:
-            color = "#00ff00"
+            color = "#006400"
         return _item(f"VOL {pct}%", color=color)
     except Exception:
         return None

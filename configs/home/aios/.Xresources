@@ -1,0 +1,6 @@
+xterm*faceName: Noto Sans Mono:style=Regular
+xterm*faceSize: 10
+xterm*renderFont: true
+xterm*background: #000000
+xterm*foreground: #006400
+xterm*cursorColor: #006400
