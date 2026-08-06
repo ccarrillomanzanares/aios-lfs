@@ -402,6 +402,40 @@ def get_agent_busy_block():
     return None
 
 
+def get_volume_block():
+    """VOL % del sink por defecto via pactl (PipeWire). Fallback amixer si no hay pactl."""
+    try:
+        env = dict(os.environ)
+        env.setdefault("XDG_RUNTIME_DIR", "/run/user/1000")
+        r = subprocess.run(["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
+                           capture_output=True, text=True, timeout=5, env=env)
+        if r.returncode != 0:
+            return None
+        # "Volume: front-left: 29490 /  45% / -20.81 dB, ..." -> 45
+        import re
+        m = re.search(r"(\d+)%", r.stdout)
+        if not m:
+            return None
+        pct = int(m.group(1))
+        # estado mute
+        muted = False
+        rm = subprocess.run(["pactl", "get-sink-mute", "@DEFAULT_SINK@"],
+                            capture_output=True, text=True, timeout=5, env=env)
+        if rm.returncode == 0 and "yes" in rm.stdout.lower():
+            muted = True
+        if muted:
+            return _item(f"VOL {pct}% 🔇", color="#ff8800")
+        if pct > 95:
+            color = "#ff0000"
+        elif pct > 80:
+            color = "#ff8800"
+        else:
+            color = "#00ff00"
+        return _item(f"VOL {pct}%", color=color)
+    except Exception:
+        return None
+
+
 def build_blocks():
     items = []
     busy = get_agent_busy_block()
@@ -417,6 +451,9 @@ def build_blocks():
     net_usage = get_net_usage_block()
     if net_usage is not None:
         items.append(net_usage)
+    vol = get_volume_block()
+    if vol is not None:
+        items.append(vol)
     items.append(get_llm_context())
     items.append(_item(get_datetime()))
 
