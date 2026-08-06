@@ -1,9 +1,9 @@
-# AIOS LFS v10
+# AIOS LFS v11
 
 ISO live de **Linux From Scratch 13.0-systemd** con el agente **AIOS** (wargame/CTF). Diseñada para arrancar en modo silencioso desde CD/USB, ofrecer una sesión gráfica mínima (i3 + xterm) y permitir instalar el sistema a disco duro conservando el mismo look de boot.
 
-- **Versión**: v10 (agosto 2026)
-- **Kernel**: 6.18.10-lfs #4
+- **Versión**: v11 (agosto 2026)
+- **Kernel**: 6.18.10-lfs #5 (kernel de distro: wifi, DRM, NVMe, ALSA)
 - **Base**: LFS 13.0-systemd
 - **Init**: systemd
 - **Entorno gráfico**: X11 + i3 + xterm
@@ -28,6 +28,9 @@ La v10 corrige todos los problemas detectados durante el verano de 2026: colgado
 - Validación de API key en hilo con timeout de 12 s (corrige bloqueo por resolución DNS).
 - Flujo `setup.py` → `aios` automático en la misma ventana xterm.
 - Instalador a disco con opción de cambio de passwords de root y aios.
+- **Kernel de distro (#5)**: drivers wifi (iwlwifi, rtlwifi/rtl8723be, rtw88/89, ath9k/10k/11k, brcmfmac), DRM (i915/amdgpu/nouveau), NVMe, UAS, I2C_HID_ACPI, ethernet (r8169/e1000e/igb) y ALSA HDA + USB, con firmware linux-firmware integrado.
+- **Opción 5 WIFI SETUP** en el setup: escaneo de redes, wpa_supplicant, verificación de internet (urllib) y persistencia al arranque vía systemd-networkd (DHCP en wl*).
+- **Sistema operativo completo en hardware real** (HP Notebook AMD + Realtek): wifi con IP al arranque, touchpad, audio y resolución nativa (verificado 4 Ago 2026).
 - Firefox incluido para obtener la API key del proveedor elegido.
 - Cliente AIOS minimalista wargame con estilo Matrix en TTY/terminal.
 - `nokaslr` eliminado en live e instalador por seguridad.
@@ -368,6 +371,71 @@ Se probó Plymouth con múltiples configuraciones (VBoxVGA+vesafb, VMSVGA+vmwgfx
 **Alternativa adoptada**: banner ASCII/Unicode mostrado directamente desde el initrd, con fondo negro y cursor oculto.
 
 ---
+
+## Fix v11 - panic en arranque desde disco (2 Ago 2026)
+
+### Síntoma
+
+Después de instalar AIOS LFS a disco duro, el sistema mostraba un **kernel panic** al arrancar:
+
+```
+Attempted to kill init! exit code=0x7f00
+```
+
+(`0x7f00` = 127). Ocurría tras el logo AIOS, antes de llegar al login.
+
+### Causa raíz
+
+El panic venía de tres fallos acumulados en `build_disk_initrd`, la función de `aios-install` que transforma el initrd live para arranque desde disco:
+
+1. **Escape octal `\1` → SOH en el init generado.** El patrón `sed` usado con `tail` estaba escrito en Python con un solo backslash: `'s/.*root=\([^ ]*\).*/\1/p'`. Python interpreta `\1` como el carácter de control SOH (`0x01`), que se escribía literalmente en el script `init` generado. Al ejecutarse, `sed` devolvía un dispositivo root inexistente, y `mount -t ext4` fallaba.
+2. **Fallback a `/bin/sh` inexistente.** Cuando el `mount` fallaba, el initrd ejecutaba `exec /bin/sh`, pero el initrd transformado no incluye `/bin/sh`: solo contiene `init` y `bin/busybox`, sin symlinks de applets. El `exec` devolvía 127, el init moría y el kernel lanzaba el panic.
+3. **Sin espera al dispositivo root.** El dispositivo de root podía no estar listo en el momento en que el init intentaba montarlo, haciendo el fallo intermitente.
+
+### Solución (aios-install v1.1.2)
+
+- Se corrigió el patrón `sed`/`tail` con **doble backslash** (`\\(` y `\\1`) para que el `init` generado contenga `\(` y `\1` correctos, y `sed` extraiga el dispositivo root real.
+- Se añadió un **bucle de espera de hasta 30 segundos** hasta que aparezca el dispositivo root en `/dev`.
+- Se cambió el fallback a **`exec /bin/busybox sh`**, que sí está disponible en el initrd.
+- Se usa **`exec /bin/busybox switch_root /root /sbin/init`** para pasar el control al sistema instalado.
+- Se incluyó **`/bin/busybox` estático (2.1 MB, extraído del initrd)** en el squashfs del sistema live, porque `build_disk_initrd` lo necesita y el sistema live no lo tenía.
+
+### Verificación
+
+Reinstalando AIOS LFS a disco, el arranque desde disco funciona correctamente: aparece el logo AIOS y el sistema llega al prompt de login.
+
+> **Nota:** todavía se muestra el mensaje de GRUB `'Welcome to GRUB!'`. Queda pendiente pulirlo en el futuro usando `timeout_style=hidden` y `quiet_boot=1`.
+
+## Hito v12 - AIOS en hardware físico (2 Ago 2026)
+
+### Síntoma
+
+Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se detenía con un kernel panic porque el init del initrd live no encontraba el dispositivo de arranque.
+
+### Causas
+
+- El script init no esperaba a que el kernel enumerara los dispositivos de bloque, por lo que el medio USB aún no existía cuando se buscaba el sistema live.
+- La lista de dispositivos candidatos era demasiado corta y no incluía controladores modernos como NVMe ni MMC.
+- Cuando se usaba Rufus en modo ISO, la partición USB se formateaba como FAT32, mientras que el init buscaba un sistema de archivos iso9660, provocando fallo silencioso.
+
+### Solución
+
+- Se añadió un bucle de espera de hasta 30 segundos en el init del initrd live, comprobando `[ -b <dispositivo> ]` y saliendo con `break 2` al encontrarlo.
+- Se amplió la lista de dispositivos de búsqueda: `sdc`, `sdd`, discos `hd*`, `nvme*` y `mmcblk*`.
+- Se sustituyó el kernel panic por un mensaje legible: `AIOS: boot media not found`, seguido de una shell de emergencia busybox para diagnóstico.
+- Se documentó que, mientras tanto, la ISO debe grabarse con Rufus en modo DD para que el init encuentre un volumen iso9660.
+
+### Verificación
+
+- ISO escrita en USB con Rufus en modo DD.
+- Arranque live USB correcto en portátil físico con SSD SATA.
+- Instalación de AIOS LFS al disco SSD completada.
+- Reinicio y arranque desde disco con banner AIOS y prompt de login funcionando.
+
+### Pendientes
+
+- Soportar el modo ISO de Rufus (FAT32) en el script init del initrd live.
+- Preparar el kernel #5 con controladores NVMe y UAS para ampliar la compatibilidad de hardware.
 
 ## 6 Ago 2026 — LLM local en portátil: SIGILL (estado actual)
 
