@@ -1,0 +1,22 @@
+# /etc/group del squashfs (estado de fábrica + grupos de escritorio para LIVE)
+root:x:0:
+bin:x:1:
+daemon:x:6:
+messagebus:x:18:
+systemd-journal:x:190:
+systemd-journal-gateway:x:191:
+systemd-journal-remote:x:192:
+systemd-journal-upload:x:193:
+systemd-network:x:194:
+systemd-oom:x:195:
+systemd-resolve:x:196:
+systemd-timesync:x:197:
+systemd-coredump:x:198:
+nogroup:x:65534:
+wheel:x:1000:aios
+vboxsf:x:999:
+vboxdrmipc:x:998:
+# Grupos de escritorio (live): aios necesita acceso a /dev/dri, /dev/snd, /dev/input
+video:x:981:aios
+audio:x:993:aios
+input:x:988:aios
