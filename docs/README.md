@@ -458,6 +458,22 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - El build del VPS es **SSE-only** (cache: `GGML_AVX=OFF`) → 17 tok/s gen / 31-57 tok/s prompt es el piso SSE; con `GGML_NATIVE=ON` en el EPYC ~2x (pendiente decisión; solo para el build local, nunca para distribuir).
 - El `import yaml` lento fue transitorio (contención CPU con la carga del modelo).
 
+## 7 Ago 2026 — Saneamiento: kernel #7 (config Ubuntu 6.18.10) + módulos 157 MB + fixes
+
+**Kernel #7 — config de Ubuntu para el MISMO kernel (6.18.10)** (idea de Carlos: en vez de la lista manual de =m, usar la config que Ubuntu usa para ese kernel — el mainline build `v6.18.10` de kernel.ubuntu.com; la config va DENTRO del .deb `linux-headers-*`). Trae TODOS los drivers de distro (rtlwifi/rtl8723be, i915, amdgpu SI/CIK, HP_WMI, iwlwifi, snd-hda...) ya incluidos. Ajustes: `OVERLAY_FS=y`, `SQUASHFS=y` (live), `LOCALVERSION=""`, `SYSTEM_TRUSTED_KEYS=""` (la config referencia `debian/canonical-certs.pem` — no existe en el tree), BTF off, y **drivers de arranque =y** (ISO9660, SATA_AHCI, NVME, USB_STORAGE, XHCI/EHCI/OHCI — el initrd AIOS no carga módulos). Deps build host: libdwarf-dev + libdw-dev + symlinks dwarf.h (gendwarfksyms).
+
+**Validado: arranca en VM y en AMBOS portátiles** (el viejo A8-7410 y el nuevo HP).
+
+**Tamaño módulos: 8.1 GB → 157 MB** (mejor que Ubuntu: 172 MB), mecanismo oficial del kernel:
+1. `MODULE_COMPRESS_ZSTD=y` → compresión en `modules_install` (8.1 → 2.2 GB; requiere rebuild limpio para regenerar auto.conf)
+2. `INSTALL_MOD_STRIP=1` → quita el debug DWARF5 de la config mainline (2.2 GB → 157 MB) — el mismo módulo rtl8723be: 6.29 MB → 82.5 KB
+
+**Fixes del saneamiento**:
+- glibc 2.44 única y alineada (`/lib64` → `/usr/lib`, cero Ubuntu) + protegida en sven
+- LLM: paquete `llama-cpp` de sven (b10221, baseline, GLIBC 2.34) — scripts adaptados (`/usr/bin/llama-server`, sin LD_LIBRARY_PATH); builds manuales eliminados (sin fallback)
+- Setup restaurado (una config.yaml de prueba en el árbol hacía saltar el wizard); aios-install v1.1.3 (grupos, passwords, silent boot disco); grub sin nokaslr
+- Pendiente: ISO final ~1.5 GB (sin modelo — el GGUF 4.7 GB se copia aparte), validar y probar el LLM (momento del SIGILL)
+
 ## Changelog
 
 ### v10 — agosto 2026
