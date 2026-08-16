@@ -474,6 +474,18 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Setup restaurado (una config.yaml de prueba en el árbol hacía saltar el wizard); aios-install v1.1.3 (grupos, passwords, silent boot disco); grub sin nokaslr
 - Pendiente: ISO final ~1.5 GB (sin modelo — el GGUF 4.7 GB se copia aparte), validar y probar el LLM (momento del SIGILL)
 
+## 8 Ago 2026 — Hardware validado (ISO #7 + LLM)
+
+| Portátil | Modelo | CPU | RAM | Resultado |
+|---|---|---|---|---|
+| Viejo (instalado) | HP con **AMD A8-7410** | AMD A8-7410 @ 2.2 GHz, 4C (Jaguar, sin AVX2) | 8 GB (6.7 GiB visibles — iGPU comparte) | ✅ Arranca + LLM carga y genera **~1.2 tok/s** (límite DDR3L single-channel); **SIGILL resuelto** |
+| Nuevo (probado desde USB, sin instalar) | **HP Laptop 15s-fq1xxx** | **Intel Core i5-1035G1** @ 1.0 GHz (boost 3.6), 4C/8T (Ice Lake, AVX2/AVX-512) | **8 GB** | ✅ Arranca y funciona; carga del modelo desde USB **7-8 min**; genera ~velocidad de tecleo (usable) |
+
+**Notas (8 Ago)**:
+- El cuello de botella de los 7-8 min es la **carga del modelo desde el USB** (4.7 GB a ~10-15 MB/s). Desde el SSD NVMe (SK hynix BC511 512 GB) será ~100x más rápida (segundos).
+- El i5-1035G1 (AVX-512) aprovecha las variantes CPU del paquete ggml mucho más que el Jaguar (AVX1) — el rendimiento en el HP nuevo será muy superior al 1.2 tok/s del viejo.
+- Observación de Carlos: "contesta aproximadamente a la velocidad de una persona promedio tecleando" (el viejo).
+
 ## Changelog
 
 ### v10 — agosto 2026
