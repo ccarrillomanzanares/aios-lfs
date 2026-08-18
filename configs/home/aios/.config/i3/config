@@ -2,7 +2,7 @@ set $mod Mod4
 font pango:monospace 8
 floating_modifier $mod
 
-bindsym $mod+Return exec /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg "#006400" -cr "#006400"
+bindsym $mod+Return exec /usr/local/bin/aios-xterm
 bindsym $mod+Shift+q kill
 bindsym $mod+h focus left
 bindsym $mod+j focus down
@@ -53,7 +53,7 @@ client.background       #000000
 exec --no-startup-id /usr/bin/VBoxClient --clipboard
 
 # AIOS autolaunch
-exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg "#006400" -cr "#006400" -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/bin/xterm -fa "Adwaita Mono" -fs 11 -bg black -fg "#006400" -cr "#006400" -e /usr/local/bin/aios; fi'
+exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/local/bin/aios-xterm -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/local/bin/aios-xterm -e /usr/local/bin/aios; fi'
 
 include /home/aios/.config/i3/volume_bindings.conf
 bar {
