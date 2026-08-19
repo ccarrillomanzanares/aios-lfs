@@ -70,3 +70,6 @@ bar {
         binding_mode       #000000 #006400 #006400
     }
 }
+
+# Help: keyboard shortcuts list (Super+F1)
+bindsym $mod+F1 exec /usr/local/bin/aios-xterm -e less /home/aios/.config/i3/shortcuts.txt

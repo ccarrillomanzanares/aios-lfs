@@ -1,0 +1,21 @@
+AIOS keyboard shortcuts
+========================
+
+  Super+Return         Open a terminal
+  Super+F1             Show this shortcut list
+  Super+q              Close the focused window
+  Super+h/j/k/l        Move focus
+  Super+Shift+h/j/k/l  Move the focused window
+  Super+v              Split vertical
+  Super+b              Split horizontal
+  Super+f              Toggle fullscreen
+  Super+s              Layout stacking
+  Super+w              Layout tabbed
+  Super+Shift+e        Exit i3 (back to login)
+
+In the chat:
+  /sound               Toggle the typewriter sound
+  /theme               Change the color theme
+  exit                 Leave the chat
+
+(Super = the Windows key)
