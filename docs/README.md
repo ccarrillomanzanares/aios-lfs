@@ -519,3 +519,51 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 ## Licencia
 
 MIT — ver el archivo `LICENSE` del repositorio.
+
+## Menú Wargames y agente — cambios v12 (Ago 2026)
+
+### Menú de arranque (setup.py)
+- Saludo **"Greetings, Professor Falken"** con efecto teletipo: tic de 850 Hz / 35 ms por carácter (PCM sintetizado vía `aplay` persistente por stdin — sin archivos de audio)
+- El saludo sale **SIEMPRE**: en el arranque del setup y **al iniciar el chat** (aios-agent) cada vez
+- **Beep fiable desde el primer carácter**: buffer/period ALSA mínimos (512 frames ~11.6 ms) + **warm-up de 0.2 s de silencio** al abrir aplay (fuerza a ALSA a abrir el dispositivo antes del primer tic — si no, los primeros tics se acumulan en el pipe y suenan tarde)
+- **`/sound`** en el chat: activa/desactiva el tic (`SOUND_ON` es atributo de clase `Agent`)
+- El saludo va **seguido directamente del menú** (sin limpiar pantalla): `Greetings, Professor Falken` → `You have just booted Artificial Intelligence Operating System.`
+- **Sin cajas** (`print_box` eliminado de todos los menús; `aios-install` idem — solo queda la definición inerte)
+- **Menú inicial insistente**: una opción inválida repite la pregunta (`Invalid option. Please choose 1 or 2.`) — nunca cae a live
+- **Backspace fiable**: `readline` con `^H` y `DEL` mapeados a `backward-delete-char` (setup.py y chat.py — cubre los dos códigos que envían los terminales)
+
+### Check de internet honesto
+- **Cascada de 6 destinos TCP**: 1.1.1.1:443, 1.0.0.1:443, 8.8.8.8:53, google.com:443, google.es:443, archlinux.org:443 — IPs sin DNS + dominios reales con DNS (una red que filtra IPs — como la de Carlos — no da falso negativo)
+- **OpenDNS** (208.67.222.222 / 208.67.220.220) en todo el sistema: live e instalado, eth + wifi (`.network` con `[DHCP] UseDNS=no` + `_ensure_dns` del wizard wifi + `persist_wifi` del instalador)
+
+### Temas de color
+- **4 temas**: `wargames` (verde oscuro `#006400`, por defecto), `amber` (`#ffb000`), `white` (`#ffffff`), `cyan` (`#00cccc`)
+- **Wrapper `/usr/local/bin/aios-xterm`**: lee `theme:` de `~/.aios/config.yaml` y lanza xterm con los colores — **un solo sitio** (usado por el menú, el chat y el atajo `$mod+Return` del i3)
+- Selección: **setup** (al configurar pregunta el tema), **`/theme`** en el chat (aplica al reiniciar), o editar `config.yaml`
+- El instalador acepta **`--theme`** (el disco conserva el tema elegido)
+
+### Proveedor "Other"
+- Opción **8) Other** en el menú de proveedores: nombre + endpoint URL (chat completions) + modelo + **API key validada contra ese endpoint** (`GET <base>/models`)
+- La config guarda `cloud.base_url` y el chat lo usa (endpoint custom en vez de `CLOUD_ENDPOINTS`)
+
+### Contexto del agente (agent.py)
+- **Prompt según modo**: `cloud` = identidad completa (qué es AIOS, LFS + sven, capacidades: comandos/archivos/procesos, búsqueda web, visión OCR/screenshots/xdotool, paquetes sven, red, servicios, LLM local en 8083); `local` = muy resumido (1 línea de identidad + capacidades esenciales) — el límite de contexto es el del proveedor elegido
+- Regla de idioma: **"Always respond in the same language the user writes in"** — el LLM responde en el idioma del usuario
+- Todo el texto de interfaz en **inglés** (modelos, mensajes, docstrings); el prompt del agente en inglés
+
+### Instalación a disco (aios-install) — login y sudo
+- El **disco instalado pide usuario y contraseña** al arrancar (`disable_autologin`: elimina el override `getty@tty1.service.d/noclear.conf` del target) — el **live conserva el autologin**
+- El **disco instalado: sudo con contraseña para `%wheel`** (`harden_sudo`: elimina el `NOPASSWD` del sudoers del target) — el **live conserva NOPASSWD** (necesario para el flujo del menú)
+- El instalador es **ÚNICO**: `/usr/local/bin/aios-install` (el de `scripts/` era un duplicado obsoleto — eliminado; el del PATH era el viejo con cajas — sustituido por el bueno, backup `.bak-6ago`)
+
+### Nota de requisitos LOCAL
+- En el menú (live e instalar):
+```
+  1) LOCAL - the built-in Qwen3-8B model (no internet needed)
+     Requires: CPU at least like an Intel i5-1035G1 (4 cores / 8 threads,
+     1.0 GHz base / 3.6 GHz boost, 6 MB cache), 8 GB RAM.
+     Note: runs slow, about human typing speed.
+```
+
+### Initrd (banner)
+- El banner volvió al **original** (arte de semitonos ▒▓░ — sin cambios): los experimentos de arte sólido (█) y del fix del scroll (cursor a línea 33) se descartaron — no quedaron en el initrd
