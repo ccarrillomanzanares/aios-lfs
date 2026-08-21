@@ -432,24 +432,15 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Instalación de AIOS LFS al disco SSD completada.
 - Reinicio y arranque desde disco con banner AIOS y prompt de login funcionando.
 
-### Pendientes
+### Pendientes (histórico — resueltos con el kernel #7)
+- ~~Soportar el modo ISO de Rufus (FAT32)~~ → resuelto: Rufus en modo DD es el método documentado
+- ~~Preparar el kernel #5 con controladores NVMe y UAS~~ → resuelto con el kernel #7 (config Ubuntu 6.18.10, ver 7 Ago)
 
-- Soportar el modo ISO de Rufus (FAT32) en el script init del initrd live.
-- Preparar el kernel #5 con controladores NVMe y UAS para ampliar la compatibilidad de hardware.
+## 6 Ago 2026 — LLM local en portátil: SIGILL (RESUELTO el 8 Ago)
 
-## 6 Ago 2026 — LLM local en portátil: SIGILL (estado actual)
+**Síntoma histórico**: `aios-llama.service` fallaba en bucle `status=4/ILL` (SIGILL core dump) en el HP AMD A8-7410 (sin AVX2/FMA3/AVX-512). Causas descartadas en su momento: GGUF corrupto, ISA de ggml (builds AVX1+F16C), mezcla glibc.
 
-**Síntoma**: `aios-llama.service` falla en bucle `status=4/ILL` (SIGILL core dump) en el HP (AMD A8-7410 — sin AVX2/FMA3/AVX-512). `launch_llama.py` usa `LLAMA_BIN=/usr/local/bin/llama-server` + `LD_LIBRARY_PATH=/usr/local/lib/llama` (build1 original, `GGML_NATIVE=ON` → AVX-512 → SIGILL garantizado).
-
-**Descartado (verificado 6 Ago)**:
-- **GGUF**: md5 idéntico VPS/portátil (`1f7c1dfa76fa25696c806e580f0964b7`), mismo tamaño exacto. El mismo modelo funciona en el VPS.
-- **ISA de ggml**: build4 AVX1+F16C puro (`--fresh`, AVX2/FMA/AVX512=OFF) verificado con objdump en las 14 libs (0 `vpblendd|vpermd|vpbroadcast|vpsllvd|vpermq|vpmaskmov|vinserti128|vextracti128|vfmadd|zmm`) → SIGILL igual al cargar el modelo (`--version` sí funciona). El conteo "290" que despistó era falso positivo (`vpblendvb`=AVX1, `vpblendw`=SSE4.1).
-- **Mezcla glibc**: core dump con cadena normal y con cadena LFS forzada (`/usr/lib/ld-linux-x86-64.so.2`).
-
-**Pendiente**:
-- Probar el build SSE-only del VPS (`~/llama.cpp/build/bin`: `GGML_AVX=OFF`, `GGML_AVX2=OFF`, 0 zmm) en el portátil — nunca probado; es el discriminador natural contra la teoría glibc/CPU Jaguar.
-- Carlos probará en otro portátil (mañana).
-- build4 está en `/tmp/llama4` del portátil, **NO instalado**; `/usr/local/lib/llama` sigue con build1 AVX-512.
+**Resolución (8 Ago)**: el SIGILL se resolvió con la alineación de glibc (única 2.44 de sven, `/lib64` → `/usr/lib`) + el paquete sven `llama-cpp` (b10221, x86-64-baseline). Verificado: el LLM carga y genera **~1.2 tok/s** en el A8. Detalle de la investigación completa en la skill `aios-iso-build`.
 
 ## 6 Ago 2026 — Agente AIOS en VPS con Qwen local (funciona)
 
@@ -472,7 +463,7 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - glibc 2.44 única y alineada (`/lib64` → `/usr/lib`, cero Ubuntu) + protegida en sven
 - LLM: paquete `llama-cpp` de sven (b10221, baseline, GLIBC 2.34) — scripts adaptados (`/usr/bin/llama-server`, sin LD_LIBRARY_PATH); builds manuales eliminados (sin fallback)
 - Setup restaurado (una config.yaml de prueba en el árbol hacía saltar el wizard); aios-install v1.1.3 (grupos, passwords, silent boot disco); grub sin nokaslr
-- Pendiente: ISO final ~1.5 GB (sin modelo — el GGUF 4.7 GB se copia aparte), validar y probar el LLM (momento del SIGILL)
+- Pendiente histórico: ISO final ~1.5 GB (sin modelo — el GGUF 4.7 GB se copia aparte) — superado: el firmware completo (416 MB) sube la ISO a ~1.5-1.8 GB; el modelo LLM va aparte.
 
 ## 8 Ago 2026 — Hardware validado (ISO #7 + LLM)
 
@@ -485,6 +476,32 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - El cuello de botella de los 7-8 min es la **carga del modelo desde el USB** (4.7 GB a ~10-15 MB/s). Desde el SSD NVMe (SK hynix BC511 512 GB) será ~100x más rápida (segundos).
 - El i5-1035G1 (AVX-512) aprovecha las variantes CPU del paquete ggml mucho más que el Jaguar (AVX1) — el rendimiento en el HP nuevo será muy superior al 1.2 tok/s del viejo.
 - Observación de Carlos: "contesta aproximadamente a la velocidad de una persona promedio tecleando" (el viejo).
+
+## 19-21 Ago 2026 — Arranque colgado, GPU/firmware completo, vbox condicionado, tema completo, instalador
+
+### Arranque colgado en el logo (resuelto)
+- **Síntoma**: tras instalar a disco, el sistema se quedaba en el logo (~2 min) y luego arrancaba. **Causa raíz**: instalación a medias por el bug de `harden_sudo` (`glob` devuelve strings → `is_file()` fallaba → el instalador abortaba ANTES de `persist_wifi`) → disco sin wifi → `systemd-networkd-wait-online` bloqueaba el boot.
+- **Fixes (en árbol e ISO)**:
+  - `systemd-networkd-wait-online` **deshabilitado** en el árbol → el arranque nunca depende de la red
+  - `options rtl8723be ips=0 fwlps=0` en `/etc/modprobe.d/rtl8723be.conf` → sin soft lockups del wifi
+  - Instalador corregido: revert del autologin/harden_sudo + fix `Path.glob` + **aborts con `sys.exit(1)`** (antes exit 0 → el setup decía "installation complete" sin haber instalado) + **menú que re-pregunta ante entradas inválidas** (setup.py y aios-install)
+- Arranque verificado: **6.3 s** a multi-user, escritorio arriba, wifi conectado (persistencia OK).
+
+### GPU: firmware radeon MULLINS (resuelto — causa raíz de la "barra verde"/scrot congelado)
+- El árbol tenía una copia **parcial** de firmware (solo amdgpu, 534 MB, del 3 Ago) → el radeon de la APU A8 (MULLINS) no tenía sus `.bin` → `Fatal error during GPU init` → sin `/dev/dri` → X sin driver nativo → render por vesa congelado (scrot devolvía siempre la misma imagen; la "barra verde" era un frame viejo, no la barra real).
+- **Fix (vía oficial)**: `sven install linux-firmware` (paquete completo de Arch, `.zst` — el kernel 6.18.10 tiene `CONFIG_FW_LOADER_COMPRESS=y`) → `/usr/lib/firmware` 416 MB con TODO (radeon, amdgpu, iwlwifi, brcm, atheros…) + `regulatory.db` preservado. El `/lib/firmware` viejo (534 MB) se movió a backup (`~/aios-work/backups/backup-firmware-lib-20260821/`) → **~530 MB menos de ISO**.
+- **Regla del build**: el firmware se instala SIEMPRE con el paquete sven `linux-firmware` completo (nunca copias parciales manuales).
+- Verificado en caliente: `radeon` inicializado (`/dev/dri/card0` + `renderD128`), render fresco, barra correcta.
+- **Microcódigo CPU**: `amd-ucode` + `intel-ucode` (paquetes sven) en el árbol — parches de CPU para cualquier equipo.
+
+### vboxadd: condicionado a VirtualBox (no es basura, es adaptativo)
+- Las units `vboxadd.service`, `vboxadd-service.service`, `vboxservice.service` llevan un drop-in con **`ConditionVirtualization=oracle`** → en hardware físico no se activan (arranque limpio, sin degraded); en VirtualBox real se levantan con los módulos del kernel de distro (`vboxguest.ko.zst` de 6.18.10 — los de las Guest Additions 7.2.6, incompatibles, se movieron a backup).
+
+### Tema de color completo (ver sección "Temas de color" más abajo)
+- `aios-theme` central + `status.py` lee el tema + i3 con `colors.conf` incluido — los 4 temas cambian TODO al momento (verificado en el portátil).
+
+### Push a GitHub (lección aprendida)
+- El token del VPS estaba caducado → los pushes de los últimos commits "parecían" funcionar por el `| tail -1` que **enmascara el error** (mismo pitfall que con xorriso). Fix: token nuevo en `~/.git-credentials` del VPS, remotos sin usuario en la URL (`https://github.com/...`), helper store en ambos repos. **Regla: nunca terminar un push con `| tail -1` sin verificar el resultado.**
 
 ## Changelog
 
@@ -536,10 +553,13 @@ MIT — ver el archivo `LICENSE` del repositorio.
 - **Cascada de 6 destinos TCP**: 1.1.1.1:443, 1.0.0.1:443, 8.8.8.8:53, google.com:443, google.es:443, archlinux.org:443 — IPs sin DNS + dominios reales con DNS (una red que filtra IPs — como la de Carlos — no da falso negativo)
 - **OpenDNS** (208.67.222.222 / 208.67.220.220) en todo el sistema: live e instalado, eth + wifi (`.network` con `[DHCP] UseDNS=no` + `_ensure_dns` del wizard wifi + `persist_wifi` del instalador)
 
-### Temas de color
+### Temas de color (completado el 21 Ago 2026)
 - **4 temas**: `wargames` (verde oscuro `#006400`, por defecto), `amber` (`#ffb000`), `white` (`#ffffff`), `cyan` (`#00cccc`)
-- **Wrapper `/usr/local/bin/aios-xterm`**: lee `theme:` de `~/.aios/config.yaml` y lanza xterm con los colores — **un solo sitio** (usado por el menú, el chat y el atajo `$mod+Return` del i3)
-- Selección: **setup** (al configurar pregunta el tema), **`/theme`** en el chat (aplica al reiniciar), o editar `config.yaml`
+- **`aios-theme <tema>`** (script central en `/usr/local/bin`): escribe `theme:` en `~/.aios/config.yaml`, genera `~/.config/i3/colors.conf` (colores `client.*` + barra) y **aplica al momento** (reinicia la barra `status.py` + `i3-msg reload`) — una sola vía para TODO
+- **Wrapper `/usr/local/bin/aios-xterm`**: lee `theme:` de `config.yaml` y lanza xterm con los colores — usado por el menú, el chat y `$mod+Return`
+- **`status.py`** (barra i3): lee `theme:` del `config.yaml` y emite los colores del tema (las alertas rojas/naranjas se mantienen — semántica)
+- **i3 config**: los colores viven en `include /home/aios/.config/i3/colors.conf` (generado por aios-theme)
+- Selección: **setup** (al configurar pregunta el tema y lo aplica), **`/theme`** en el chat (**aplica al momento**, sin reiniciar), o `aios-theme <tema>` manual
 - El instalador acepta **`--theme`** (el disco conserva el tema elegido)
 
 ### Proveedor "Other"
@@ -552,9 +572,8 @@ MIT — ver el archivo `LICENSE` del repositorio.
 - Todo el texto de interfaz en **inglés** (modelos, mensajes, docstrings); el prompt del agente en inglés
 
 ### Instalación a disco (aios-install) — login y sudo
-- El **disco instalado pide usuario y contraseña** al arrancar (`disable_autologin`: elimina el override `getty@tty1.service.d/noclear.conf` del target) — el **live conserva el autologin**
-- El **disco instalado: sudo con contraseña para `%wheel`** (`harden_sudo`: elimina el `NOPASSWD` del sudoers del target) — el **live conserva NOPASSWD** (necesario para el flujo del menú)
-- El instalador es **ÚNICO**: `/usr/local/bin/aios-install` (el de `scripts/` era un duplicado obsoleto — eliminado; el del PATH era el viejo con cajas — sustituido por el bueno, backup `.bak-6ago`)
+- ⚠️ **REVERTIDO el 19 Ago 2026**: el disco instalado **conserva el autologin y el NOPASSWD del live** (disco = live). El intento de endurecer (disable_autologin + harden_sudo) se revirtió porque introdujo un bug (`harden_sudo` con `glob` → `is_file()` fallaba) que **abortaba el instalador a mitad** → disco sin wifi persistido → `systemd-networkd-wait-online` bloqueaba el arranque (logo colgado ~2 min). El instalador corregido (21 Ago) ya no toca autologin ni sudoers.
+- El instalador es **ÚNICO**: `/usr/local/bin/aios-install` (versionado en el repo `sre-agent`; el de `scripts/` era un duplicado obsoleto — eliminado)
 
 ### Nota de requisitos LOCAL
 - En el menú (live e instalar):
