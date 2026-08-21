@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIOS — our own operating system built from scratch on Linux From Scratch 13.0-systemd. Bootable ISO with live mode and installer.">
+    <meta property="og:title" content="AIOS — A custom Linux distribution · CCMAI">
+    <meta property="og:description" content="Our own operating system, built from scratch. Generic distro kernel, sven package manager, integrated AI agent.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ccmai.org/">
+    <meta property="og:image" content="https://ccmai.org/assets/hex.svg">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 116'%3E%3Cpolygon points='50,4 92,30 92,86 50,112 8,86 8,30' fill='%23001100' stroke='%2300ff00' stroke-width='8'/%3E%3Ccircle cx='50' cy='58' r='16' fill='%2300ff00' opacity='0.9'/%3E%3C/svg%3E">
+    <title>AIOS — A custom Linux distribution · CCMAI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Consolas", "Menlo", "DejaVu Sans Mono", monospace;
+            background: #000000;
+            color: #33ff33;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        .container { max-width: 780px; width: 100%; }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .ascii {
+            color: #00ff00;
+            font-size: 11px;
+            line-height: 1.15;
+            letter-spacing: 0;
+            display: inline-block;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.35);
+            white-space: pre;
+        }
+        svg.hex { filter: drop-shadow(0 0 12px rgba(0, 255, 0, 0.35)); }
+        .header h1 {
+            font-size: 2.6rem; font-weight: 700; color: #00ff00; margin: 0.8rem 0 0.3rem;
+            letter-spacing: 0.15em; text-shadow: 0 0 12px rgba(0, 255, 0, 0.5);
+        }
+        .header p { font-size: 1rem; color: #008800; }
+        .greeting {
+            display: inline-block; margin-top: 0.9rem; padding: 0.3rem 1rem;
+            background: #001100; border: 1px solid #006400; border-radius: 4px;
+            font-size: 0.85rem; color: #00ff00;
+        }
+        .badge {
+            display: inline-block; margin-left: 0.6rem; padding: 0.15rem 0.6rem;
+            background: #001100; border: 1px solid #00ff00; border-radius: 2px;
+            font-size: 0.8rem; color: #00ff00;
+        }
+        .card {
+            background: #001100; border: 1px solid #006400; border-radius: 6px;
+            padding: 1.6rem; margin-bottom: 1.5rem;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.06);
+        }
+        .card h2 {
+            font-size: 1.15rem; color: #00ff00; margin-bottom: 1rem;
+            letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        .card ul { list-style: none; }
+        .card li {
+            padding: 0.45rem 0 0.45rem 1.6rem; position: relative; color: #33dd33;
+            font-size: 0.95rem; line-height: 1.55;
+        }
+        .card li::before { content: "▸"; position: absolute; left: 0; color: #00ff00; }
+        .card li strong { color: #00ff00; }
+        .descarga {
+            text-align: center; background: #001100; border: 1px solid #006400;
+            border-radius: 6px; padding: 1.8rem; margin-bottom: 1.5rem;
+        }
+        .descarga h2 { font-size: 1.15rem; color: #00ff00; margin-bottom: 0.6rem; letter-spacing: 0.08em; }
+        .descarga p { color: #00aa00; margin-bottom: 1.4rem; font-size: 0.9rem; }
+        .btn {
+            display: inline-block; background: #003300; color: #00ff00; text-decoration: none;
+            padding: 0.8rem 2rem; border-radius: 4px; font-weight: 600; font-size: 1rem;
+            border: 1px solid #00ff00; font-family: inherit; letter-spacing: 0.05em;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn:hover { background: #00ff00; color: #000000; transform: translateY(-1px); box-shadow: 0 0 14px rgba(0,255,0,0.4); }
+        .btn small { display: block; font-weight: 400; font-size: 0.72rem; opacity: 0.8; margin-top: 0.25rem; }
+        .btn.old { margin-left: 0.8rem; background: transparent; border-color: #005500; color: #008800; }
+        .btn.old:hover { background: #005500; color: #00ff00; }
+        .enlaces { display: flex; justify-content: center; gap: 1.4rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+        .enlaces a { color: #00ff00; text-decoration: none; font-size: 0.9rem; }
+        .enlaces a:hover { text-decoration: underline; text-shadow: 0 0 8px rgba(0,255,0,0.6); }
+        footer { text-align: center; color: #007700; font-size: 0.8rem; padding-bottom: 1rem; }
+        footer a { color: #008800; text-decoration: none; }
+        /* cursor de terminal: bloque solido verde, parpadeo on/off (fiel a los 80) */
+        .cursor {
+            display: inline-block;
+            width: 0.6em;
+            height: 1.15em;
+            background: #00ff00;
+            vertical-align: text-bottom;
+            margin-left: 1px;
+            animation: blink 1s step-start infinite;
+        }
+        /* scanlines CRT sutiles (solo desktop) */
+        body::after {
+            content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 998;
+            background: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0 1px, transparent 1px 3px);
+        }
+        /* accesibilidad teclado */
+        a:focus-visible, .btn:focus-visible {
+            outline: 2px solid #00ff00; outline-offset: 2px;
+        }
+        /* separador bajo titulos de seccion */
+        .card h2 { border-bottom: 1px solid #004400; padding-bottom: 0.6rem; }
+        @keyframes blink { 50% { opacity: 0; } }
+        @media (max-width: 600px) {
+            body { padding: 1rem 0.8rem; }
+            .header h1 { font-size: 1.9rem; }
+            .ascii { font-size: 8px; }
+            .card, .descarga { padding: 1.2rem; }
+            .btn.old { margin-left: 0; margin-top: 0.6rem; display: inline-block; }
+            .btn { width: 100%; padding: 0.9rem 1rem; }
+            .enlaces { gap: 1rem; flex-direction: column; align-items: center; }
+            .header p { font-size: 0.85rem; }
+            .descarga p { font-size: 0.85rem; }
+            body::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <svg class="hex" width="210" height="195" viewBox="0 0 130 116" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="65,2 112,30 112,86 65,114 18,86 18,30"
+                         fill="#001100" stroke="#00ff00" stroke-width="8"
+                         stroke-linejoin="round"/>
+                <circle cx="65" cy="58" r="17" fill="#00ff00" opacity="0.9"/>
+            </svg>
+            <h1>AIOS</h1>
+            <p style="color:#008800;font-size:1rem;letter-spacing:0.12em;margin-top:0.2rem">Artificial Intelligence Operating System</p>
+            <div style="margin-top:0.9rem">
+                <span style="display:block"><span class="greeting" id="greeting">Greetings, Professor Falken</span><span class="cursor" id="type-cursor" style="display:none"></span></span>
+            </div>
+        </div>
+
+        <div style="margin-bottom:2rem;text-align:center;color:#33dd33;font-size:0.95rem;line-height:1.7;max-width:640px;margin-left:auto;margin-right:auto">
+            AIOS is a minimalist operating system built with and for artificial intelligence — autonomous, yet always under human review.<br><br>
+            The goal: a computer operated by a human–agent team, and a complete SRE platform.<br><br>
+            <span style="color:#008800;font-size:0.85rem;font-style:italic">Made with a nostalgic nod to WarGames (1983)</span>
+        </div>
+
+        <div class="descarga">
+            <p>Bootable ISO — run it in live mode, or install it to disk.
+            Works on physical hardware and virtual machines (tested on VirtualBox).</p>
+            <a class="btn" href="releases/aios-1.4.iso">
+                Download AIOS 1.4
+                <small>ISO · 1.9 GB</small>
+            </a>
+        </div>
+
+        <div class="enlaces">
+            <a href="https://github.com/ccarrillomanzanares/aios-lfs" target="_blank" rel="noopener">GitHub: aios-lfs</a>
+            <a href="https://github.com/ccarrillomanzanares/aios-agent" target="_blank" rel="noopener">GitHub: aios-agent</a>
+        </div>
+
+        <footer>© 2026 CCMAI · <a href="https://ccmai.org">ccmai.org</a> <span class="cursor"></span>
+            <div style="margin-top:0.8rem"><span class="badge">v1.4 · x86-64</span></div>
+            <div style="margin-top:0.6rem;font-size:0.72rem;color:#006600">Proof of concept — beta stage · use at your own risk</div>
+            <div id="audio-toggle" title="Activar / silenciar el sonido"
+                 style="position:fixed;bottom:12px;right:14px;background:#001100;border:1px solid #006400;
+                 color:#00ff00;border-radius:4px;padding:4px 10px;font-size:0.9rem;z-index:99;
+                 cursor:pointer;user-select:none">🔊</div>
+        </footer>
+    </div>
+    <script>
+        // Frases de Wargames (1983) — escritura caracter a caracter + beep, como en AIOS
+        const QUOTES = [
+            "Greetings, Professor Falken",
+            "Shall we play a game?",
+            "Would you prefer a nice game of chess?",
+            "A strange game. The only winning move is not to play.",
+            "How about Global Thermonuclear War?",
+            "What's the difference?",
+            "To win the game.",
+            "You are a hard man to reach."
+        ];
+        const el = document.getElementById("greeting");
+        let idx = 0, typing = false;
+        let audioCtx = null;
+        let soundOn = true;
+
+        const toggle = document.getElementById("audio-toggle");
+        if (toggle) toggle.addEventListener("click", (e) => {
+            soundOn = !soundOn;
+            e.target.textContent = soundOn ? "🔊" : "🔇";
+            if (soundOn) ensureAudio();
+            e.stopPropagation();
+        });
+
+        function ensureAudio() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+            }
+            if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+        }
+        document.addEventListener("click", ensureAudio, { capture: true });
+
+        function beep() {
+            if (!soundOn || !audioCtx || audioCtx.state !== "running") return;
+            try {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.type = "square";
+                o.frequency.value = 850;          // 850 Hz, como el tic de AIOS
+                g.gain.setValueAtTime(0.025, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.035);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start();
+                o.stop(audioCtx.currentTime + 0.04);
+            } catch (e) {}
+        }
+
+        function typeText(text) {
+            if (typing) return;
+            typing = true;
+            el.textContent = "";
+            const cur = document.getElementById("type-cursor");
+            if (cur) cur.style.display = "inline-block";
+            let i = 0;
+            const iv = setInterval(() => {
+                if (i < text.length) {
+                    el.textContent += text[i];
+                    beep();
+                    i++;
+                } else {
+                    clearInterval(iv);
+                    typing = false;
+                    if (cur) cur.style.display = "none";
+                    setTimeout(nextQuote, 6000);   // pausa entre frases
+                }
+            }, 55);                                 // ritmo: 55 ms por caracter
+        }
+
+        function nextQuote() {
+            if (typing) return;
+            let n;
+            do { n = Math.floor(Math.random() * QUOTES.length); } while (n === idx && QUOTES.length > 1);
+            idx = n;
+            typeText(QUOTES[n]);
+        }
+
+        typeText(QUOTES[0]);                        // arranque: primera frase al cargar
+    </script>
+</body>
+</html>

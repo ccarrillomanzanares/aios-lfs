@@ -503,6 +503,30 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 ### Push a GitHub (lección aprendida)
 - El token del VPS estaba caducado → los pushes de los últimos commits "parecían" funcionar por el `| tail -1` que **enmascara el error** (mismo pitfall que con xorriso). Fix: token nuevo en `~/.git-credentials` del VPS, remotos sin usuario en la URL (`https://github.com/...`), helper store en ambos repos. **Regla: nunca terminar un push con `| tail -1` sin verificar el resultado.**
 
+## 21 Ago 2026 (tarde) — Web v1.4, estadísticas por correo, frases de Wargames, ISO 1.4
+
+### Publicación y web (ccmai.org)
+- **ISO v1.4 publicada** en `/var/www/ccmai.org/releases/aios-1.4.iso` (1.9 GB, 21 Ago 20:36) — la 1.3 queda en el servidor sin enlazar (decisión de Carlos).
+- **Backup de la web** en `~/aios-work/backups/web-ccmai-20260821/` (patrón de siempre).
+- **Rediseño completo estilo wargames/AIOS**: fondo negro, verde Matrix (`#00ff00`/`#006400`), tipografía mono, hexágono **SVG** (borde grueso 8 + círculo relleno — sustituye al ASCII de semitonos, sin pixelación), "Greetings, Professor Falken" con **typewriter + beep 850 Hz/35 ms** (Web Audio API, 8 frases rotativas cada ~6 s, toggle 🔊/🔇 abajo a la derecha — el navegador exige primer clic para el audio), cursor bloque sólido parpadeante, scanlines CRT sutiles (desktop), favicon SVG con hexágono+círculo, meta description + Open Graph (imagen `assets/hex.svg`).
+- **Estructura final**: hexágono → AIOS → "Artificial Intelligence Operating System" → frase rotativa → misión (2 frases + "Made with a nostalgic nod to WarGames (1983)") → descarga (sin aios-install, con mención físico/VirtualBox) → enlaces GitHub (corregidos a `ccarrillomanzanares`; **sre-agent fuera**) → footer (badge v1.4 · x86-64 + disclaimer "Proof of concept — beta stage · use at your own risk").
+- **Web versionada en el repo**: `aios-lfs/web/` (index.html + releases/index.html + assets/hex.svg) — antes solo vivía en el servidor.
+
+### Estadísticas de acceso (ccmai.org)
+- **Script `~/scripts/ccmai-stats-mail.py`**: informe diario (peticiones, IPs únicas, estados, top rutas, descargas ISO con bytes/completas, escaneos sospechosos) en **HTML responsive** (KPIs, barras, media query móvil) + alternativa texto plano; envía por **SMTP Zoho** (`smtp.zoho.eu:587`, app password en `~/info.txt` — ruta absoluta porque el cron corre como root).
+- **Cron diario root**: `30 7 * * *` (07:30) → correo a `ccarrillo@ccmai.org`.
+- Dato relevante: ~86% del tráfico son 404 de escaneos automáticos (`/.env`, `/.git/config`, `.aws/credentials`); la ISO se descarga en parciales (ninguna completa en 15 días); detrás de Cloudflare (IPs del edge, no reales — `CF-Connecting-IP` pendiente si se quiere).
+
+### Frases de Wargames rotativas (web + AIOS)
+- 8 frases míticas: "Greetings, Professor Falken", "Shall we play a game?", "Would you prefer a nice game of chess?", "A strange game. The only winning move is not to play.", "How about Global Thermonuclear War?", "What's the difference?", "To win the game.", "You are a hard man to reach."
+- **AIOS**: `setup.py` (wg con typewriter+beep) y `chat.py` (`_greet`) eligen frase aleatoria en cada arranque — commit `dba187e`. **La ISO v1.4 publicada NO lleva esto** (se regenera después).
+- **Web**: JS typewriter + beep por carácter.
+
+### Incidente 522 intermitente (móvil de Carlos)
+- Síntoma: 522 de Cloudflare + error de certificado SOLO desde el móvil (wifi, sin wifi y datos); portátil OK.
+- Diagnóstico: origen sano (localhost 200 en 0.0008 s, workers OK, firewall abierto, DNS global apunta a Cloudflare en router/8.8.8.8/1.1.1.1); certificados válidos (CF: Let's Encrypt hasta Nov 2026; VPS: self-signed). Los 522 no llegan al Apache (no hay línea en el access log del momento).
+- Conclusión: **problema del móvil** (caché DNS / DNS privado / hora / VPN con inspección TLS) o ruta intermitente edge-CF→VPS. Pendiente: verificar en el móvil (otros https, DNS privado, hora, reinicio) — no es del servidor.
+
 ## Changelog
 
 ### v10 — agosto 2026

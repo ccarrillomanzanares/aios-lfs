@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOS — Releases · CCMAI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Consolas", "Menlo", "DejaVu Sans Mono", monospace;
+            background: #000000; color: #33ff33;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 2rem 1rem; min-height: 100vh;
+        }
+        .container { max-width: 720px; width: 100%; }
+        h1 { color: #00ff00; font-size: 1.6rem; letter-spacing: 0.1em; margin-bottom: 0.4rem; text-shadow: 0 0 10px rgba(0,255,0,0.4); }
+        .sub { color: #008800; font-size: 0.9rem; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th {
+            text-align: left; color: #00ff00; padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid #00ff00; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8rem;
+        }
+        td { padding: 0.8rem; border-bottom: 1px solid #003300; color: #22cc22; }
+        td a { color: #00ff00; text-decoration: none; }
+        td a:hover { text-decoration: underline; text-shadow: 0 0 8px rgba(0,255,0,0.6); }
+        .size { color: #008800; font-size: 0.8rem; }
+        .date { color: #008800; font-size: 0.8rem; }
+        .note { margin-top: 1.5rem; color: #006600; font-size: 0.8rem; }
+        .back { display: inline-block; margin-top: 2rem; color: #00ff00; text-decoration: none; font-size: 0.9rem; }
+        .back:hover { text-shadow: 0 0 8px rgba(0,255,0,0.6); }
+        .cursor::after { content: "▊"; animation: blink 1s step-start infinite; color: #00ff00; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>&gt; AIOS releases</h1>
+        <div class="sub">bootable ISO images — live mode + installer</div>
+        <table>
+            <tr><th>file</th><th>size</th><th>date</th><th></th></tr>
+            <tr>
+                <td><a href="aios-1.4.iso">aios-1.4.iso</a></td>
+                <td class="size">1.9 GB</td>
+                <td class="date">2026-08-21</td>
+                <td class="size">current</td>
+            </tr>
+        </table>
+        <div class="note">
+            Write the ISO to USB with Rufus in DD mode (or dd) and boot. The installer
+            (aios-install) runs from the live system — WiFi configured in live mode is
+            persisted to the installed disk automatically.
+        </div>
+        <a class="back" href="/">← back to ccmai.org</a> <span class="cursor"></span>
+    </div>
+</body>
+</html>
