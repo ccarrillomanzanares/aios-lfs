@@ -9,11 +9,32 @@ import subprocess
 import sys
 import time
 
-# i3bar Matrix color scheme
+# Colores por tema (aios-theme aplica el tema: wargames/amber/white/cyan)
+THEMES = {
+    "wargames": ("#006400", "#003300"),
+    "amber":    ("#ffb000", "#885500"),
+    "white":    ("#ffffff", "#888888"),
+    "cyan":     ("#00cccc", "#006666"),
+}
 COLOR_TEXT = "#006400"
 COLOR_SEP = "#003300"
 SEPARATOR = {"full_text": " | ", "color": COLOR_SEP}
 VERSION_LINE = {"version": 1, "click_events": False}
+
+def _load_theme():
+    """Lee theme: del config.yaml y aplica los colores (igual que aios-xterm)."""
+    global COLOR_TEXT, COLOR_SEP, SEPARATOR
+    try:
+        with open(AIOS_CONFIG) as f:
+            for line in f:
+                if line.startswith("theme:"):
+                    t = line.split(":", 1)[1].strip().strip("\"'")
+                    if t in THEMES:
+                        COLOR_TEXT, COLOR_SEP = THEMES[t]
+                        SEPARATOR = {"full_text": " | ", "color": COLOR_SEP}
+                    break
+    except Exception:
+        pass
 
 WIFI_IFACE = "wlo1"
 ETH_IFACE = "enp3s0"
@@ -396,7 +417,7 @@ def get_agent_busy_block():
     """⏳ si el agente está trabajando (marcador /tmp/aios-agent.busy creado por agent.py)."""
     try:
         if os.path.isfile("/tmp/aios-agent.busy"):
-            return _item("⏳", color="#006400")
+            return _item("⏳", color=COLOR_TEXT)
     except Exception:
         pass
     return None
@@ -430,7 +451,7 @@ def get_volume_block():
         elif pct > 80:
             color = "#ff8800"
         else:
-            color = "#006400"
+            color = COLOR_TEXT
         return _item(f"VOL {pct}%", color=color)
     except Exception:
         return None
@@ -467,6 +488,7 @@ def build_blocks():
 
 
 def main():
+    _load_theme()
     print(json.dumps(VERSION_LINE))
     print("[")
     sys.stdout.flush()

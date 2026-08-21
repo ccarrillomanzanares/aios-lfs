@@ -37,13 +37,8 @@ bindsym $mod+Shift+5 move container to workspace 5
 # Fondo negro
 exec --no-startup-id /usr/bin/xsetroot -solid "#000000"
 
-# Colores Matrix para ventanas (borde + título) — el azul por defecto de i3 se va
-client.focused          #006400 #002200 #006400 #006400
-client.focused_inactive #005500 #001100 #006400 #00aa00
-client.unfocused        #004400 #000000 #005500 #008800
-client.urgent           #ff0000 #220000 #006400 #006400
-client.placeholder      #004400 #000000 #005500 #008800
-client.background       #000000
+# Colores (client.* + barra) por tema — generado por aios-theme
+include /home/aios/.config/i3/colors.conf
 
 # Ventana 1: terminal Matrix con AIOS Agent
 
@@ -56,20 +51,6 @@ exec --no-startup-id /usr/bin/VBoxClient --clipboard
 exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/local/bin/aios-xterm -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/local/bin/aios-xterm -e /usr/local/bin/aios; fi'
 
 include /home/aios/.config/i3/volume_bindings.conf
-bar {
-    position bottom
-    status_command python3 /home/aios/.config/i3/status.py
-    colors {
-        background #000000
-        statusline #006400
-        separator #003300
-        focused_workspace  #000000 #006400 #006400
-        active_workspace   #000000 #004400 #006400
-        inactive_workspace #000000 #002200 #005500
-        urgent_workspace   #000000 #ff0000 #006400
-        binding_mode       #000000 #006400 #006400
-    }
-}
 
 # Help: keyboard shortcuts list (Super+F1)
 bindsym $mod+F1 exec /usr/local/bin/aios-xterm -e less /home/aios/.config/i3/shortcuts.txt
