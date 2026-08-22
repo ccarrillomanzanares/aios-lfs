@@ -527,6 +527,34 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Diagnóstico: origen sano (localhost 200 en 0.0008 s, workers OK, firewall abierto, DNS global apunta a Cloudflare en router/8.8.8.8/1.1.1.1); certificados válidos (CF: Let's Encrypt hasta Nov 2026; VPS: self-signed). Los 522 no llegan al Apache (no hay línea en el access log del momento).
 - Conclusión: **problema del móvil** (caché DNS / DNS privado / hora / VPN con inspección TLS) o ruta intermitente edge-CF→VPS. Pendiente: verificar en el móvil (otros https, DNS privado, hora, reinicio) — no es del servidor.
 
+## 21-22 Ago 2026 (madrugada) — Cuatro bugs encadenados tras el firmware y sus fixes (ISO final 07:38)
+
+### 1. ISO rota: kernel vanilla busca SOLO /lib/firmware
+- **Síntoma** (portátil 2014, live): la wifi "se encuentra" pero no levanta ni escanea; dmesg: `Direct firmware load for rtlwifi/rtl8723befw.bin failed with error -2` (ENOENT) — también radeon, regulatory.db, bluetooth.
+- **Causa**: al mover el `/lib/firmware` viejo (534 MB) a backup, el árbol quedó con el firmware solo en `/usr/lib/firmware` (paquete sven). El kernel de distro (vanilla 6.18.10 + config Ubuntu, **sin el parche de código de Ubuntu que añade /usr/lib/firmware**) busca SOLO en `/lib/firmware`. Error de proceso: asumir la ruta sin verificarla + publicar la ISO sin arrancarla.
+- **Fix (en el árbol)**: `sudo ln -s ../usr/lib/firmware $R/lib/firmware` — symlink, sin duplicación (mismo inodo); `sven install` sigue instalando en /usr/lib. Verificado con `stat -c %i` y `unsquashfs -ll`.
+- **Lección**: el puente /lib/firmware → /usr/lib/firmware es OBLIGATORIO en el árbol (regla añadida a la skill aios-distro-kernel).
+
+### 2. Tema parcial tras instalar: colors.conf root:root
+- **Síntoma**: el tema elegido se aplica en xterm y status.py pero NO en el borde i3 / rectángulo de workspace (quedan verde wargames).
+- **Causa**: `colors.conf` se subió al árbol con `sudo cp` (después del chown de la fase 2.2) → `root:root` → `aios-theme` (corre como aios) no podía escribirlo → PermissionError; y el script **no comprobaba el error** (decía "Theme applied" con exit 0, y el setup lo tragaba con capture_output).
+- **Fix**: `chown -R 1000:1000` en `.config/i3/` del árbol + `set -e` en aios-theme (ahora falla ruidoso). Comprobación del tema: `head -4 /home/aios/.config/i3/colors.conf` debe tener `(white)`/`(amber)`… en la primera línea.
+
+### 3. Escritorio muerto: carrera udev-trigger vs udevd (intermitente)
+- **Síntoma**: arranca el logo, autologin, X "se levanta" y nada más. Xorg.0.log: `(EE) open /dev/dri/card0: No such file or directory` + `Fatal server error`.
+- **Causa**: el kernel inicializa radeon bien (firmware OK), pero **/dev/dri/card0 lo crea udev** al procesar el uevent. El unit `systemd-udev-trigger.service` (systemd upstream) solo tiene `After=` de los **sockets** de udevd, no del **daemon** → en arranques lentos (HDD 2014) el trigger ejecuta `udevadm trigger` antes de que udevd escuche → los uevents se pierden → sin /dev/dri → X muere. **Carrera intermitente** (las ISOs anteriores la ganaron por casualidad).
+- **Diagnóstico en caliente**: `udevadm trigger --subsystem-match=drm` crea card0 al momento (prueba de la causa); journal muestra `Finished systemd-udev-trigger.service` ANTES de `Started systemd-udevd.service`.
+- **Fix (en el árbol)**: drop-in `/etc/systemd/system/systemd-udev-trigger.service.d/order.conf` con `[Unit]\nAfter=systemd-udevd.service`.
+
+### 4. Xterm no aparece: -sr no existe en el xterm del build
+- **Síntoma**: tras añadir scroll, el live arranca el escritorio pero la xterm del menú no se muestra.
+- **Causa**: `xterm: bad command line option "-sr"` — la opción CLI de scrollbar-derecha no existe en el xterm del build LFS.
+- **Fix**: la derecha se configura por **recurso X**: `-xrm "*rightScrollBar: true"` (probado, exit 0). Wrapper final: `xterm -fa "Adwaita Mono" -fs 11 ... -sb -sl 2000 -xrm "*rightScrollBar: true"`.
+
+### ISO final de la ronda
+- `~/aios.iso` → `releases/aios-1.4.iso` (22 Ago 07:38, 1.9 GB): lleva los 4 fixes + firmware accesible + tema + frases Wargames + microcódigo + vbox adaptativo + instalador corregido.
+- Verificación post-build sistemática en esta ronda: `unsquashfs -cat/-ll` del squashfs (symlink, drop-in, aios-xterm, permisos colors.conf) antes de publicar.
+
 ## Changelog
 
 ### v10 — agosto 2026
