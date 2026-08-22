@@ -14,6 +14,7 @@ AIOS keyboard shortcuts
   Super+Shift+e        Exit i3 (back to login)
 
 In the chat:
+  SPACE                Skip the typewriter (write the pending text instantly)
   /sound               Toggle the typewriter sound
   /theme               Change the color theme
   exit                 Leave the chat
