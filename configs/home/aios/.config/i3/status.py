@@ -161,6 +161,20 @@ def _get_ssid_iwgetid(iface):
     return None
 
 
+def _get_signal_pct(iface):
+    """% de cobertura wifi desde 'signal: -XX dBm' de `iw dev <iface> link` (0-100)."""
+    try:
+        r = subprocess.run(["iw", "dev", iface, "link"],
+                           capture_output=True, text=True, timeout=2)
+        for line in r.stdout.splitlines():
+            if "signal:" in line:
+                dbm = float(line.split("signal:")[1].split()[0])
+                return int(max(0, min(100, 2 * (dbm + 100))))
+    except Exception:
+        pass
+    return None
+
+
 def get_network_blocks():
     """Return a list of i3bar items for active WiFi and/or Ethernet."""
     try:
@@ -168,11 +182,14 @@ def get_network_blocks():
         if _iface_up(WIFI_IFACE):
             ssid = _get_ssid(WIFI_IFACE)
             ip = _iface_ip(WIFI_IFACE)
+            sig = _get_signal_pct(WIFI_IFACE)
             parts = ["WiFi"]
             if ssid:
                 parts.append(ssid)
             if ip:
                 parts.append(ip)
+            if sig is not None:
+                parts.append(f"{sig}%")
             if len(parts) > 1:
                 blocks.append(_item(" ".join(parts)))
         if _iface_up(ETH_IFACE):
@@ -392,22 +409,26 @@ def _iface_capacity_bps(iface):
 
 
 def get_net_usage_block():
-    """% de uso de red sobre la capacidad de la interfaz activa (o KB/s si no hay capacidad)."""
+    """% de uso de red sobre la capacidad de la interfaz activa (o KB/s si no hay capacidad).
+    Sin trafico: muestra el link de la interfaz (p.ej. NET 100M)."""
     try:
         for iface in (WIFI_IFACE, ETH_IFACE):
             if not _iface_up(iface):
                 continue
             rate = _net_rate_bps(iface)
-            if not rate:
-                continue  # primera muestra, aún sin dato
-            rx_bps, tx_bps = rate
-            total_bps = rx_bps + tx_bps
             cap = _iface_capacity_bps(iface)
+            if rate:
+                rx_bps, tx_bps = rate
+                total_bps = rx_bps + tx_bps
+                if cap:
+                    pct = min(total_bps * 100 / cap, 100)
+                    if pct < 1:
+                        return _item(f"NET {int(cap/1_000_000)}M")
+                    color = "#ff0000" if pct > 95 else ("#ff8800" if pct > 80 else COLOR_TEXT)
+                    return _item(f"NET {pct:.0f}%", color=color)
+                return _item(f"NET {total_bps/1024:.0f}KB/s")
             if cap:
-                pct = min(total_bps * 100 / cap, 100)
-                color = "#ff0000" if pct > 95 else ("#ff8800" if pct > 80 else COLOR_TEXT)
-                return _item(f"NET {pct:.0f}%", color=color)
-            return _item(f"NET {total_bps/1024:.0f}KB/s")
+                return _item(f"NET {int(cap/1_000_000)}M")
         return None
     except Exception:
         return None
@@ -463,7 +484,7 @@ def build_blocks():
     if busy is not None:
         items.append(busy)
     items.extend([
-        _item("AIOS"),
+        _item("Help: Super+F1"),
         _item(get_cpu_load()),
         _item(get_memory()),
         _item(get_disk()),
