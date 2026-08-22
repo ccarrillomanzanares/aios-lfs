@@ -565,16 +565,64 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - **.bak fuera del árbol**: 11 archivos → `~/aios-work/backups/bak-arbol-20260822/` (incluido `vmlinuz-6.18.10-lfs.bak-k6`).
 - Repos: `aios-agent` `c438861` (early microcode instalador) · `aios-lfs` `1d66b62` (asound.state + alsa-restore).
 
-### ⚠️ PROBLEMA ABIERTO — la ISO definitiva (08:41) no arranca en el 2014
-- **Cambio sospechoso (único de arranque)**: early microcode en el initrd — cpio newc (18 MB, `kernel/x86/microcode/AuthenticAMD.bin` + `GenuineIntel.bin`) concatenado DELANTE del initrd gzip (1.1 MB) → initrd total 19 MB (`070701` al inicio, método estándar de Arch). Justificación: el kernel 6.18.10 tiene `CONFIG_MICROCODE=y` pero **`LATE_LOADING` desactivado** → el initrd es la única vía para el microcódigo.
-- **Síntoma en el 2014**: GRUB arranca, el kernel corre, el init del live se ejecuta pero: `mounting /dev/loop0 on /squashfs failed` → "AIOS: boot media not found" → sh sin tty. El init SÍ encontró el medio (montó la ISO) pero el mount loop del squashfs falla.
-- **Verificado sano**: la ISO está íntegra (md5 del lfs.squashfs idéntico dentro/fuera `63e2e4aa`, superbloque válido, initrd con 070701, grub.cfg correcto). La grabación del USB NO se ha verificado por hash (pendiente: `dd if=/dev/sdb bs=4M | md5sum` → debe dar `b42dddb8`).
-- **QEMU en el VPS (sin KVM)**: intento 1 (cdrom) se queda en SeaBIOS; intento 2 (media=disk, MBR grub) arranca "GRUB" pero no completa el boot en 7 min (TCG lento — no concluyente).
-- **Plan de aislamiento pendiente (próxima sesión)**:
-  1. Verificar la grabación del USB (hash `b42dddb8`) — 3 min, descarta/confirma el USB.
-  2. **ISO de control sin early microcode** (initrd original 1.1 MB, todo lo demás igual): si arranca → el initrd es el culpable (buscar vía correcta: p.ej. microcódigo dentro del initrd gzip, o early solo en el disco); si falla igual → squashfs/USB.
-  3. El microcódigo early en `build_disk_initrd` (instalador) también está pendiente de validar con la ISO nueva.
-- **Rollback disponible**: `~/aios-work/backups/initrd-originales/initrd.img-antes-early-20260822` (1.1 MB, el initrd bueno de las ISOs anteriores).
+### ✅ RESUELTO (22 Ago tarde) — el early microcode era el culpable del arranque
+- **Aislamiento confirmado**: ISO de control sin early microcode (initrd original 1.1 MB `a349e10d`, todo lo demás igual) → **arranca en el 2014**. El initrd de 19 MB (cpio newc de microcode delante del gzip) rompía el `mounting /dev/loop0 on /squashfs failed`.
+- **Acción**: initrd con early → `~/aios-work/backups/initrd-originales/initrd.img-con-early-20260822` (19 MB, conservado); el tree `~/aios/boot/initrd.img` usa el bueno (`a349e10d`). El instalador copia el initrd del árbol → `build_disk_initrd` queda sin early de facto (validar si algún día se reintenta el microcódigo por la vía correcta).
+
+## 22 Ago 2026 (tarde-noche) — ISO nueva instalada OK, fix wifi, tema, chat molón, barra, NTP, web por productos
+
+### 🔧 Wifi RTL8723BE rota con el firmware completo (RESUELTO)
+- **Síntoma**: wlo1 existe pero DOWN; `rtl8723be: Using firmware rtlwifi/rtl8723befw_36.bin` → `Polling FW ready fail!! REG_MCUFWDL:0x00000006` → `Firmware is not ready to run!` (solo en el boot; las recargas no repetían el fail → despiste).
+- **Causa**: el driver del kernel 6.18.10 de distro **prefiere `rtl8723befw_36.bin` cuando el archivo existe**; el chip 8723BE de 2014 no arranca con él. El firmware anterior (subconjunto manual) no lo tenía → usaba el base y funcionaba. El paquete sven `linux-firmware` completo (21 Ago) lo añadió → regresión "de repente".
+- **Fix**: `rtl8723befw_36.bin.zst` fuera del árbol → `backups/backup-firmware-lib-20260821/`. El driver cae al base (`Loading alternative firmware rtlwifi/rtl8723befw.bin`) y la radio funciona (validado en vivo: `ip link set wlo1 up` + `iw dev wlo1 scan` → ve redes).
+- **ISO 10:52 `933ecbd7`** con el fix → grabada por Carlos (Rufus DD) → **instalada OK en el 2014**.
+
+### 🎨 Tema parcial tras instalar (RESUELTO, causa real)
+- **Síntoma**: xterm y barra abajo en ámbar (leen config.yaml) pero títulos de ventana en verde (colors.conf del disco = wargames del árbol).
+- **Causa real**: el flujo de INSTALACIÓN (`_install_flow` → `aios-install --theme`) escribía config.yaml pero **nadie generaba colors.conf en el disco** (la llamada a `aios-theme` solo existía en los flujos post-instalación, que no corren tras instalar).
+- **Fix** (commit `20a150f`): `apply_theme(target, theme)` en aios-install — `chroot <target> env HOME=/home/aios aios-theme <tema>` + chown a uid/gid de aios de colors.conf y config.yaml.
+- **Pitfall**: el LFS NO tiene `su`/`runuser`/`setpriv` (el libro los deshabilita) → para ejecutar como aios desde root: `sudo -u aios <cmd>` (root no pide password).
+- Fix manual en disco ya instalado: `sudo -u aios aios-theme amber` + `sudo -u aios env DISPLAY=:0 i3-msg reload`.
+
+### 💬 Chat y typewriter
+- **Arranque limpio** (be8a467): fuera el banner técnico (`[LOCAL/CLOUD/HYBRID]...`, `Independent session`, `Type your query...`, `(Local model: EN, ZH...)`) y el `[Session resumed...]` (agent.py). Queda: `AIOS/1.4 — fecha` (BBS) + frase de película con typewriter.
+- **Skip con ESPACIO** (a65c0ae): durante el typewriter, pulsar espacio escribe el texto pendiente de golpe (menús wg/wg_input y stream del chat; el espacio se consume para no interferir con el input siguiente). Documentado en shortcuts.txt (a7b285b: `SPACE Skip the typewriter`).
+- **Lote molón** (17013ba):
+  - **Hexágono en el arranque del chat**: arte leído de `/usr/local/share/aios/aios-ascii.txt` (instalado en el árbol; copia del repo `configs/aios-ascii.txt`), coloreado con el tema (ANSI 32/33/36/37).
+  - **Teclado con tics**: `_input_tic()` — termios raw, tic por tecla (máquina de escribir), backspace, Ctrl+C/D, historial ↑/↓ en sesión. Se desactiva con `/sound` (controla salida y entrada).
+  - **23 frases** (WarGames + Matrix + Tron + 2001), **aleatoria sin repetir la inmediatamente anterior** (como la web). Cotejadas contra Wikiquote vía Firecrawl (túnel 3002): corregida `Greetings, Programs!` (con S); `Daisy, Daisy, give me your answer, do...` (canto de HAL); `Wake up, Neo...` e `I fight for the Users!` no están en Wikiquote pero Carlos las comprobó personalmente → incluidas.
+  - **`/health`**: LOAD / MEM / DISK / UP / TEMP / NET / últimos errores del journal.
+  - **`/reset`** (sesión limpia) y **`/stats`** (mensajes/tokens/% del límite).
+  - **Aviso sin internet** en modo cloud al arrancar.
+
+### 📊 Barra i3 (b424263)
+- `AIOS` → **`Help: Super+F1`** (primer bloque).
+- **% cobertura wifi** en el bloque WiFi (señal dBm → %, `_get_signal_pct`): `WiFi <ssid> <ip> 60%`.
+- **NET**: sin tráfico muestra el **link** (`NET 100M`); con uso, el % como antes (colores conservados).
+
+### 🕐 NTP (04657cd)
+- Opción **3** en el menú del setup: `Configure NTP time sync (external server)` → `setup_ntp()` escribe `/etc/systemd/timesyncd.conf` (default `pool.ntp.org`), enable+restart timesyncd, `timedatectl set-ntp true`, muestra estado.
+- **`persist_ntp(target)`** en aios-install: copia la config del live al disco + habilita el servicio (patrón persist_wifi). Nota: en el disco ya instalado no hay vía desde el chat (Carlos rechazó /wifi y /ntp).
+
+### 🧹 setup.py único
+- Había DOS setup.py: el oficial (`/usr/local/bin/aios-agent/setup.py`) y una **reliquia del 4 Ago** en `/usr/local/bin/setup.py` (wizard con cajas) que se ejecutaba al teclear `setup.py` (PATH). Movida a `backups/setup.py-antiguo-20260822` — nada la referenciaba (el i3 usa la ruta completa).
+- **Requisitos local** (e389fab): `_check_local_requirements()` compara cores/RAM reales con el mínimo (4 cores / 8 GB) y muestra `This machine could run it (N cores, X GB RAM)` o `Better not to try it: needs 4+ cores and 8 GB RAM (this machine: ...)` en los flujos live e instalación.
+
+### 🖼️ Arte y login
+- **Hexágono 100% sólido** (`█` U+2588, sustituye a ▓▒░ con trama) — editado por Carlos, versionado en `aios-lfs/configs/aios-ascii.txt` (cc5c0d4) y copiado al árbol en `/usr/local/share/aios/aios-ascii.txt`.
+- **`/etc/issue` VACÍO** (d2dd217): login limpio sin texto. (Pendiente de decisión: centrar el prompt con ANSI en el issue — opción A propuesta.)
+
+### 🌐 Web ccmai.org — estructura por productos
+- **ccmai.org = matriz; AIOS = producto en `/aios/`** (936b51b): movidos index.html, assets/, releases/ a `/var/www/ccmai.org/aios/`; `huerta/` intacto.
+- **Redirects Apache** (vhosts http+ssl): `^/$` → `/aios/` y `^/releases(/.*)?$` → `/aios/releases$1` (301). Verificado local y vía Cloudflare. Backup: `web-ccmai-20260822c`.
+- **Frases en la web** (572187c): 23 frases con typewriter+beep (ya era aleatoria sin repetir: `Math.random` + do-while contra idx) + `Made with nostalgia for classic AI movies (WarGames · The Matrix · Tron · 2001)`.
+- Repo: `aios-lfs/web/aios/` (git mv). Skill `ccmai-web-maintenance` actualizada.
+
+### 📦 Pendientes (próxima sesión)
+- **ISO sin regenerar** — se creará con TODO lo de hoy dentro (Carlos reinstalará el 2014; NO desplegar nada en el portátil antes).
+- **Audio del tic** — suena "a altavoz estropeado" en el portátil; los WAV generados suenan bien en el PC de Carlos → pendiente probar A/B/C/D en el portátil (tic actual / con rampas / tono continuo / volumen bajo). Sospecha: volumen/amplificador o rate del códec, no la forma de onda. Script listo: `audio-test.sh` + WAV en aios-tmp.
+- **Login centrado** (idea ANSI) — pausado.
+- **Contraseñas temporales** del disco 2014 pendientes de cambiar por Carlos.
 
 ## Changelog
 
