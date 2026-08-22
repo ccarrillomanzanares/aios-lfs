@@ -555,6 +555,27 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - `~/aios.iso` → `releases/aios-1.4.iso` (22 Ago 07:38, 1.9 GB): lleva los 4 fixes + firmware accesible + tema + frases Wargames + microcódigo + vbox adaptativo + instalador corregido.
 - Verificación post-build sistemática en esta ronda: `unsquashfs -cat/-ll` del squashfs (symlink, drop-in, aios-xterm, permisos colors.conf) antes de publicar.
 
+## 22 Ago 2026 (mañana) — Ronda final: login endurecido, audio, imagemagick, early microcode — ⚠️ PROBLEMA ABIERTO en el arranque
+
+### Hecho y verificado (en el árbol, repo y portátil donde aplica)
+- **Login en disco endurecido (punto 4 del plan)**: `harden_login` en `aios-install` — retira `/etc/sudoers.d/wheel-nopasswd` y el autologin de `getty@tty1` (por archivo, sin globs — lección 19 Ago), tras `set_passwords`, con verificación `visudo -c`. **Probado en el portátil 2014 (disco)**: sudo pide contraseña ("a password is required") + getty pide login. El live mantiene autologin+NOPASSWD (decisión Carlos). Backups de la prueba: `/root/backup-login-20260822/` en el disco. Contraseñas temporales pendientes de cambiar por Carlos.
+- **Audio / beep**: `/etc/asound.conf` → `pcm.!default { type plug; slave.pcm "plughw:1,0" }` + `ctl card 1` (sin esto aplay iba al HDMI — el beep se perdía; "Host is down" con `defaults.pcm.card` simple, la vía plug+plughw funciona). Probado en el live: beep audible.
+- **Volumen persistente**: `/etc/alsa/asound.state` (Master 64%, card "Generic" ALC3227) + **alsa-restore activado** (el unit era static sin `[Install]` → symlink en `multi-user.target.wants` — sin esto el restore nunca corría).
+- **Imagemagick**: `sven install imagemagick` (magick v7) en el árbol.
+- **.bak fuera del árbol**: 11 archivos → `~/aios-work/backups/bak-arbol-20260822/` (incluido `vmlinuz-6.18.10-lfs.bak-k6`).
+- Repos: `aios-agent` `c438861` (early microcode instalador) · `aios-lfs` `1d66b62` (asound.state + alsa-restore).
+
+### ⚠️ PROBLEMA ABIERTO — la ISO definitiva (08:41) no arranca en el 2014
+- **Cambio sospechoso (único de arranque)**: early microcode en el initrd — cpio newc (18 MB, `kernel/x86/microcode/AuthenticAMD.bin` + `GenuineIntel.bin`) concatenado DELANTE del initrd gzip (1.1 MB) → initrd total 19 MB (`070701` al inicio, método estándar de Arch). Justificación: el kernel 6.18.10 tiene `CONFIG_MICROCODE=y` pero **`LATE_LOADING` desactivado** → el initrd es la única vía para el microcódigo.
+- **Síntoma en el 2014**: GRUB arranca, el kernel corre, el init del live se ejecuta pero: `mounting /dev/loop0 on /squashfs failed` → "AIOS: boot media not found" → sh sin tty. El init SÍ encontró el medio (montó la ISO) pero el mount loop del squashfs falla.
+- **Verificado sano**: la ISO está íntegra (md5 del lfs.squashfs idéntico dentro/fuera `63e2e4aa`, superbloque válido, initrd con 070701, grub.cfg correcto). La grabación del USB NO se ha verificado por hash (pendiente: `dd if=/dev/sdb bs=4M | md5sum` → debe dar `b42dddb8`).
+- **QEMU en el VPS (sin KVM)**: intento 1 (cdrom) se queda en SeaBIOS; intento 2 (media=disk, MBR grub) arranca "GRUB" pero no completa el boot en 7 min (TCG lento — no concluyente).
+- **Plan de aislamiento pendiente (próxima sesión)**:
+  1. Verificar la grabación del USB (hash `b42dddb8`) — 3 min, descarta/confirma el USB.
+  2. **ISO de control sin early microcode** (initrd original 1.1 MB, todo lo demás igual): si arranca → el initrd es el culpable (buscar vía correcta: p.ej. microcódigo dentro del initrd gzip, o early solo en el disco); si falla igual → squashfs/USB.
+  3. El microcódigo early en `build_disk_initrd` (instalador) también está pendiente de validar con la ISO nueva.
+- **Rollback disponible**: `~/aios-work/backups/initrd-originales/initrd.img-antes-early-20260822` (1.1 MB, el initrd bueno de las ISOs anteriores).
+
 ## Changelog
 
 ### v10 — agosto 2026
