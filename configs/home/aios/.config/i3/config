@@ -52,5 +52,5 @@ exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/loc
 
 include /home/aios/.config/i3/volume_bindings.conf
 
-# Help: keyboard shortcuts list (Super+F1)
+# Help: keyboard shortcuts list (F1)
 bindsym $mod+F1 exec /usr/local/bin/aios-xterm -e less /home/aios/.config/i3/shortcuts.txt

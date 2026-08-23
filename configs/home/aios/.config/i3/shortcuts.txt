@@ -2,7 +2,7 @@ AIOS keyboard shortcuts
 ========================
 
   Super+Return         Open a terminal
-  Super/Win+F1          Show this shortcut list
+  F1                     Show this shortcut list
   Super+q              Close the focused window
   Super+h/j/k/l        Move focus
   Super+Shift+h/j/k/l  Move the focused window

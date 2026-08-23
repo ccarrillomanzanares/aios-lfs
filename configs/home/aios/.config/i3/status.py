@@ -484,7 +484,7 @@ def build_blocks():
     if busy is not None:
         items.append(busy)
     items.extend([
-        _item("Help: Super+F1"),
+        _item("Help:F1"),
         _item(get_cpu_load()),
         _item(get_memory()),
         _item(get_disk()),
