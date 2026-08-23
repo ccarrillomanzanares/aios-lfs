@@ -586,9 +586,9 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 
 ### 💬 Chat y typewriter
 - **Arranque limpio** (be8a467): fuera el banner técnico (`[LOCAL/CLOUD/HYBRID]...`, `Independent session`, `Type your query...`, `(Local model: EN, ZH...)`) y el `[Session resumed...]` (agent.py). Queda: `AIOS/1.4 — fecha` (BBS) + frase de película con typewriter.
-- **Skip con ESPACIO** (a65c0ae): durante el typewriter, pulsar espacio escribe el texto pendiente de golpe (menús wg/wg_input y stream del chat; el espacio se consume para no interferir con el input siguiente). Documentado en shortcuts.txt (a7b285b: `SPACE Skip the typewriter`).
+- **Skip con ESPACIO** (a65c0ae): pulsar espacio escribe el texto pendiente de golpe. ⚠️ El 22 Ago **NO funcionaba en terminal real** (select() en cooked no ve la tecla hasta Enter); **ARREGLADO el 23 Ago** con cbreak — ver sección 23 Ago.
 - **Lote molón** (17013ba):
-  - **Hexágono en el arranque del chat**: arte leído de `/usr/local/share/aios/aios-ascii.txt` (instalado en el árbol; copia del repo `configs/aios-ascii.txt`), coloreado con el tema (ANSI 32/33/36/37).
+  - ~~Hexágono en el arranque del chat~~ → **ELIMINADO el 23 Ago** (el logo solo vive en el initrd): el chat arranca con `AIOS/1.4 — fecha` + frase.
   - **Teclado con tics**: `_input_tic()` — termios raw, tic por tecla (máquina de escribir), backspace, Ctrl+C/D, historial ↑/↓ en sesión. Se desactiva con `/sound` (controla salida y entrada).
   - **23 frases** (WarGames + Matrix + Tron + 2001), **aleatoria sin repetir la inmediatamente anterior** (como la web). Cotejadas contra Wikiquote vía Firecrawl (túnel 3002): corregida `Greetings, Programs!` (con S); `Daisy, Daisy, give me your answer, do...` (canto de HAL); `Wake up, Neo...` e `I fight for the Users!` no están en Wikiquote pero Carlos las comprobó personalmente → incluidas.
   - **`/health`**: LOAD / MEM / DISK / UP / TEMP / NET / últimos errores del journal.
@@ -596,20 +596,20 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
   - **Aviso sin internet** en modo cloud al arrancar.
 
 ### 📊 Barra i3 (b424263)
-- `AIOS` → **`Help: Super+F1`** (primer bloque).
+- `AIOS` → **`Help:F1`** (primer bloque; desde 23 Ago — Carlos comprobó la tecla real).
 - **% cobertura wifi** en el bloque WiFi (señal dBm → %, `_get_signal_pct`): `WiFi <ssid> <ip> 60%`.
 - **NET**: sin tráfico muestra el **link** (`NET 100M`); con uso, el % como antes (colores conservados).
 
 ### 🕐 NTP (04657cd)
-- Opción **3** en el menú del setup: `Configure NTP time sync (external server)` → `setup_ntp()` escribe `/etc/systemd/timesyncd.conf` (default `pool.ntp.org`), enable+restart timesyncd, `timedatectl set-ntp true`, muestra estado.
+- NTP (23 Ago): ya NO es opción del menú principal — se pregunta **dentro del flujo de instalación** (opción 2): `Configure NTP time sync (external server)? (y/N)` → `setup_ntp(standalone=False)` escribe `/etc/systemd/timesyncd.conf` (default `pool.ntp.org`), enable+restart timesyncd, `timedatectl set-ntp true`, muestra estado.
 - **`persist_ntp(target)`** en aios-install: copia la config del live al disco + habilita el servicio (patrón persist_wifi). Nota: en el disco ya instalado no hay vía desde el chat (Carlos rechazó /wifi y /ntp).
 
 ### 🧹 setup.py único
 - Había DOS setup.py: el oficial (`/usr/local/bin/aios-agent/setup.py`) y una **reliquia del 4 Ago** en `/usr/local/bin/setup.py` (wizard con cajas) que se ejecutaba al teclear `setup.py` (PATH). Movida a `backups/setup.py-antiguo-20260822` — nada la referenciaba (el i3 usa la ruta completa).
-- **Requisitos local** (e389fab): `_check_local_requirements()` compara cores/RAM reales con el mínimo (4 cores / 8 GB) y muestra `This machine could run it (N cores, X GB RAM)` o `Better not to try it: needs 4+ cores and 8 GB RAM (this machine: ...)` en los flujos live e instalación.
+- **Requisitos local** (e389fab, frase retocada 23 Ago): `_check_local_requirements()` compara cores/RAM reales con el mínimo (4 cores / 8 GB) y muestra `This machine could run it (N cores, X GB RAM)` o `I have reviewed this machine's resources: N cores, X GB RAM. They are below the minimum required... Better not to use local mode.` en los flujos live e instalación.
 
 ### 🖼️ Arte y login
-- **Hexágono 100% sólido** (`█` U+2588, sustituye a ▓▒░ con trama) — editado por Carlos, versionado en `aios-lfs/configs/aios-ascii.txt` (cc5c0d4) y copiado al árbol en `/usr/local/share/aios/aios-ascii.txt`.
+- **El logo SOLO vive en el initrd** (23 Ago): el arte del chat se eliminó (chat.py sin `ART_FILE`) y `configs/aios-ascii.txt` se borró del repo (git rm, `60d9d83`). El banner del arranque sigue siendo el de semitonos ▒▓░ (el arte de 29 líneas no cabe en el initrd — intento revertido, ver 23 Ago).
 - **`/etc/issue` VACÍO** (d2dd217): login limpio sin texto. (Pendiente de decisión: centrar el prompt con ANSI en el issue — opción A propuesta.)
 
 ### 🌐 Web ccmai.org — estructura por productos
@@ -619,10 +619,38 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Repo: `aios-lfs/web/aios/` (git mv). Skill `ccmai-web-maintenance` actualizada.
 
 ### 📦 Pendientes (próxima sesión)
-- **ISO sin regenerar** — se creará con TODO lo de hoy dentro (Carlos reinstalará el 2014; NO desplegar nada en el portátil antes).
-- **Audio del tic** — suena "a altavoz estropeado" en el portátil; los WAV generados suenan bien en el PC de Carlos → pendiente probar A/B/C/D en el portátil (tic actual / con rampas / tono continuo / volumen bajo). Sospecha: volumen/amplificador o rate del códec, no la forma de onda. Script listo: `audio-test.sh` + WAV en aios-tmp.
+- **ISO 6.7 GB (23 Ago 18:48)** con TODO dentro (modelo Qwen3-8B Q4_K_M + fixes del día) — pendiente de grabar (Rufus DD) y probar en el 2014; NO desplegar nada en el portátil antes.
+- **Audio del tic** — suena "a altavoz estropeado" en el portátil → pendiente probar A/B/C/D (script `audio-test.sh` + WAV en aios-tmp).
 - **Login centrado** (idea ANSI) — pausado.
 - **Contraseñas temporales** del disco 2014 pendientes de cambiar por Carlos.
+- **ffmpeg** instalado en el árbol (23 Ago) — pendiente de probar la grabación x11grab; chafa/mpv/cmus en stand-by (decisión de Carlos).
+
+## 23 Ago 2026 — LLM Qwen en la ISO, chat sin hexágono, skip ESPACIO arreglado, NTP al instalador
+
+### 🧠 LLM local en la ISO (vuelve el modelo)
+- **Qwen3-8B Q4_K_M** (`Qwen_Qwen3-8B-Q4_K_M.gguf`, 4.7 GB, md5 `1f7c1dfa…`) copiado al árbol en `/usr/local/share/aios/models/` — la ruta exacta que espera llama-server (`MODELS_DIR` en `scripts/launch_llama.py` y `LOCAL_MODELS[0]["file"]` en setup.py).
+- **ISO ~6.7 GB** con `grub-mkrescue -iso-level 3` (obligatorio >4 GB) — primera ISO con LLM desde julio.
+- **ffmpeg instalado en el árbol** (sven): el primer intento falló con checksum mismatch (descargas truncadas — bases de sven desactualizadas); **`sven sync`** lo resolvió. Pendiente de probar x11grab.
+
+### ✂️ Chat: hexágono fuera (el logo solo vive en el initrd)
+- `_greet()` ya no lee el arte: sin `ART_FILE`, sin hexágono. El chat arranca con `AIOS/1.4 — fecha` (cabecera **alineada a la izquierda**, sin los 3 espacios) + frase de película.
+- `configs/aios-ascii.txt` eliminado del repo (git rm, `60d9d83`) y del árbol. El arte del arranque (initrd) NO se toca.
+
+### ⏩ Skip con ESPACIO — ARREGLADO (lección: select + cooked)
+- `_skip_pressed()` (select sobre stdin) **solo detecta la tecla en modo cbreak/raw**; en cooked el carácter queda retenido hasta Enter → el skip no funcionaba en ningún typewriter pese a estar implementado (a65c0ae).
+- Fix (commit `9aacd15`): helpers `_cbreak_on()`/`_cbreak_off()` en agent.py (`tty.setcbreak` + try/except, seguro sin tty) usados en `wg()`/`wg_input()` (setup.py), el stream (agent.py) y `_greet()` (chat.py — que además no tenía skip).
+- Verificación empírica (pty): cooked 1.51 s vs cbreak 0.53 s.
+
+### ⚙️ NTP dentro del flujo de instalación
+- El menú principal queda con 2 opciones (live / instalar). NTP se pregunta en `_install_flow` (opción 2) antes de lanzar `aios-install`: `setup_ntp(standalone=False)`.
+
+### 🖥️ Barra y atajos
+- Barra: **`Help:F1`** (status.py).
+- Frase nueva en setup.py y aios-install: **`Press F1 anytime to view the keyboard shortcuts`**; `shortcuts.txt` y comentario del config también a F1. Cero restos de Super+F1 (grep verificado).
+
+### 📦 Backups y commits (23 Ago)
+- Backups: `lfs.squashfs-20260822-2234fixes.bak` · `aios-20260822-2253.iso.bak` · `aios-20260822-2144.iso.bak` · `initrd.img-20260822-1000-semitonos.bak` (el bueno) · intento de initrd con arte en `~/aios-work/tmp/initrd-new.img`.
+- Commits: `sre-agent` `9aacd15` · `aios-lfs` `60d9d83` (más `05a818f` y `b909411` del 22).
 
 ## Changelog
 
@@ -706,4 +734,4 @@ MIT — ver el archivo `LICENSE` del repositorio.
 ```
 
 ### Initrd (banner)
-- El banner volvió al **original** (arte de semitonos ▒▓░ — sin cambios): los experimentos de arte sólido (█) y del fix del scroll (cursor a línea 33) se descartaron — no quedaron en el initrd
+- El banner sigue siendo el **original de semitonos ▒▓░** (md5 `a349e10d`). El 23 Ago se intentó poner el arte de Carlos (█ + AI*OS, 29 líneas) → **rompía el arranque** (logo visible, autologin, luego pantalla negra — desborde de las ~25 líneas de pantalla) → REVERTIDO. Procedimiento para reintentar con un arte que quepa: `build_initrd_art.py` (extrae gzip+cpio, reemplaza el bloque `\033[2J`→`\033[0m`, re-empaqueta).
