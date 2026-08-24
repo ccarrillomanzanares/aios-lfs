@@ -652,6 +652,39 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Backups: `lfs.squashfs-20260822-2234fixes.bak` · `aios-20260822-2253.iso.bak` · `aios-20260822-2144.iso.bak` · `initrd.img-20260822-1000-semitonos.bak` (el bueno) · intento de initrd con arte en `~/aios-work/tmp/initrd-new.img`.
 - Commits: `sre-agent` `9aacd15` · `aios-lfs` `60d9d83` (más `05a818f` y `b909411` del 22).
 
+## 24 Ago 2026 — Web v2 (terminal, sin sonido), badges partners, frases Blade Runner publicadas, ISO final, limpieza ISOs
+
+### 🌐 Web v2 — la web ES la terminal de AIOS (publicada en `/aios/`, commit `34ddd4c`)
+- Rediseño completo, desarrollado aparte en `/aios-dev/` (página de pruebas que se queda versionada). Caja terminal `aios@ccmai — /aios` (**SIN los 3 círculos** — Carlos: "en AIOS no salen"), hexágono 150px, título AIOS, frase rotativa typewriter (28 frases), `$ curl -O …aios-1.4.iso` + botón descarga grande, badges NVIDIA Inception (50px) + Lambda (36px) encima de links GitHub pequeños, pie de terminal. Todo en una pantalla (scroll natural si el viewport es pequeño — "sin scroll no es un must, es un si se puede").
+- **Sin sonido**: eliminados el beep (Web Audio) y el botón del altavoz 🔊 — decisión de Carlos. 0 restos verificados.
+- **Responsive** (<760px): la caja fluye (height auto, nunca corta), logo 100px, botón full-width, curl con word-break, badges reajustados.
+- Meta/OG/favicon correctos. Backup de la antigua: `backups/web-ccmai-20260824/index-antiguo.html`.
+
+### 🏅 Badges de partners (assets oficiales, commit `d6bd11f`)
+- **NVIDIA Inception**: badge oficial del ZIP de Carlos (`Downloads/Inception Badges.zip` → `for-screen/rgb-for-screen.svg`) → `assets/inception-badge.svg` (enlaza a nvidia.com/startups).
+- **Lambda**: wordmark oficial de lambda.ai (`logo-white` SVG) → `assets/lambda-logo.svg` (enlaza a lambda.ai).
+- ⚠️ **Lección**: los SVG como **data URI base64 no se veían** (badge NVIDIA invisible en el navegador) — servirlos como **archivos** en `assets/` (y en dev, rutas relativas). El HTML puede corromperse en reemplazos masivos — verificar estructura (tags balanceados) tras cada cambio.
+
+### 🎬 Frases Blade Runner (agente + web)
+- 5 frases (23 → **28**): monólogo completo "Tears in rain" (42 palabras, verificado por Wikipedia), "The light that burns twice as bright burns half as long.", "I want more life, father!", "It's too bad she won't live! But then again, who does?", "Wake up! Time to die!".
+- Nostalgia web: `(WarGames · The Matrix · Tron · 2001 · Blade Runner)`. Commits: sre-agent `b1c51a5`, aios-lfs `a064f63`.
+
+### 💿 ISO final publicada (24 Ago 16:58, md5 `d1828ce0…`)
+- 6.7 GB, `-iso-level 3`, con: modelo Qwen3-8B Q4_K_M + todos los fixes + frases Blade Runner. Publicada en `releases/aios-1.4.iso` (200 vía CF). Tabla de releases: solo 1.4, fecha 2026-08-24 (`0ed1977`).
+- **Limpieza**: borradas TODAS las ISOs antiguas (16 archivos, ~40 GB) — quedan solo `~/aios.iso` y la de releases. (Squashfs y web antiguos se conservan en backups.)
+
+### 🔧 Firecrawl self-hosted (VPS, `/opt/firecrawl`, docker compose)
+- El stack estaba **parado desde las 09:40 UTC del 23 Ago** (apagado limpio: logs con "Goodbye!", exit 0 — no fue crash; probablemente stop manual/script) + túnel local 3002 caído → web tools rotas.
+- Fix: `cd /opt/firecrawl && sudo docker compose up -d` (compose en `/opt/firecrawl/docker-compose.yaml`, NO en ~) + túnel SSH `-L 3002:localhost:3002` en background.
+- Portal Nous para web: **descartado** (Carlos: "no usaremos nousportal; cuando sea necesario usaremos firecrawl") — `web.use_gateway: false`.
+- Nota: el stack ollama-hardened (webuillama) también estaba parado (~23 Ago, 59 min antes) — **NO se tocó** (decisión de Carlos).
+
+### 📦 Pendientes (24 Ago)
+- **Grabar la ISO final** (Rufus DD) y probar en el 2014 — lleva modelo + frases + fixes.
+- Audio del tic en el portátil (A/B/C/D, `audio-test.sh`) — sigue pendiente.
+- Login centrado (ANSI) — pausado. Contraseñas temporales del disco 2014 — pendientes.
+- chafa/mpv/cmus — stand-by (decisión de Carlos). UEFI (hito 6) y resto de hitos del PLAN — pendientes.
+
 ## Changelog
 
 ### v10 — agosto 2026
