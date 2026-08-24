@@ -688,6 +688,7 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - **`/aios-dev/`**: movido a `backups/aios-dev-20260824/` → 404 (Carlos: "que no se cargue; cuando sea necesario la cargamos en la config de apache"). Sigue versionado en el repo (`web/aios-dev/`).
 
 ### 📦 Pendientes (24 Ago)
+- **Pantalla del navegador de Neo (Matrix)** — idea en stand-by: réplica del buscador retro "Global Search" con la foto de Morfeo en ASCII + "Searching..." + noticias ("Morpheus eludes Police at Heathrow Airport") — antes del contacto "Wake up, Neo". ⚠️ Revisar copyright (imágenes de la película = derivado protegido; ver decisión de Carlos).
 - **Grabar la ISO final** (Rufus DD) y probar en el 2014 — lleva modelo + frases + fixes.
 - Audio del tic en el portátil (A/B/C/D, `audio-test.sh`) — sigue pendiente.
 - Login centrado (ANSI) — pausado. Contraseñas temporales del disco 2014 — pendientes.
