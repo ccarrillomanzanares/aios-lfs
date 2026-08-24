@@ -679,6 +679,14 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Portal Nous para web: **descartado** (Carlos: "no usaremos nousportal; cuando sea necesario usaremos firecrawl") — `web.use_gateway: false`.
 - Nota: el stack ollama-hardened (webuillama) también estaba parado (~23 Ago, 59 min antes) — **NO se tocó** (decisión de Carlos).
 
+### 🔐 Seguridad VPS + web (24 Ago — auditoría aplicada)
+- **Firecrawl**: bind cambiado de `0.0.0.0:3002` → `127.0.0.1:3002` (estaba expuesto a Internet; el proveedor Contabo lo bloqueaba, pero sin firewall local) + `BULL_AUTH_KEY` fuerte (antes CHANGEME) → **parado y deshabilitado** (`docker compose stop` + `docker update --restart=no`) — Carlos: "lo dejamos parado; cuando sea necesario lo levantamos" (`cd /opt/firecrawl && sudo docker compose up -d`). ⚠️ **web_search de Hermes depende de él** (config `firecrawl_api_url: http://127.0.0.1:3002` + túnel) — sin firecrawl, sin web tools.
+- **Firewall**: NO se toca (Carlos: "tenemos el de Contabo").
+- **fail2ban**: instalado y activo (jail sshd, maxretry 5, bantime 10m, findtime 10m). IP dinámica de Carlos: no es problema (a lo sumo 10 min baneado si falla 5 veces; `sudo fail2ban-client set sshd unbanip <ip>`).
+- **Apache**: `ServerTokens Prod` + `ServerSignature Off` (verificado: `Server: Apache` sin versión) + módulo `headers` habilitado.
+- **Headers web**: HSTS (`max-age=31536000`) + `X-Content-Type-Options: nosniff` en el vhost SSL (verificados vía CF). Backup: `backups/ccmai-ssl-20260824.bak`.
+- **`/aios-dev/`**: movido a `backups/aios-dev-20260824/` → 404 (Carlos: "que no se cargue; cuando sea necesario la cargamos en la config de apache"). Sigue versionado en el repo (`web/aios-dev/`).
+
 ### 📦 Pendientes (24 Ago)
 - **Grabar la ISO final** (Rufus DD) y probar en el 2014 — lleva modelo + frases + fixes.
 - Audio del tic en el portátil (A/B/C/D, `audio-test.sh`) — sigue pendiente.
