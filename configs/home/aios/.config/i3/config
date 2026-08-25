@@ -19,7 +19,7 @@ bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod=e layout toggle split
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m Exit? -B Yes i3-msg exit"
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'Exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 bindsym $mod+d exec /usr/bin/dmenu_run
 
 bindsym $mod+1 workspace 1
@@ -46,6 +46,9 @@ include /home/aios/.config/i3/colors.conf
 
 # VirtualBox Guest Additions: portapapeles compartido
 exec --no-startup-id /usr/bin/VBoxClient --clipboard
+
+# Layout de teclado persistido (config.yaml → setxkbmap)
+exec --no-startup-id /usr/local/bin/aios-keyboard
 
 # AIOS autolaunch
 exec --no-startup-id bash -c 'if [ ! -f $HOME/.aios/config.yaml ]; then /usr/local/bin/aios-xterm -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f $HOME/.aios/config.yaml ] && aios || exec bash"; else /usr/local/bin/aios-xterm -e /usr/local/bin/aios; fi'

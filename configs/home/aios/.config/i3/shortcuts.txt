@@ -2,7 +2,7 @@ AIOS keyboard shortcuts
 ========================
 
   Super+Return         Open a terminal
-  F1                     Show this shortcut list
+  F1/Super+F1          Show this shortcut list
   Super+q              Close the focused window
   Super+h/j/k/l        Move focus
   Super+Shift+h/j/k/l  Move the focused window
@@ -19,4 +19,5 @@ In the chat:
   /theme               Change the color theme
   exit                 Leave the chat
 
+In this list: press q (or Super+q) to close.
 (Super = the Windows key)
