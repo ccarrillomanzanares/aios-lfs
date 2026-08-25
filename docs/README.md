@@ -699,20 +699,22 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intento de instalación).
 
 ### 🐞 Problemas reportados → mejoras (plan)
-- **P1-1 · Instalador no vuelve al menú** al fallar (disco mal informado / ABORTED) — hay que reiniciar la VM. → manejo de errores → volver al menú.
+- **P1-1 · Instalador no vuelve al menú** al fallar (disco mal informado / ABORTED) — hay que reiniciar la VM. **CONFIRMADO con captura (12:08)**: tras `Aborted.`/`Installation aborted or failed` y *"Press Enter to return to the menu..."*, Enter cae al shell `[aios@lfs aios-agent]$` — no al menú. → manejo de errores → volver al menú.
 - **P1-2 · Sin barra de progreso** en la instalación (media hora sin saber si avanza). → feedback de progreso (pasos numerados o barra).
 - **P1-3 · "Se paró en format disc porque no pude escribirlo"** — el input del disco (typo sin backspace) aborta. → validación con reintento.
 - **P1-4 · Agente en LOOP** listando directorios (el anti-bucle de 3 repeticiones idénticas no lo cortó — las llamadas variaban). → detectar mismo comando base repetido.
-- **P1-5 · Agente intenta comandos sin sudo** y fallan. → regla sudo en el prompt del agente (live = NOPASSWD).
+- **P1-5 · Agente intenta comandos sin sudo** y fallan. **CONFIRMADO con captura (13:23)**: `dmesg | grep firefox` → "Opération non permise" (dmesg requiere root; NOPASSWD disponible). → regla sudo en el prompt del agente.
+- **P1-6 · NUEVO (capturas 13:17/13:23) — Firefox nunca abre**: el agente lanza GUI en FOREGROUND (`run_command({"command":"firefox"})`) → el tool espera 30s y mata (3× timeout). → el agente debe lanzar apps GUI en BACKGROUND (`setsid firefox >/dev/null 2>&1 &`) o tener tool de background.
 - **P2-6 · No backspace/ESC/SUPPR** en el input (solo ctrl+backspace). Conocido, sin fix aún.
 - **P2-7 · F1 no funciona** en su teclado (Win+F1 sí). → bindear AMBOS en i3 (`bindsym F1` + `$mod+F1`); texto a decidir ("F1 / Win+F1").
-- **P2-8 · VirtualBox no detecta el OS** (informar manualmente: Linux/Oracle 64-bit) + **sin internet** (NAT). → guía VBox en web/repo + requisitos (8 GB RAM con LLM).
+- **P2-8 · VirtualBox** — la red NAT SÍ funciona (enp0s3 10.0.2.15/24 UP, captura 13:23); el "sin internet" de Arnold era el web_search del agente (sin backend en live), NO la red. Guía VBox: tipo Linux/Oracle 64-bit, NAT, 8 GB RAM con LLM.
 - **P3-9 · "Wargames es probablemente desconocido de los informáticos jóvenes"** → subtítulo explicativo.
-- **P3-10 · Firefox arranca 15 s y se cierra** (probable: red VBox o perfil) → diagnosticar con logs si se reproduce.
+- **P3-10 · Firefox arranca 15 s y se cierra** → CAUSA raíz probable = P1-6 (timeout del tool, no arranque real). A re-test tras el fix.
 - **P3-11 · Contexto local pequeño** (Qwen3-8B en CPU/VM) → olvida cosas; posible aviso al usuario.
 
-### ✅ Lo que SÍ funcionó (validado en VM)
-- Live mode + LLM local: el agente responde y ejecuta (cambiar teclado a francés, listar archivos, abrir firefox).
+### ✅ Lo que SÍ funcionó (validado en VM, vídeo 11:02)
+- Instalador flujo feliz: menú → "Installing AIOS to the hard disk..." → modo agente (LOCAL Qwen3-8B, requisitos mostrados) → "Select the color theme:" (1 Wargames / 2 Amber / 3 White).
+- Live mode + LLM local: el agente responde y ejecuta (cambiar teclado a francés, listar archivos, which firefox).
 - El LLM en VM es lento pero usable ("es lentisimo en VM pero funciona").
 - Interés real: Arnold pidió el enlace para un amigo; Carlos le pasará API key de DeepSeek (meet por la tarde).
 
