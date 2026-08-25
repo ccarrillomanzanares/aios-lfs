@@ -694,6 +694,28 @@ Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se det
 - Login centrado (ANSI) — pausado. Contraseñas temporales del disco 2014 — pendientes.
 - chafa/mpv/cmus — stand-by (decisión de Carlos). UEFI (hito 6) y resto de hitos del PLAN — pendientes.
 
+## 25 Ago 2026 — Pruebas externas: Arnold (VirtualBox) — feedback y plan de mejoras
+
+Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intento de instalación).
+
+### 🐞 Problemas reportados → mejoras (plan)
+- **P1-1 · Instalador no vuelve al menú** al fallar (disco mal informado / ABORTED) — hay que reiniciar la VM. → manejo de errores → volver al menú.
+- **P1-2 · Sin barra de progreso** en la instalación (media hora sin saber si avanza). → feedback de progreso (pasos numerados o barra).
+- **P1-3 · "Se paró en format disc porque no pude escribirlo"** — el input del disco (typo sin backspace) aborta. → validación con reintento.
+- **P1-4 · Agente en LOOP** listando directorios (el anti-bucle de 3 repeticiones idénticas no lo cortó — las llamadas variaban). → detectar mismo comando base repetido.
+- **P1-5 · Agente intenta comandos sin sudo** y fallan. → regla sudo en el prompt del agente (live = NOPASSWD).
+- **P2-6 · No backspace/ESC/SUPPR** en el input (solo ctrl+backspace). Conocido, sin fix aún.
+- **P2-7 · F1 no funciona** en su teclado (Win+F1 sí). → bindear AMBOS en i3 (`bindsym F1` + `$mod+F1`); texto a decidir ("F1 / Win+F1").
+- **P2-8 · VirtualBox no detecta el OS** (informar manualmente: Linux/Oracle 64-bit) + **sin internet** (NAT). → guía VBox en web/repo + requisitos (8 GB RAM con LLM).
+- **P3-9 · "Wargames es probablemente desconocido de los informáticos jóvenes"** → subtítulo explicativo.
+- **P3-10 · Firefox arranca 15 s y se cierra** (probable: red VBox o perfil) → diagnosticar con logs si se reproduce.
+- **P3-11 · Contexto local pequeño** (Qwen3-8B en CPU/VM) → olvida cosas; posible aviso al usuario.
+
+### ✅ Lo que SÍ funcionó (validado en VM)
+- Live mode + LLM local: el agente responde y ejecuta (cambiar teclado a francés, listar archivos, abrir firefox).
+- El LLM en VM es lento pero usable ("es lentisimo en VM pero funciona").
+- Interés real: Arnold pidió el enlace para un amigo; Carlos le pasará API key de DeepSeek (meet por la tarde).
+
 ## Changelog
 
 ### v10 — agosto 2026
