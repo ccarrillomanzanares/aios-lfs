@@ -718,6 +718,17 @@ Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intent
 - El LLM en VM es lento pero usable ("es lentisimo en VM pero funciona").
 - Interés real: Arnold pidió el enlace para un amigo; Carlos le pasará API key de DeepSeek (meet por la tarde).
 
+### ✅ Aplicado el 25 Ago (commits: sre-agent `e5df97f` · aios-lfs `a4994ed`)
+- **A.1** Regla sudo en `_RULES_COMMON`: "si falla con Permission denied, reintenta con sudo (passwordless)".
+- **A.2** GUI background: **DESCARTADO** por Carlos ("las aplicaciones gráficas es obvio que se tienen que ver en i3"). El timeout de Firefox en VM = recursos insuficientes (2 GB), no bug (verificado en hardware real funciona).
+- **B** Anti-bucle por **comando base** (`ls` aunque varien los args) + umbral **4** — probado: 4/4 casos (loop Arnold dispara a la 5ª; 3 ls legítimos + cat no dispara; 3× idéntico no dispara; comandos distintos no dispara).
+- **C.1** Menú con `0) Exit to shell`; tras live o instalación **vuelve al menú** (solo 0 sale); `returncode 2` = "Installation cancelled.".
+- **C.2** Instalador con pasos `[1/7]…[7/7]`.
+- **C.3** `select_disk`: vacío → cancelación (exit 2); nombre no encontrado → reintento (máx 3) → cancelación. Probado: 5/5 casos.
+- **D** i3: binds `F1` + `$mod+F1` (textos "F1" se mantienen — ahora F1 funciona universalmente).
+- **E** `docs/VIRTUALBOX.md` (tipo Linux/Oracle 64-bit, NAT, 8 GB RAM, 20 GB disco, ~30 min instalación, nota del web_search del agente).
+- Nota: estos cambios están en el árbol → **próxima ISO** (la actual ya publicada no los lleva).
+
 ## Changelog
 
 ### v10 — agosto 2026
