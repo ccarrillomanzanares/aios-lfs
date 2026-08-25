@@ -11,13 +11,13 @@ import time
 
 # Colores por tema (aios-theme aplica el tema: wargames/amber/white/cyan)
 THEMES = {
-    "wargames": ("#006400", "#003300"),
+    "wargames": ("#00ff66", "#66ffa8"),
     "amber":    ("#ffb000", "#885500"),
     "white":    ("#ffffff", "#888888"),
     "cyan":     ("#00cccc", "#006666"),
 }
-COLOR_TEXT = "#006400"
-COLOR_SEP = "#003300"
+COLOR_TEXT = "#00ff66"
+COLOR_SEP = "#66ffa8"
 SEPARATOR = {"full_text": " | ", "color": COLOR_SEP}
 VERSION_LINE = {"version": 1, "click_events": False}
 
