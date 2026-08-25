@@ -729,6 +729,15 @@ Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intent
 - **E** `docs/VIRTUALBOX.md` (tipo Linux/Oracle 64-bit, NAT, 8 GB RAM, 20 GB disco, ~30 min instalación, nota del web_search del agente).
 - Nota: estos cambios están en el árbol → **próxima ISO** (la actual ya publicada no los lleva).
 
+### ✅ Aplicado 2ª tanda el 25 Ago (commits: sre-agent `ea239a8` · aios-lfs `5de58bc`) — layouts + feedback Carlos/Arnold
+- **Layouts de teclado**: nueva pantalla en el setup (`Select keyboard layout: 1) US 2) French/AZERTY 3) Spanish 4) German 5) Other`) → aplica `loadkeys` (TTY) + `setxkbmap` (X) al momento, se persiste en `config.yaml` (`keyboard:`) y se reaplica en cada arranque de i3 vía el nuevo script `/usr/local/bin/aios-keyboard` (lee el config → setxkbmap). Resuelve el problema de usuarios con AZERTY/QWERTZ.
+- **Selección de disco por NÚMERO** en el instalador (`Select disk [1-N]`, fallback: nombre) — sin escribir → el layout no importa en el paso crítico. Probado: 6/6.
+- **Confirmaciones de formateo: 3 → 2** — fusionadas la #2 y la #3: `WARNING: This will DESTROY all data on this disk (type 'format disk' to confirm)` (petición de Arnold: demasiadas preguntas).
+- **Fix Enter tras fallo de instalación**: `wg_input` ahora hace `tcflush(TCIFLUSH)` antes de `input()` — descarta el Enter residual del subproceso (el prompt espera de verdad).
+- **Super+Shift+E (exit i3)**: nagbar con el formato oficial de i3 (el anterior `-m Exit? -B Yes i3-msg exit` no respondía al pulsar Yes).
+- **shortcuts.txt**: `F1/Super+F1`, alineación corregida (el "Show..." estaba 2 cols desplazado), y nota "In this list: press q (or Super+q) to close".
+- Nota: NO se regeneró ISO (decisión Carlos) — los cambios están en el árbol para la próxima.
+
 ## Changelog
 
 ### v10 — agosto 2026
