@@ -738,6 +738,21 @@ Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intent
 - **shortcuts.txt**: `F1/Super+F1`, alineación corregida (el "Show..." estaba 2 cols desplazado), y nota "In this list: press q (or Super+q) to close".
 - Nota: NO se regeneró ISO (decisión Carlos) — los cambios están en el árbol para la próxima.
 
+### ✅ Aplicado 3ª tanda el 25 Ago (commits: sre-agent `d1a1f58`, `47d1d92`, `11ce11f`, `b081a60`, `1bf5a4e` · aios-lfs `ff73c31`)
+- **Fix NTP NameError** (`b081a60`): `setup_ntp` usaba `print_box` sin definir el alias (solo existía en `setup_wifi`) → crasheaba la instalación al responder "y" al NTP. Confirmado con captura de Carlos.
+- **Frase del NTP clara** (`1bf5a4e`): "Set the correct time automatically using an internet time server? (y/N)" (antes "Configure NTP time sync (external server)?" — "muy pro", petición Carlos).
+- **Input robusto `_read_line()`** (`11ce11f`, setup.py + aios-install): raw mode con gestión manual — backspace funciona SIEMPRE (sin `^`/letras raras, solo ctrl+backspace ya no hace falta), **el prompt `>` es inviolable** (el buffer empieza vacío), Ctrl+C interrumpe, Ctrl+D = fin. Resuelve el P2-6 (reportado 3 veces).
+- **loadkeys con sudo** (`11ce11f`): el layout del TTY necesita root — antes fallaba en silencio (solo setxkbmap funcionaba en X).
+- **Saludo reordenado** (`d1a1f58`): frase de película → "You have just booted..." → "Press F1 or Super+F1 (Super = the Windows key) to view the keyboard shortcuts" → Select keyboard layout → menú limpio.
+- **Barra de progreso monótona** (`47d1d92`): el % de rsync `--info=progress2` se recalcula (total estimado) y bajaba (90→40→70…) → ahora solo sube; termina en 100%.
+- **umount/sudo**: reportado por Carlos y descartado por él ("olvida lo del umount") — el inventario de binarios con sudo está completo (todos existen en el árbol; secure_path correcto).
+
+### 💿 ISOs 25 Ago 23:47 (con todos los fixes; NO descargadas por petición)
+- `~/aios.iso` (con LLM): 6.7 GB · md5 `899325f5d5b120468d6332f22b146801`
+- `~/aios-nollm.iso` (sin LLM): 2.1 GB · md5 `16986c5b25e7bb5f207426cf67dd1a77`
+- Backups: `aios-20260825-2219.iso.bak` · `aios-nollm-20260825-2221.iso.bak` · servidas 1.4/nollm `-20260825-2.iso.bak`.
+- La web sigue publicando las de las 22:22 (md5 `7f59d9d4` / `e3162f28`) — las nuevas NO se han publicado.
+
 ## Changelog
 
 ### v10 — agosto 2026
