@@ -1,0 +1,11 @@
+[Unit]
+Description=Sven package database sync
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sven sync
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
