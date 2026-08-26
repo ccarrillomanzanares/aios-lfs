@@ -12,6 +12,7 @@ AIOS keyboard shortcuts
   Super+s              Layout stacking
   Super+w              Layout tabbed
   Super+Shift+e        Exit i3 (back to login)
+  Super+Print          Start/stop screen recording (/tmp/grabacion.mp4)
 
 In the chat:
   SPACE                Skip the typewriter (write the pending text instantly)
