@@ -775,6 +775,8 @@ Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intent
 
 **Pendientes**: descartados por Carlos el 26 Ago (visibilidad del agente y acceso al portátil incluidos) — sin lista activa.
 
+**Publicación ISOs 26 Ago (noche)**: con el árbol final del día (usrmerge, BD sven 393, teclado, FONT=ter-232n, /dev limpio) se generaron y publicaron `aios-1.4.iso` (**6.0 GB**, con LLM) y `aios-nollm.iso` (**1.4 GB**, sin LLM) en `/var/www/ccmai.org/aios/releases/` (backups de las servidas en `backups/aios-*-servida-20260826.iso.bak`; web index+releases actualizadas a los tamaños/fechas nuevos, repo `web/` sincronizado `9b59414`). ⚠️ **Lección de tamaño**: el caché de sven (`var/cache/sven/pkgs`, ~950 MB tras upgrades) se empaqueta en la ISO — limpiarlo ANTES de mksquashfs (`rm -rf var/cache/sven/pkgs/*`) o las ISOs engordan ~1 GB. La nollm se descargó al PC de Carlos como `aios.iso` (anterior → `aios.iso.anterior-20260826`) para probar.
+
 ## Changelog
 
 ### v10 — agosto 2026
