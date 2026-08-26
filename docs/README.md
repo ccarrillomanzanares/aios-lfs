@@ -767,9 +767,9 @@ Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intent
 
 **Grabación de pantalla** (desde el portátil — rama `feat/grabacion-pantalla` mergeada `e8134c5`): `scripts/grabar.sh` (ffmpeg x11grab → /tmp/grabacion.mp4), `toggle-grabacion.sh`, `parar_grabacion.sh`, `instalar-grabacion.sh`. Incorporada al árbol + binding `$mod+Print` en i3 + shortcut en la ayuda + personalidad LLM ("e.g. /tmp/grabacion.mp4").
 
-**aios-update** (`8589eed`): script oficial de actualización del sistema instalado (git clone/pull + manifest md5-sync + backups + avisos). ⚠️ **BUG DETECTADO (fix pendiente)**: el split `${entry%% *}`/`${entry#* }` del manifest con espacios de alineación deja espacios en `dst` → `[ -f '       /path' ]` falso → nunca actualiza. **Fix: `read -r src dst <<< "$entry"`** (colapsa espacios). Probar de nuevo tras el fix (chroot: tocar archivo → detectar → backup → restaurar).
+**aios-update** (`8589eed` → fix `060e98d`): script oficial de actualización del sistema instalado (git clone/pull + manifest md5-sync + backups + avisos). ✅ **BUG RESUELTO (26 Ago tarde)**: el split `${entry%% *}`/`${entry#* }` del manifest con espacios de alineación dejaba los espacios pegados a `dst` → `[ -f '       /path' ]` falso → nunca actualizaba. **Fix aplicado: `read -r src dst <<< "$entry"`** (colapsa espacios; rutas destino sin espacios → seguro). **Verificado en chroot**: chat.py corrompido → aios-update lo detectó, backup en `/var/backups/aios-update/<fecha>/` y restauración (md5 = repo); de paso actualizó agent.py y aios-session que estaban desincronizados del árbol. Cache/backups de prueba del chroot: los de esta verificación limpiados (quedan los del test original 1542/1543/1548).
 
-**Pendientes próximos**: fix aios-update + re-prueba; decisión rollback sven; migración usrmerge (backup ya hecho); 4 fixes de visibilidad del agente (log de comandos /tmp/aios-cmd.log, sudo -n, timeout run_command, NOPASSWD disco); acceso al portátil 2014 (IP + clave aios_portatil del VPS).
+**Pendientes próximos**: decisión rollback sven; migración usrmerge (backup ya hecho); 4 fixes de visibilidad del agente (log de comandos /tmp/aios-cmd.log, sudo -n, timeout run_command, NOPASSWD disco); acceso al portátil 2014 (IP + clave aios_portatil del VPS).
 
 ## Changelog
 
