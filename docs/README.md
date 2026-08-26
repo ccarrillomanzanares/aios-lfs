@@ -753,6 +753,24 @@ Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intent
 - Backups: `aios-20260825-2219.iso.bak` · `aios-nollm-20260825-2221.iso.bak` · servidas 1.4/nollm `-20260825-2.iso.bak`.
 - La web sigue publicando las de las 22:22 (md5 `7f59d9d4` / `e3162f28`) — las nuevas NO se han publicado.
 
+### 📝 Sesión 26 Ago (commits: sre-agent `b081a60`→`8589eed` · aios-lfs `5d9e37c`→`e1ec0dc`)
+
+**Backspace global (reportado 3 veces, resuelto)**: erase char del tty ≠ tecla → "^ y letras" en sudo/getpass/login. Fix en 4 capas: `/etc/profile.d/aios-tty.sh` (stty erase ^?), `/home/aios/.bashrc`, `_fix_erase()` en setup.py+aios-install (VERASE=b"\x7f" al arrancar — probado en chroot pty real: ^H→^? OK), y `keycode 14 = Delete` en `_apply_layout` (consola con fr/es manda ^H). Cobertura completa: consola, xterm, setup, instalador (getpass incluido).
+
+**Check internet robusto + lógica cloud/local** (`4c2e892`, `3a6649b`): TCP a 6 destinos + **DNS UDP** como último recurso (redes con TCP filtrado — el caso "tengo IP pero no hay conexión" del 2014). `_net_summary()` muestra IP/Gateway en el fallo (rutas absolutas de ip — /usr/sbin fuera del PATH de usuario en Debian). Fallback cloud→local ahora PREGUNTA (Y/n) en vez de sorprender. Probado 4/4 escenarios (Windows + VPS Linux real).
+
+**Barra de progreso definitiva** (`578ad4c`): adiós % global (rsync lo recalcula y oscila) → `--out-format=%f` muestra el ARCHIVO actual + contador, todo en la misma línea (probado con rsync real).
+
+**sven update/upgrade (investigado a fondo)**: el upgrade SÍ funciona (70 paquetes aplicados en 2 tandas; 1er intento falló por checksums truncados transitorios — reintentar resuelve). El "ciclo de los 35" es COSMÉTICO: son los paquetes **LFS/BLFS** (acl, krb5, openssl, nettle, glibc, libgcc...) que sven adoptó sin instalar → "skipped strict version checks" → los re-ofrece siempre aunque estén actualizados (To Download: 0). **NO reinstalar** (rompería la cadena LFS — lección glibc 4 Ago). ⚠️ El upgrade SÍ reemplazó glibc/libgcc/libffi/systemd-libs por versiones de Arch (dualidad /lib64 LFS vs /usr/lib Arch — el árbol NO es usrmerge) → **PENDIENTE DECISIÓN: rollback del árbol al snapshot pre-upgrade o mantener** (recomendación: rollback + BD fresca; usrmerge como migración futura programada).
+
+**Backup del árbol para la migración**: `backups/bak-arbol-20260826-usrmerge.tar.zst` (tar zstd, excluye modelo 4.7G — intacto en ~/models — y caché sven; árbol = 9.0 GB, backup ~4.5 GB; VPS con 104 GB libres).
+
+**Grabación de pantalla** (desde el portátil — rama `feat/grabacion-pantalla` mergeada `e8134c5`): `scripts/grabar.sh` (ffmpeg x11grab → /tmp/grabacion.mp4), `toggle-grabacion.sh`, `parar_grabacion.sh`, `instalar-grabacion.sh`. Incorporada al árbol + binding `$mod+Print` en i3 + shortcut en la ayuda + personalidad LLM ("e.g. /tmp/grabacion.mp4").
+
+**aios-update** (`8589eed`): script oficial de actualización del sistema instalado (git clone/pull + manifest md5-sync + backups + avisos). ⚠️ **BUG DETECTADO (fix pendiente)**: el split `${entry%% *}`/`${entry#* }` del manifest con espacios de alineación deja espacios en `dst` → `[ -f '       /path' ]` falso → nunca actualiza. **Fix: `read -r src dst <<< "$entry"`** (colapsa espacios). Probar de nuevo tras el fix (chroot: tocar archivo → detectar → backup → restaurar).
+
+**Pendientes próximos**: fix aios-update + re-prueba; decisión rollback sven; migración usrmerge (backup ya hecho); 4 fixes de visibilidad del agente (log de comandos /tmp/aios-cmd.log, sudo -n, timeout run_command, NOPASSWD disco); acceso al portátil 2014 (IP + clave aios_portatil del VPS).
+
 ## Changelog
 
 ### v10 — agosto 2026
