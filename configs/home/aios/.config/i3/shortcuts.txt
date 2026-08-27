@@ -18,6 +18,10 @@ In the chat:
   SPACE                Skip the typewriter (write the pending text instantly)
   /sound               Toggle the typewriter sound
   /theme               Change the color theme
+  /think               Toggle thinking mode (local model; more precise, slower)
+  /reset               Clear the conversation
+  /health              Show system status
+  /stats               Show session stats (messages / tokens)
   exit                 Leave the chat
 
 In this list: press q (or Super+q) to close.
