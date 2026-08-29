@@ -198,11 +198,19 @@ const QUOTES=[
 "Daisy, Daisy, give me your answer, do...",
 "I've seen things you people wouldn't believe. Attack ships on fire off the shoulder of Orion. I watched C-beams glitter in the dark near the Tannhäuser Gate. All those moments will be lost in time, like tears in rain. Time to die.",
 "The light that burns twice as bright burns half as long.","I want more life, father!",
-"It's too bad she won't live! But then again, who does?","Wake up! Time to die!"
+"It's too bad she won't live! But then again, who does?","Wake up! Time to die!",
+"I'll be back.","Come with me if you want to live.","Hasta la vista, baby.","I need your clothes, your boots and your motorcycle.","I know now why you cry, but it's something I can never do."
 ];
 const el=document.getElementById("greeting");
-let idx=-1,typing=false,last=null;
-function pick(){let n;do{n=Math.floor(Math.random()*QUOTES.length)}while(n===last);last=n;return QUOTES[n]}
+let idx=-1,typing=false,last=null,pool=[];
+function pick(){
+  if(!pool.length){
+    pool=QUOTES.slice();
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=pool[i];pool[i]=pool[j];pool[j]=t}
+    if(pool.length>1&&pool[pool.length-1]===last){const t=pool[pool.length-1];pool[pool.length-1]=pool[pool.length-2];pool[pool.length-2]=t}
+  }
+  const q=pool.pop();last=q;return q;
+}
 function type(q){
   typing=true;el.textContent="";let i=0;
   const t=setInterval(()=>{
