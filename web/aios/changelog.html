@@ -44,14 +44,30 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     <div class="changelog">
 
 <div class="ver-block">
-<h2>v0.17 — 2026-08-30 00:53</h2>
+<h2>v0.17 — 2026-08-30 01:48</h2>
+<h3>new features</h3>
+<ul>
+<li><b>sudo with password</b>: <code>/sudo &lt;password&gt;</code> (cached in session) + <code>run_command</code> uses <code>sudo -S</code>; the agent accepts the password in local and cloud modes (no NOPASSWD needed).</li>
+<li><b>audio-detect.py</b>: autodetects the analog sound card and writes <code>asound.conf</code> dynamically — audio works on any hardware.</li>
+</ul>
+<h3>i18n</h3>
+<ul>
+<li>All comments and user-facing strings translated to English (agent, installer, README, docs, scripts). Fixes <code>&lt;think&gt;</code> tag corruption.</li>
+</ul>
 <h3>quotes</h3>
 <ul>
-<li><b>2 new Matrix quotes</b>: the full red pill / blue pill monologue and "Whoa. Déjà vu." added to the rotating pool (<code>chat.py</code> + <code>setup.py</code>).</li>
+<li><b>5 Terminator quotes</b> (T1 + T2) and <b>2 Matrix quotes</b> (the full red pill / blue pill monologue + "Whoa. Déjà vu."). Quote lists unified (<code>setup.py</code> was missing Blade Runner) + shuffle-cycle picker to avoid repeats.</li>
 </ul>
-<h3>docs</h3>
+<h3>fixes</h3>
 <ul>
-<li>Changelog dates corrected from git history; README version-agnostic; <code>ejecutivo.pdf</code> regenerated.</li>
+<li>Don't auto-open Firefox for the API key (ask first).</li>
+<li>Login cursor: remove <code>vt.global_cursor_default=0</code> from the disk GRUB entry.</li>
+<li>Audio/voice/chat patches.</li>
+<li>Restore <code>scripts/aios-diag</code> exec bit.</li>
+</ul>
+<h3>license</h3>
+<ul>
+<li>MIT license added.</li>
 </ul>
 </div>
 
