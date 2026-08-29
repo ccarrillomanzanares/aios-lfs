@@ -118,7 +118,7 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
 .changelog-link{display:inline-block;color:var(--bright);text-decoration:none;font-size:.8rem;margin-top:.9rem}
 .changelog-link:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
 .changelog-tip{position:fixed;z-index:999;max-width:380px;max-height:300px;overflow:auto;background:#000800;border:1px solid var(--bright);border-radius:4px;padding:.7rem .9rem;font-size:.7rem;line-height:1.45;color:var(--ink);box-shadow:0 0 20px rgba(0,255,0,.25);display:none;white-space:pre-wrap}
-@media (max-width:760px){.downloads{grid-template-columns:1fr}}
+@media (max-width:480px){.downloads{grid-template-columns:1fr}}
 /* ---------- responsive ---------- */
 @media (max-width:760px){
   .v2 .screen{grid-template-columns:1fr;gap:1.2rem}
@@ -164,8 +164,8 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
           </div>
           <div class="dl-col">
             <div class="dl-head">AIOS · with LLM</div>
-            <p class="cmdline"><span class="prompt">$</span> <span class="cmd">curl -O https://ccmai.org/aios/releases/aios-conllm.iso</span></p>
-            <a class="btn" href="https://ccmai.org/aios/releases/aios-conllm.iso">Download AIOS (with LLM)<small>ISO with LLM · 6.0 GB</small></a>
+            <p class="cmdline"><span class="prompt">$</span> <span class="cmd">curl -O https://ccmai.org/aios/releases/aios-withllm.iso</span></p>
+            <a class="btn" href="https://ccmai.org/aios/releases/aios-withllm.iso">Download AIOS (with LLM)<small>ISO with LLM · 6.0 GB</small></a>
             <div class="versions">
               <div class="ver" data-ver="0.16"><span class="v">v0.16</span><span class="sz">6.0 GB</span></div>
             </div>
@@ -215,11 +215,10 @@ type(pick());
 
 const CHANGELOG={"0.16":"voice (TTS/STT) — independent `voice:` section from chat\n\n- Config: `voice:` section in config.yaml (tts/stt/tts_lang), separate from chat; keys in ~/.aios/.env\n- TTS (voice.py): espeak-ng local, Gemini, OpenAI — skips code blocks, speaks in a thread\n- STT (voice.py): vosk local, Gemini, OpenAI (arecord)\n- Commands: /voice (toggle, persists), /mic (record + transcribe + send)\n- Icon: VOX/MIC in the i3 bar\n\nfixes\n- Beep/tic: aplay --buffer/--period (buffer==period) removed\n- Loading bar text in English"};
 const tip=document.createElement("div");tip.className="changelog-tip";document.body.appendChild(tip);
-function pos(e){const m=14;let x=e.clientX+m,y=e.clientY+m;const r=tip.getBoundingClientRect();if(x+r.width>innerWidth-8)x=e.clientX-r.width-m;if(y+r.height>innerHeight-8)y=e.clientY-r.height-m;tip.style.left=x+"px";tip.style.top=y+"px"}
+function showTip(el){const v=el.dataset.ver;tip.textContent="v"+v+" — changelog\n\n"+(CHANGELOG[v]||"—");tip.style.display="block";const r=el.getBoundingClientRect();const tw=tip.offsetWidth,th=tip.offsetHeight;let x=r.right+12;if(x+tw>innerWidth-8)x=Math.max(8,r.left-tw-12);let y=r.top;if(y+th>innerHeight-8)y=Math.max(8,innerHeight-th-8);tip.style.left=x+"px";tip.style.top=y+"px"}
 document.querySelectorAll(".ver").forEach(el=>{
-  el.addEventListener("mouseenter",e=>{const v=el.dataset.ver;tip.textContent="v"+v+" — changelog\n\n"+(CHANGELOG[v]||"—");tip.style.display="block";pos(e)});
-  el.addEventListener("mousemove",pos);
-  el.addEventListener("mouseleave",()=>{tip.style.display="none"});
+  el.addEventListener("mouseenter",()=>showTip(el));
+  el.addEventListener("mouseleave",()=>{setTimeout(()=>{if(!tip.matches(":hover"))tip.style.display="none"},300)});
 });
 </script>
 </body>
