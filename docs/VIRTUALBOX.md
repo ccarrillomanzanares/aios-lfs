@@ -1,44 +1,44 @@
-# Guía de VirtualBox para probar AIOS
+# VirtualBox Guide for Testing AIOS
 
-Cómo montar una máquina virtual para probar AIOS (ISO 1.4, live + instalación).
-Verificado con el primer usuario externo (Arnold, 25 Ago 2026).
+How to set up a virtual machine to test AIOS (ISO 1.4, live + installation).
+Verified with the first external user (Arnold, 25 Aug 2026).
 
-## Crear la VM
+## Create the VM
 
-| Parámetro | Valor | Nota |
+| Parameter | Value | Note |
 |---|---|---|
-| Tipo | **Linux** | — |
-| Versión | **Oracle Linux (64-bit)** | Si no se elige un tipo Linux, VirtualBox no detecta el sistema |
-| RAM | **8192 MB (8 GB)** mínimo | Con 2 GB el LLM local y el escritorio van muy lentos (el agente responde, pero tarda) |
-| CPU | 2+ núcleos | |
-| Disco | **20 GB mínimo** | El sistema instalado + el modelo LLM (4,7 GB) necesitan espacio |
-| Red | **NAT** (por defecto) | Verificado: la VM recibe 10.0.2.15/24 y funciona |
+| Type | **Linux** | — |
+| Version | **Oracle Linux (64-bit)** | If a Linux type is not selected, VirtualBox won't detect the system |
+| RAM | **8192 MB (8 GB)** minimum | With 2 GB the local LLM and desktop run very slowly (the agent responds, but takes time) |
+| CPU | 2+ cores | |
+| Disk | **20 GB minimum** | The installed system + LLM model (4.7 GB) need space |
+| Network | **NAT** (default) | Verified: the VM gets 10.0.2.15/24 and works |
 
-## Arrancar la ISO
+## Boot the ISO
 
-1. En la VM: *Almacenamiento → Controladora IDE → Añadir disco óptico* → seleccionar `aios-1.4.iso` (6,7 GB).
-2. Arrancar la VM. El menú de AIOS aparece en la terminal (verde).
+1. In the VM: *Storage → IDE Controller → Add optical disk* → select `aios-1.4.iso` (6.7 GB).
+2. Start the VM. The AIOS menu appears in the terminal (green).
 
-## Durante el arranque/uso
+## During boot/use
 
-- El **menú principal** tiene 3 opciones: `1) Test AIOS live` · `2) Install AIOS` · `0) Exit to shell`.
-- Tras elegir **Instalar**, el instalador muestra pasos `[1/7] … [7/7]` con progreso.
-- **La instalación tarda ~30 minutos** (copia del modelo LLM de 4,7 GB). No interrumpir.
-- Ayuda de teclado: **F1 o Win+F1**.
-- El teclado francés/azerty se configura desde el chat: *"cambia el teclado a francés"*.
+- The **main menu** has 3 options: `1) Test AIOS live` · `2) Install AIOS` · `0) Exit to shell`.
+- After choosing **Install**, the installer shows steps `[1/7] … [7/7]` with progress.
+- **Installation takes ~30 minutes** (copying the 4.7 GB LLM model). Do not interrupt.
+- Keyboard help: **F1 or Win+F1**.
+- French/AZERTY keyboard is configured from the chat: *"change the keyboard to french"*.
 
-## Notas / problemas conocidos
+## Notes / known issues
 
-- **Firefox puede tardar >30 s en abrir** en VM con poca RAM (2 GB) → el agente reporta timeout.
-  No es un fallo del sistema: con 8 GB de RAM abre con normalidad (verificado en hardware real).
-- El **web_search del agente** (búsqueda web) requiere configuración (API key/backend);
-  sin ella el agente avisa de problema de conexión. No es un fallo de red de la VM.
-- Si la instalación se **cancela** (disco inválido o confirmación rechazada), el instalador
-  vuelve al menú — no hay que reiniciar la VM.
-- Solo se ha probado en máquinas **sin multi-boot** (ver disclaimer del instalador).
+- **Firefox may take >30 s to open** on a VM with little RAM (2 GB) → the agent reports timeout.
+  This is not a system failure: with 8 GB RAM it opens normally (verified on real hardware).
+- The agent's **web_search** requires configuration (API key/backend);
+  without it the agent warns about a connection problem. This is not a VM network failure.
+- If installation is **cancelled** (invalid disk or confirmation rejected), the installer
+  returns to the menu — no need to reboot the VM.
+- Only tested on **non-multiboot** machines (see installer disclaimer).
 
-## Enlaces
+## Links
 
 - ISO: `https://ccmai.org/aios/releases/aios-1.4.iso`
-- Web del proyecto: `https://ccmai.org/aios/`
+- Project website: `https://ccmai.org/aios/`
 - Repos: `github.com/ccarrillomanzanares/aios-lfs` · `github.com/ccarrillomanzanares/aios-agent`

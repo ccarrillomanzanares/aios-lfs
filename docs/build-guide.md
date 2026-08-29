@@ -1,29 +1,29 @@
-# Guía de construcción: ISO AIOS LFS
+# Build Guide: AIOS LFS ISO
 
-## Requisitos
+## Requirements
 
-- VPS Linux (Ubuntu 24.04+) con ~20 GB libres
-- ISO base LFS 13.0-systemd
-- Paquetes: xorriso, grub-pc-bin, mtools
+- Linux VPS (Ubuntu 24.04+) with ~20 GB free
+- Base ISO LFS 13.0-systemd
+- Packages: xorriso, grub-pc-bin, mtools
 - Kernel linux-6.18.10
 - Python 3.11+, git, cmake, make, gcc
 
-## Compilación dentro del chroot (recomendado)
+## Compilation inside the chroot (recommended)
 
-Siempre compilar dentro del chroot `/lfs-rw/`, no copiar binarios del host VPS.
+Always compile inside the chroot `/lfs-rw/`, never copy binaries from the host VPS.
 
 ### llama.cpp
 
 ```bash
-# Montar entorno chroot
+# Mount chroot environment
 sudo mount --bind /dev /lfs-rw/dev
 sudo mount --bind /proc /lfs-rw/proc
 sudo mount --bind /sys /lfs-rw/sys
 
-# Instalar cmake si no está
+# Install cmake if missing
 sudo chroot /lfs-rw sven install cmake
 
-# Clonar y compilar
+# Clone and compile
 sudo chroot /lfs-rw /bin/bash -lc "
   git clone https://github.com/ggml-org/llama.cpp /home/aios/llama.cpp
   cd /home/aios/llama.cpp
@@ -43,7 +43,7 @@ sudo chroot /lfs-rw /bin/bash -lc "
 sudo chroot /lfs-rw git clone https://github.com/ccarrillomanzanares/aios-agent /usr/local/bin/aios-agent
 ```
 
-### Modelo Qwen3-8B
+### Qwen3-8B Model
 
 ```bash
 sudo mkdir -p /lfs-rw/usr/local/share/aios/models
@@ -53,17 +53,17 @@ sudo chroot /lfs-rw /bin/bash -lc "
 "
 ```
 
-## Generación de la ISO
+## ISO Generation
 
 ```bash
-# 1. Preparar
+# 1. Prepare
 sudo rm -rf /lfs-rw/tmp/*
 sudo rm -f /tmp/iso/live/lfs.squashfs
 
 # 2. Squashfs
 sudo mksquashfs /lfs-rw /tmp/iso/live/lfs.squashfs -comp zstd -b 128K
 
-# 3. ISO (soporte archivos >4 GB con -iso-level 3)
+# 3. ISO (support for files >4 GB with -iso-level 3)
 sudo xorriso -as mkisofs -iso-level 3 \
   -eltorito-boot boot/grub/i386-pc/eltorito.img \
   -no-emul-boot -boot-load-size 4 -boot-info-table \
@@ -72,32 +72,32 @@ sudo xorriso -as mkisofs -iso-level 3 \
   -o /home/ccmai/lfs-rw-sven.iso /tmp/iso
 ```
 
-## Notas importantes
+## Important notes
 
-1. **Compilar en chroot**: no copiar binarios del host VPS. Las librerías del host y del chroot pueden diferir.
-2. **iso-level 3**: necesario porque el modelo GGUF (4.7 GB) supera el límite de 4 GB del ISO 9660.
-3. **Servicios deshabilitados**: aios-llama.service y sshd.service arrancan bajo demanda, no al boot.
-4. **Backup**: mantener backup de /lfs-rw antes de cambios grandes.
+1. **Compile in chroot**: do not copy binaries from the host VPS. Host and chroot libraries may differ.
+2. **iso-level 3**: required because the GGUF model (4.7 GB) exceeds the 4 GB ISO 9660 limit.
+3. **Disabled services**: aios-llama.service and sshd.service start on demand, not at boot.
+4. **Backup**: keep a backup of /lfs-rw before big changes.
 
-## Fixes aplicados (jul 2026)
+## Fixes applied (Jul 2026)
 
 ### chat.py
-- Error wrapper robusto: maneja EOFError sin excepción anidada
-- Permisos: `/usr/local/bin/aios-agent/` debe ser `aios:wheel` para que chat.py pueda escribir `data/`
-- `data/` se crea previamente en el build
+- Robust error wrapper: handles EOFError without a nested exception
+- Permissions: `/usr/local/bin/aios-agent/` must be `aios:wheel` so chat.py can write `data/`
+- `data/` is created beforehand during build
 
-### Servicios
-- `aios-llama.service`: deshabilitado en boot, lo activa setup.py al elegir local/híbrido
-- `sshd.service`: deshabilitado, arranque manual
-- `ssh-host-keys.service`: eliminado
+### Services
+- `aios-llama.service`: disabled at boot, setup.py enables it when local/hybrid is chosen
+- `sshd.service`: disabled, manual start
+- `ssh-host-keys.service`: removed
 
 ### ISO
-- Sin modelo incluido (1.4 GB). Modo cloud funciona directo.
-- Modo local requiere descargar modelo desde HuggingFace.
+- No model included (1.4 GB). Cloud mode works out of the box.
+- Local mode requires downloading the model from HuggingFace.
 
-## Configuración PAM y sudo (BLFS estándar)
+## PAM and sudo configuration (standard BLFS)
 
-Tras instalar Linux-PAM desde Sven, configurar los archivos PAM según BLFS:
+After installing Linux-PAM from Sven, configure the PAM files according to BLFS:
 
 ```bash
 # /etc/pam.d/system-auth
@@ -121,13 +121,13 @@ session   include     system-session
 EOF
 ```
 
-## sudo NOPASSWD para ISO live
+## sudo NOPASSWD for live ISO
 
 ```bash
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-nopasswd
 ```
 
-## nsswitch.conf (LFS 13.0-systemd estándar)
+## nsswitch.conf (standard LFS 13.0-systemd)
 
 ```bash
 cat > /etc/nsswitch.conf << "EOF"

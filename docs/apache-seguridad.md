@@ -1,83 +1,83 @@
-# Securización y configuración de Apache — ccmai.org
+# Apache Hardening and Configuration — ccmai.org
 
-Procedimiento y estado de la configuración de Apache del VPS (31.220.80.78),
-aplicado el **24 Ago 2026** (auditoría de seguridad). Documento de referencia:
-si se toca Apache, actualizar este archivo.
+Procedure and status of the Apache configuration on the VPS (31.220.80.78),
+applied on **24 Aug 2026** (security audit). Reference document:
+if Apache is changed, update this file.
 
-## Estado actual
+## Current status
 
-- Apache2 (Debian/Ubuntu), sitios: `ccmai.org.conf` (http) + `ccmai.org-ssl.conf` (https).
-- Tráfico público por Cloudflare; TLS Let's Encrypt (TLS 1.3).
-- Módulo `headers` HABILITADO (necesario para las directivas `Header`).
-- DocumentRoot: `/var/www/ccmai.org` (matriz; el producto AIOS vive en `/aios/`).
+- Apache2 (Debian/Ubuntu), sites: `ccmai.org.conf` (http) + `ccmai.org-ssl.conf` (https).
+- Public traffic through Cloudflare; TLS Let's Encrypt (TLS 1.3).
+- `headers` module ENABLED (required for the `Header` directives).
+- DocumentRoot: `/var/www/ccmai.org` (parent site; the AIOS product lives at `/aios/`).
 
-## 1. Ocultar la versión de Apache
+## 1. Hide Apache version
 
-Archivo: `/etc/apache2/conf-enabled/security.conf`
+File: `/etc/apache2/conf-enabled/security.conf`
 
 ```apache
 ServerTokens Prod
 ServerSignature Off
 ```
 
-Aplicar:
+Apply:
 
 ```bash
 sudo sed -i "s/^ServerTokens.*/ServerTokens Prod/; s/^ServerSignature.*/ServerSignature Off/" /etc/apache2/conf-enabled/security.conf
 sudo systemctl reload apache2
 ```
 
-Verificar (local — Cloudflare oculta el Server en el exterior):
+Verify (locally — Cloudflare hides the Server header externally):
 
 ```bash
 curl -sI http://127.0.0.1/ | grep -i "^server"
-# Esperado: Server: Apache   (sin número de versión)
+# Expected: Server: Apache   (no version number)
 ```
 
-## 2. Headers de seguridad (HSTS + X-Content-Type-Options)
+## 2. Security headers (HSTS + X-Content-Type-Options)
 
-1. Habilitar el módulo (solo la primera vez):
+1. Enable the module (first time only):
 
 ```bash
 sudo a2enmod headers && sudo apachectl -t && sudo systemctl reload apache2
 ```
 
-2. En `/etc/apache2/sites-enabled/ccmai.org-ssl.conf`, justo tras `ServerName`:
+2. In `/etc/apache2/sites-enabled/ccmai.org-ssl.conf`, right after `ServerName`:
 
 ```apache
-    # Seguridad (24 Ago 2026): HSTS + X-Content-Type-Options
+    # Security (24 Aug 2026): HSTS + X-Content-Type-Options
     Header always set Strict-Transport-Security "max-age=31536000"
     Header always set X-Content-Type-Options "nosniff"
 ```
 
-3. Recargar y verificar:
+3. Reload and verify:
 
 ```bash
 sudo apachectl -t && sudo systemctl reload apache2
 curl -sI https://ccmai.org/aios/ | grep -iE "strict-transport|x-content-type"
-# Esperado: Strict-Transport-Security: max-age=31536000
+# Expected: Strict-Transport-Security: max-age=31536000
 #           X-Content-Type-Options: nosniff
 ```
 
-Para añadir más headers (X-Frame-Options, CSP...), misma directiva en el mismo vhost.
+To add more headers (X-Frame-Options, CSP...), use the same directive in the same vhost.
 
-## 3. Los vhosts de ccmai.org
+## 3. The ccmai.org vhosts
 
 - `ServerName ccmai.org`, `ServerAlias www.ccmai.org`, DocumentRoot `/var/www/ccmai.org`.
-- Redirects de la matriz al producto:
+- Redirects from the parent site to the product:
 
 ```apache
 RedirectMatch 301 ^/$ /aios/
 RedirectMatch 301 ^/releases(/.*)?$ /aios/releases$1
 ```
 
-- Backup del vhost SSL: `~/aios-work/backups/ccmai-ssl-20260824.bak`.
-- ⚠️ Pitfall: si se añade una directiva `Header` sin el módulo `headers` activo, Apache
-  falla con `AH00526: Invalid command 'Header'` → `sudo a2enmod headers` primero.
+- Backup of the SSL vhost: `~/aios-work/backups/ccmai-ssl-20260824.bak`.
+- ⚠️ Pitfall: if you add a `Header` directive without the `headers` module enabled, Apache
+  fails with `AH00526: Invalid command 'Header'` → run `sudo a2enmod headers` first.
 
-## 4. fail2ban (complemento: fuerza bruta SSH)
+## 4. fail2ban (add-on: SSH brute force)
 
-- Instalado y activo el 24 Ago 2026. Config: `/etc/fail2ban/jail.local`
+- Installed and activated on 24 Aug 2026. Config: `/etc/fail2ban/jail.local`
 
 ```ini
 [DEFAULT]
@@ -90,27 +90,27 @@ ignoreip = 127.0.0.1/8 ::1
 enabled = true
 ```
 
-- Desbanear una IP (p. ej. la propia con IP dinámica):
+- Unban an IP (e.g. your own dynamic IP):
 
 ```bash
 sudo fail2ban-client set sshd unbanip <ip>
 ```
 
-- Estado: `sudo fail2ban-client status sshd`
+- Status: `sudo fail2ban-client status sshd`
 
-## 5. Páginas de desarrollo (`/aios-dev/`)
+## 5. Development pages (`/aios-dev/`)
 
-- **FUERA del servidor** desde el 24 Ago (movido a `~/aios-work/backups/aios-dev-20260824/`).
-  Da 404. Sigue versionada en el repo: `aios-lfs/web/aios-dev/`.
-- Para volver a servirla cuando se necesite: restaurar el directorio en
-  `/var/www/ccmai.org/aios-dev/` (o añadir un `Alias` en el vhost) y recargar Apache.
+- **REMOVED from the server** since 24 Aug (moved to `~/aios-work/backups/aios-dev-20260824/`).
+  Returns 404. Still versioned in the repo: `aios-lfs/web/aios-dev/`.
+- To serve it again when needed: restore the directory to
+  `/var/www/ccmai.org/aios-dev/` (or add an `Alias` in the vhost) and reload Apache.
 
-## 6. Checklist de verificación
+## 6. Verification checklist
 
 ```bash
 sudo apachectl -t                                   # Syntax OK
-curl -sI http://127.0.0.1/ | grep -i "^server"      # Server: Apache (sin versión)
-curl -sI https://ccmai.org/aios/ | grep -iE "strict-transport|x-content-type"   # ambos
+curl -sI http://127.0.0.1/ | grep -i "^server"      # Server: Apache (no version)
+curl -sI https://ccmai.org/aios/ | grep -iE "strict-transport|x-content-type"   # both
 curl -s -o /dev/null -w "%{http_code}\n" https://ccmai.org/aios-dev/            # 404
 curl -s -o /dev/null -w "%{http_code}\n" https://ccmai.org/aios/releases/aios-1.4.iso  # 200
 curl -s -o /dev/null -w "%{http_code}\n" https://ccmai.org/                     # 301 -> /aios/
@@ -118,12 +118,12 @@ curl -s -o /dev/null -w "%{http_code}\n" https://ccmai.org/                     
 
 ## 7. Firewall
 
-- `ufw`/`iptables` **no configurados** (decisión 24 Ago: se usa el firewall del
-  proveedor Contabo). No habilitar ufw sin revisar el flujo completo (SSH 22,
+- `ufw`/`iptables` **not configured** (decision on 24 Aug: we use the Contabo provider
+  firewall). Do not enable ufw without reviewing the full flow (SSH 22,
   HTTP 80, HTTPS 443).
 
-## Historial
+## History
 
-- **24 Ago 2026**: auditoría — ServerTokens Prod, ServerSignature Off, módulo
-  headers, HSTS + X-Content-Type-Options, fail2ban activo, /aios-dev/ fuera del
-  servidor, Firecrawl bind 127.0.0.1 + parado (ver README maestro).
+- **24 Aug 2026**: audit — ServerTokens Prod, ServerSignature Off, headers
+  module, HSTS + X-Content-Type-Options, fail2ban active, /aios-dev/ removed from
+  the server, Firecrawl bound to 127.0.0.1 + stopped (see master README).

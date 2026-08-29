@@ -1,133 +1,133 @@
 # AIOS LFS v11
 
-ISO live de **Linux From Scratch 13.0-systemd** con el agente **AIOS** (wargame/CTF). Diseñada para arrancar en modo silencioso desde CD/USB, ofrecer una sesión gráfica mínima (i3 + xterm) y permitir instalar el sistema a disco duro conservando el mismo look de boot.
+Live ISO of **Linux From Scratch 13.0-systemd** with the **AIOS** agent (wargame/CTF). Designed to boot silently from CD/USB, offer a minimal graphical session (i3 + xterm), and allow installing the system to hard disk while keeping the same boot look.
 
-- **Versión**: v11 (agosto 2026)
-- **Kernel**: 6.18.10-lfs #5 (kernel de distro: wifi, DRM, NVMe, ALSA)
+- **Version**: v11 (August 2026)
+- **Kernel**: 6.18.10-lfs #5 (distro kernel: wifi, DRM, NVMe, ALSA)
 - **Base**: LFS 13.0-systemd
 - **Init**: systemd
-- **Entorno gráfico**: X11 + i3 + xterm
-- **Licencia**: MIT
+- **Desktop environment**: X11 + i3 + xterm
+- **License**: MIT
 
 ---
 
-## Descripción
+## Description
 
-AIOS LFS es una distribución live minimalista construida desde cero siguiendo el libro LFS 13.0-systemd. El objetivo es tener un entorno autocontenido, ligero y con estética wargame/CTF para ejecutar el agente AIOS.
+AIOS LFS is a minimalist live distribution built from scratch following the LFS 13.0-systemd book. The goal is to have a self-contained, lightweight environment with a wargame/CTF aesthetic for running the AIOS agent.
 
-La v10 corrige todos los problemas detectados durante el verano de 2026: colgados del menú de setup por DNS sin timeout, bucles de Plymouth que bloqueaban el login, mojibake de cajas Unicode en xterm, y la diferencia visual entre arranque live e instalado.
-
----
-
-## Características
-
-- Sistema live con OverlayFS totalmente escribible en RAM.
-- Arranque silencioso: fondo negro, sin mensajes de kernel/systemd, banner AIOS mostrado desde initrd.
-- Kernel compilado con gcc del host VPS 15.2.0, verificado en `/proc/version`.
-- Menú del setup centrado en pantalla (`print_box` con padding horizontal y vertical).
-- Validación de API key en hilo con timeout de 12 s (corrige bloqueo por resolución DNS).
-- Flujo `setup.py` → `aios` automático en la misma ventana xterm.
-- Instalador a disco con opción de cambio de passwords de root y aios.
-- **Kernel de distro (#5)**: drivers wifi (iwlwifi, rtlwifi/rtl8723be, rtw88/89, ath9k/10k/11k, brcmfmac), DRM (i915/amdgpu/nouveau), NVMe, UAS, I2C_HID_ACPI, ethernet (r8169/e1000e/igb) y ALSA HDA + USB, con firmware linux-firmware integrado.
-- **Opción 5 WIFI SETUP** en el setup: escaneo de redes, wpa_supplicant, verificación de internet (urllib) y persistencia al arranque vía systemd-networkd (DHCP en wl*).
-- **Sistema operativo completo en hardware real** (HP Notebook AMD + Realtek): wifi con IP al arranque, touchpad, audio y resolución nativa (verificado 4 Ago 2026).
-- Firefox incluido para obtener la API key del proveedor elegido.
-- Cliente AIOS minimalista wargame con estilo Matrix en TTY/terminal.
-- `nokaslr` eliminado en live e instalador por seguridad.
-- Plymouth descartado definitivamente.
+v10 fixes all problems detected during the summer of 2026: hangs in the setup menu due to DNS without timeout, Plymouth loops blocking login, Unicode box mojibake in xterm, and the visual difference between live and installed boot.
 
 ---
 
-## Requisitos
+## Features
 
-| Entorno | Requisitos |
+- Live system with fully writable OverlayFS in RAM.
+- Silent boot: black background, no kernel/systemd messages, AIOS banner shown from initrd.
+- Kernel compiled with host VPS gcc 15.2.0, verified in `/proc/version`.
+- Setup menu centered on screen (`print_box` with horizontal and vertical padding).
+- API key validation in a thread with a 12 s timeout (fixes DNS resolution hang).
+- `setup.py` → `aios` automatic flow in the same xterm window.
+- Disk installer with option to change root and aios passwords.
+- **Distro kernel (#5)**: wifi drivers (iwlwifi, rtlwifi/rtl8723be, rtw88/89, ath9k/10k/11k, brcmfmac), DRM (i915/amdgpu/nouveau), NVMe, UAS, I2C_HID_ACPI, ethernet (r8169/e1000e/igb), and ALSA HDA + USB, with linux-firmware integrated.
+- **Option 5 WIFI SETUP** in the setup: network scanning, wpa_supplicant, internet verification (urllib), and persistence across boots via systemd-networkd (DHCP on wl*).
+- **Complete operating system on real hardware** (HP Notebook AMD + Realtek): wifi with IP at boot, touchpad, audio, and native resolution (verified 4 Aug 2026).
+- Firefox included to obtain the API key from the chosen provider.
+- Minimalist AIOS client with Matrix style in TTY/terminal.
+- `nokaslr` removed in live and installer for security.
+- Plymouth definitively discarded.
+
+---
+
+## Requirements
+
+| Environment | Requirements |
 |---|---|
-| VirtualBox recomendado | 2 vCPU, 4 GB RAM, 20 GB disco para instalar, controlador gráfico VBoxVGA o VMSVGA |
-| Hardware real | x86_64, BIOS/UEFI con soporte para arranque desde USB/CD |
-| Sin red | Funciona el modo **LOCAL** de AIOS si se descarga un modelo GGUF previamente |
-| Con red | Permite usar AIOS en modo cloud sin descargar el LLM |
+| VirtualBox recommended | 2 vCPU, 4 GB RAM, 20 GB disk to install, VBoxVGA or VMSVGA graphics controller |
+| Real hardware | x86_64, BIOS/UEFI with boot from USB/CD support |
+| Without network | AIOS **LOCAL** mode works if a GGUF model is downloaded beforehand |
+| With network | Allows using AIOS in cloud mode without downloading the LLM |
 
 ---
 
-## Usuarios por defecto
+## Default users
 
-| Usuario | Password | Notas |
+| User | Password | Notes |
 |---|---|---|
-| `root` | `root` | Administrador del sistema |
-| `aios` | `aios` | Usuario para ejecutar el agente |
+| `root` | `root` | System administrator |
+| `aios` | `aios` | User for running the agent |
 
-> Tras instalar a disco, `aios-install v1.1.1` permite cambiar ambas passwords. Si el usuario elige no cambiarlas, el resumen final muestra `Login: aios/aios or root/root`; si se cambian, se omite el aviso por seguridad.
+> After installing to disk, `aios-install v1.1.1` allows changing both passwords. If the user chooses not to change them, the final summary shows `Login: aios/aios or root/root`; if they are changed, the warning is omitted for security.
 
 ---
 
-## Instalación a disco
+## Disk installation
 
-1. Arrancar la ISO live.
-2. Iniciar sesión como `aios`/`aios` o `root`/`root`.
-3. Ejecutar `setup.py` y elegir **`4) INSTALL TO DISK`** (o lanzar directamente `/usr/local/bin/aios-install`).
-4. Seguir las instrucciones del instalador.
-5. Al finalizar, `aios-install` pregunta:
+1. Boot the live ISO.
+2. Log in as `aios`/`aios` or `root`/`root`.
+3. Run `setup.py` and choose **`4) INSTALL TO DISK`** (or launch `/usr/local/bin/aios-install` directly).
+4. Follow the installer instructions.
+5. At the end, `aios-install` asks:
 
    ```text
-   ¿Cambiar la password de root? [s/N]:
-   ¿Cambiar la password de aios? [s/N]:
+   Change root password? [y/N]:
+   Change aios password? [y/N]:
    ```
 
-   Se usa `getpass` y se valida un mínimo de 8 caracteres. El cambio se aplica vía `chpasswd` dentro del chroot del disco recién instalado (stdin).
+   It uses `getpass` and validates a minimum of 8 characters. The change is applied via `chpasswd` inside the chroot of the newly installed disk (stdin).
 
-6. Confirmar reinicio (`reboot`).
+6. Confirm reboot (`reboot`).
 
-El sistema instalado arranca exactamente igual que el live: fondo negro sin mensajes, banner AIOS y login en `tty1`.
+The installed system boots exactly like the live one: black background, no messages, AIOS banner, and login on `tty1`.
 
 ---
 
-## Componentes
+## Components
 
-| Componente | Ruta en live | Ruta tras instalar a disco |
+| Component | Path in live | Path after disk install |
 |---|---|---|
-| Kernel | `/boot/vmlinuz-6.18.10-lfs` (también en squashfs `boot/vmlinuz-6.18.10-lfs`) | `/boot/vmlinuz` |
-| Initrd | `/boot/initrd.img` (también en squashfs `boot/initrd.img`) | `/boot/initrd.img` |
-| Sistema raíz | `live/lfs.squashfs` + OverlayFS en RAM | Partición real con ext4 |
-| Repositorio agente | `/usr/local/bin/aios-agent/` | `/usr/local/bin/aios-agent/` |
-| Cliente AIOS | `/usr/local/bin/aios` | `/usr/local/bin/aios` |
-| Instalador | `/usr/local/bin/aios-install` | no aplica |
-| Wrapper setup | `/usr/local/bin/setup.py` o `setup.py` en PATH | no aplica |
-| Config AIOS | `~/.aios/config.yaml` y `~/.aios/.env` | `~/.aios/config.yaml` y `~/.aios/.env` |
-| Servidor llama.cpp | `/usr/local/bin/llama-server` | `/usr/local/bin/llama-server` |
+| Kernel | `/boot/vmlinuz-6.18.10-lfs` (also in squashfs `boot/vmlinuz-6.18.10-lfs`) | `/boot/vmlinuz` |
+| Initrd | `/boot/initrd.img` (also in squashfs `boot/initrd.img`) | `/boot/initrd.img` |
+| Root filesystem | `live/lfs.squashfs` + OverlayFS in RAM | Real ext4 partition |
+| Agent repository | `/usr/local/bin/aios-agent/` | `/usr/local/bin/aios-agent/` |
+| AIOS client | `/usr/local/bin/aios` | `/usr/local/bin/aios` |
+| Installer | `/usr/local/bin/aios-install` | not applicable |
+| Setup wrapper | `/usr/local/bin/setup.py` or `setup.py` in PATH | not applicable |
+| AIOS config | `~/.aios/config.yaml` and `~/.aios/.env` | `~/.aios/config.yaml` and `~/.aios/.env` |
+| llama.cpp server | `/usr/local/bin/llama-server` | `/usr/local/bin/llama-server` |
 
-### Novedad v10: kernel e initrd dentro del squashfs
+### v10 novelty: kernel and initrd inside the squashfs
 
-El squashfs ahora incluye:
+The squashfs now includes:
 
 ```text
 boot/vmlinuz-6.18.10-lfs
 boot/initrd.img
 ```
 
-Esto permite que el instalador los copie al disco sin necesidad de extraerlos de la ISO en tiempo de instalación.
+This allows the installer to copy them to disk without extracting them from the ISO at install time.
 
 ---
 
-## Secuencia de arranque
+## Boot sequence
 
-1. GRUB carga `/boot/vmlinuz` + `/boot/initrd.img`.
-2. El kernel inicia con `quiet loglevel=3 systemd.show_status=false vt.global_cursor_default=0`.
-3. El initrd:
-   - Monta `proc`, `sysfs`, `devtmpfs`, `tmpfs`.
-   - Limpia la pantalla inmediatamente (`clear` + ocultar cursor).
-   - Muestra el banner AIOS.
-   - Localiza la ISO live, monta el squashfs, crea el overlay (`lowerdir` + `upperdir` + `workdir`) y ejecuta `switch_root` hacia `/sbin/init`.
-4. systemd arranca en `multi-user.target`.
-5. `agetty` abre `tty1`.
-6. Al hacer login en `tty1`, se ejecuta el script de sesión (`scripts/aios-session`), que:
-   - Lanza `setup.py` si no existe `~/.aios/config.yaml`.
-   - Tras la configuración, inicia X11 (`startx`) → i3 → xterm con el agente.
+1. GRUB loads `/boot/vmlinuz` + `/boot/initrd.img`.
+2. The kernel starts with `quiet loglevel=3 systemd.show_status=false vt.global_cursor_default=0`.
+3. The initrd:
+   - Mounts `proc`, `sysfs`, `devtmpfs`, `tmpfs`.
+   - Clears the screen immediately (`clear` + hide cursor).
+   - Shows the AIOS banner.
+   - Locates the live ISO, mounts the squashfs, creates the overlay (`lowerdir` + `upperdir` + `workdir`), and executes `switch_root` to `/sbin/init`.
+4. systemd starts in `multi-user.target`.
+5. `agetty` opens `tty1`.
+6. When logging in to `tty1`, the session script (`scripts/aios-session`) runs:
+   - Launches `setup.py` if `~/.aios/config.yaml` does not exist.
+   - After configuration, starts X11 (`startx`) → i3 → xterm with the agent.
 
 ---
 
-## Silent boot y banner AIOS
+## Silent boot and AIOS banner
 
-### GRUB live
+### Live GRUB
 
 ```text
 set default=0
@@ -138,63 +138,63 @@ menuentry "AIOS LFS v10" {
 }
 ```
 
-> No se usa `nokaslr` en ningún sitio.
+> `nokaslr` is not used anywhere.
 
 ### Initrd
 
-El initrd realiza `clear` + `ocultar cursor` antes de buscar el medio live:
+The initrd performs `clear` + `hide cursor` before searching for the live medium:
 
 ```sh
 /bin/busybox printf "\033[2J\033[H" > /dev/tty0
 /bin/busybox printf "\033[?25l" > /dev/tty0
 ```
 
-Luego imprime el banner AIOS (texto ASCII/Unicode) y monta el sistema raíz.
+Then it prints the AIOS banner (ASCII/Unicode text) and mounts the root system.
 
-### Instalado a disco
+### Installed to disk
 
-El instalador genera un nuevo initrd (`build_disk_initrd`) que:
+The installer generates a new initrd (`build_disk_initrd`) that:
 
-- Conserva las mismas rutinas de clear + cursor + banner.
-- Reemplaza el bucle de búsqueda de ISO por un `mount` directo de la partición raíz real.
-- Finaliza con `switch_root /sbin/init`.
+- Keeps the same clear + cursor + banner routines.
+- Replaces the ISO search loop with a direct `mount` of the real root partition.
+- Ends with `switch_root /sbin/init`.
 
-La configuración de GRUB del disco usa `timeout=0` y los mismos parámetros silenciosos del live, apuntando `root=` a la partición real.
+The disk GRUB configuration uses `timeout=0` and the same silent parameters as the live one, pointing `root=` to the real partition.
 
 ---
 
-## Servicios systemd
+## systemd services
 
 ```text
 /usr/lib/systemd/system/
 ├── aios-llama.service    # llama-server (disabled at boot)
-├── aios-agent.service    # chat.py interactivo (disabled, lo lanza i3)
-└── getty@tty1.service    # login en tty1
+├── aios-agent.service    # chat.py interactive (disabled, i3 launches it)
+└── getty@tty1.service    # login on tty1
 ```
 
-- `aios-llama.service` se habilita/arranca solo cuando setup.py selecciona modo `local` o `hybrid`.
-- `sshd` está deshabilitado por defecto en la ISO.
-- No hay servicio de Plymouth.
+- `aios-llama.service` is enabled/started only when setup.py selects `local` or `hybrid` mode.
+- `sshd` is disabled by default in the ISO.
+- There is no Plymouth service.
 
 ---
 
 ## SSH
 
-`sshd` no arranca por defecto. Para activarlo manualmente en live:
+`sshd` does not start by default. To activate it manually in live mode:
 
 ```bash
 /etc/rc.d/init.d/sshd start
 ```
 
-Las host keys se regeneran automáticamente al primer uso. El servicio está controlado por el script SysV tradicional de LFS, no por systemd.
+Host keys are regenerated automatically on first use. The service is controlled by the traditional LFS SysV script, not by systemd.
 
 ---
 
 ## Firefox
 
-Firefox ESR se incluye en `/opt/firefox/`, con enlace en `/usr/local/bin/firefox`. Se usa para que el usuario pueda obtener la API key de su proveedor (OpenAI, Anthropic, DeepSeek, etc.) sin depender de otro equipo. Las dependencias GTK3 necesarias se instalan manualmente desde `archive.archlinux.org` cuando los mirrors actuales fallan por checksums corruptos.
+Firefox ESR is included in `/opt/firefox/`, with a symlink in `/usr/local/bin/firefox`. It is used so the user can obtain the API key from their provider (OpenAI, Anthropic, DeepSeek, etc.) without depending on another machine. The required GTK3 dependencies are installed manually from `archive.archlinux.org` when current mirrors fail due to corrupt checksums.
 
-Para lanzarlo desde i3:
+To launch it from i3:
 
 ```text
 exec --no-startup-id /usr/local/bin/firefox about:blank
@@ -202,15 +202,15 @@ exec --no-startup-id /usr/local/bin/firefox about:blank
 
 ---
 
-## Configuración de librerías ldconfig
+## ldconfig library configuration
 
-Tras instalar paquetes extra (Firefox, GTK3, llama.cpp, etc.), ejecutar:
+After installing extra packages (Firefox, GTK3, llama.cpp, etc.), run:
 
 ```bash
 ldconfig
 ```
 
-Además, crear o actualizar `/etc/ld.so.conf.d/` según sea necesario:
+Also, create or update `/etc/ld.so.conf.d/` as needed:
 
 ```text
 /usr/local/lib
@@ -220,15 +220,15 @@ Además, crear o actualizar `/etc/ld.so.conf.d/` según sea necesario:
 
 ---
 
-## Generación de la ISO
+## ISO generation
 
-Resumen de pasos en el host de build:
+Summary of steps on the build host:
 
 ```bash
-# 1. Preparar directorio ISO
+# 1. Prepare ISO directory
 mkdir -p /tmp/iso/{boot/grub,live}
 
-# 2. Copiar kernel e initrd
+# 2. Copy kernel and initrd
 sudo cp ~/aios/boot/vmlinuz /tmp/iso/boot/vmlinuz
 sudo cp ~/aios/boot/initrd.img /tmp/iso/boot/initrd.img
 
@@ -242,20 +242,20 @@ menuentry "AIOS LFS v10" {
 }
 GRUBEOF
 
-# 4. Squashfs (incluye kernel e initrd copiados dentro)
+# 4. Squashfs (includes kernel and initrd copied inside)
 sudo mksquashfs /lfs-rw /tmp/iso/live/lfs.squashfs -comp zstd -b 128K -noappend
 
 # 5. ISO
 sudo grub-mkrescue -o aios-lfs-v10.iso /tmp/iso
 ```
 
-**Si la ISO supera 4 GB**, añadir `-iso-level 3`.
+**If the ISO exceeds 4 GB**, add `-iso-level 3`.
 
 ---
 
-## Fix de GRUB en instalación a disco
+## GRUB fix on disk installation
 
-El instalador `aios-install` genera automáticamente `grub.cfg` para el disco con:
+The `aios-install` installer automatically generates `grub.cfg` for the disk with:
 
 ```text
 set default=0
@@ -266,60 +266,60 @@ menuentry "AIOS LFS v10" {
 }
 ```
 
-- `root=` apunta a la partición real seleccionada durante la instalación.
-- No se usa `nokaslr`.
-- El initrd del disco es una variante del live generada por `build_disk_initrd`.
+- `root=` points to the real partition selected during installation.
+- `nokaslr` is not used.
+- The disk initrd is a variant of the live one generated by `build_disk_initrd`.
 
 ---
 
-## Repositorio del agente
+## Agent repository
 
-El agente AIOS se despliega en `/usr/local/bin/aios-agent/` dentro del squashfs. Sus partes principales son:
+The AIOS agent is deployed in `/usr/local/bin/aios-agent/` inside the squashfs. Its main parts are:
 
-| Archivo | Función |
+| File | Function |
 |---|---|
-| `setup.py` | Wizard de configuración del proveedor/modelo |
-| `chat.py` | Cliente interactivo con manejo robusto de EOF/errores |
-| `agent.py` | Bucle de function calling |
-| `scripts/aios-session` | Arranque de sesión gráfica en la ISO |
-| `scripts/aios-install` | Instalador a disco v1.1.1 |
+| `setup.py` | Provider/model configuration wizard |
+| `chat.py` | Interactive client with robust EOF/error handling |
+| `agent.py` | Function calling loop |
+| `scripts/aios-session` | Graphical session startup in the ISO |
+| `scripts/aios-install` | Disk installer v1.1.1 |
 
-### Cambios v10 en setup.py
+### v10 changes in setup.py
 
-- `validate_api_key` se ejecuta en un hilo daemon con `join(timeout=12)`; dentro del hilo, `urlopen(..., timeout=5)` limita la espera por la API. Esto corrige el bloqueo por `getaddrinfo` sin límite (Ctrl+C tampoco respondía por `SA_RESTART`).
-- La API key se guarda en `~/.aios/.env` (no en `config.yaml`).
-- Al final del script se usa `os._exit(0)` para evitar que hilos residuales mantengan el proceso abierto.
-- Menú LOCAL actualizado:
-  - Modelo por defecto: `Qwen3-8B-Instruct`.
-  - Texto: `1) LOCAL (no internet) / Simple tasks`.
-  - Se eliminó la frase `Works 100% offline`.
-- Los menús se pintan centrados usando `os.get_terminal_size()` con padding horizontal y vertical.
+- `validate_api_key` runs in a daemon thread with `join(timeout=12)`; inside the thread, `urlopen(..., timeout=5)` limits API wait. This fixes the hang caused by `getaddrinfo` without a limit (Ctrl+C also didn't respond due to `SA_RESTART`).
+- The API key is saved in `~/.aios/.env` (not in `config.yaml`).
+- At the end of the script `os._exit(0)` is used so residual threads don't keep the process open.
+- LOCAL menu updated:
+  - Default model: `Qwen3-8B-Instruct`.
+  - Text: `1) LOCAL (no internet) / Simple tasks`.
+  - Removed the phrase `Works 100% offline`.
+- Menus are drawn centered using `os.get_terminal_size()` with horizontal and vertical padding.
 
-### Flujo setup → agente v10
+### v10 setup → agent flow
 
-Tras completar la configuración, setup.py ejecuta `aios` automáticamente en la misma ventana:
+After completing the configuration, setup.py automatically runs `aios` in the same window:
 
 ```bash
 xterm -fa 'Adwaita Mono' -fs 11 -bg black -fg green -cr green \
   -e "cd /usr/local/bin/aios-agent && python3 setup.py && [ -f \$HOME/.aios/config.yaml ] && aios || exec bash"
 ```
 
-- No se usa `-hold`: evita que parezca que el menú se cuelga tras terminar.
-- Si el setup se cancela, se abre un shell bash interactivo.
+- `-hold` is not used: avoids the menu appearing to hang after finishing.
+- If setup is cancelled, an interactive bash shell opens.
 
-### xterm en i3 v10
+### v10 xterm in i3
 
 ```text
 xterm -fa 'Adwaita Mono' -fs 11 -bg black -fg green -cr green ...
 ```
 
-La fuente `Adwaita Mono` contiene los glifos de línea doble (`╔═╗`) que antes se mostraban como mojibake.
+The `Adwaita Mono` font contains the double-line glyphs (`╔═╗`) that previously rendered as mojibake.
 
 ---
 
 ## Kernel #4
 
-Configuración real del kernel 6.18.10-lfs #4:
+Actual configuration of kernel 6.18.10-lfs #4:
 
 ```text
 CONFIG_X86_VERBOSE_BOOTUP=n
@@ -327,7 +327,7 @@ CONFIG_OVERLAY_FS=y
 CONFIG_FB_VESA=y
 ```
 
-Sin:
+Without:
 
 ```text
 # CONFIG_DRM_VMWGFX is not set
@@ -335,23 +335,23 @@ Sin:
 # CONFIG_DRM_FBDEV_EMULATION is not set
 ```
 
-- Compilado con gcc del host VPS 15.2.0 (verificado en `/proc/version` de la VM).
-- `make olddefconfig` y compilación normal; NO se usa `LD=/mnt/sq/usr/bin/ld` (el ld LFS necesita `libbfd` que no está disponible fuera del chroot).
+- Compiled with host VPS gcc 15.2.0 (verified in VM `/proc/version`).
+- `make olddefconfig` and normal compilation; `LD=/mnt/sq/usr/bin/ld` is NOT used (the LFS ld needs `libbfd` which is not available outside the chroot).
 
 ---
 
 ## Locale
 
-El sistema live/instalado usa:
+The live/installed system uses:
 
 ```text
 LANG=C.UTF-8
 LC_ALL=C.UTF-8
 ```
 
-en `/etc/locale.conf`. `es_ES.UTF-8` no está generado en el sistema base; si se define sin generarlo, glibc cae a `C` y xterm interpreta los caracteres de caja en Latin-1, produciendo mojibake (``). La solución adoptada es fijar `C.UTF-8`, que está disponible y soporta Unicode correctamente.
+in `/etc/locale.conf`. `es_ES.UTF-8` is not generated in the base system; if defined without generating it, glibc falls back to `C` and xterm interprets the box characters in Latin-1, producing mojibake (``). The adopted solution is to fix `C.UTF-8`, which is available and correctly supports Unicode.
 
-Si se desea español completo, generar el locale antes de fijarlo:
+If full Spanish is desired, generate the locale before setting it:
 
 ```bash
 localedef -i es_ES -f UTF-8 es_ES.UTF-8
@@ -359,500 +359,500 @@ localedef -i es_ES -f UTF-8 es_ES.UTF-8
 
 ---
 
-## Plymouth descartado definitivamente
+## Plymouth definitively discarded
 
-Se probó Plymouth con múltiples configuraciones (VBoxVGA+vesafb, VMSVGA+vmwgfx, gfxpayload). En todos los casos el resultado fue pantalla negra o logo no visible. La causa raíz en v10 es definitiva:
+Plymouth was tested with multiple configurations (VBoxVGA+vesafb, VMSVGA+vmwgfx, gfxpayload). In all cases the result was a black screen or invisible logo. The root cause in v10 is definitive:
 
-- El kernel #4 no incluye `vmwgfx`, `vboxvideo` ni `fbdev-emulation`.
-- VirtualBox con VMSVGA no ofrece VBE clásico.
-- `vesafb` no puede crear `/dev/fb0` ni `/dev/dri`.
-- `plymouthd` no encuentra renderer, espera el timeout de systemd, y al morir retiene el VT bloqueando el login.
+- Kernel #4 does not include `vmwgfx`, `vboxvideo`, or `fbdev-emulation`.
+- VirtualBox with VMSVGA does not offer classic VBE.
+- `vesafb` cannot create `/dev/fb0` nor `/dev/dri`.
+- `plymouthd` finds no renderer, waits for the systemd timeout, and on death retains the VT blocking login.
 
-**Alternativa adoptada**: banner ASCII/Unicode mostrado directamente desde el initrd, con fondo negro y cursor oculto.
+**Adopted alternative**: ASCII/Unicode banner shown directly from the initrd, with black background and hidden cursor.
 
 ---
 
-## Fix v11 - panic en arranque desde disco (2 Ago 2026)
+## v11 fix — panic when booting from disk (2 Aug 2026)
 
-### Síntoma
+### Symptom
 
-Después de instalar AIOS LFS a disco duro, el sistema mostraba un **kernel panic** al arrancar:
+After installing AIOS LFS to hard disk, the system showed a **kernel panic** on boot:
 
 ```
 Attempted to kill init! exit code=0x7f00
 ```
 
-(`0x7f00` = 127). Ocurría tras el logo AIOS, antes de llegar al login.
+(`0x7f00` = 127). It occurred after the AIOS logo, before reaching the login.
 
-### Causa raíz
+### Root cause
 
-El panic venía de tres fallos acumulados en `build_disk_initrd`, la función de `aios-install` que transforma el initrd live para arranque desde disco:
+The panic came from three accumulated failures in `build_disk_initrd`, the `aios-install` function that transforms the live initrd for booting from disk:
 
-1. **Escape octal `\1` → SOH en el init generado.** El patrón `sed` usado con `tail` estaba escrito en Python con un solo backslash: `'s/.*root=\([^ ]*\).*/\1/p'`. Python interpreta `\1` como el carácter de control SOH (`0x01`), que se escribía literalmente en el script `init` generado. Al ejecutarse, `sed` devolvía un dispositivo root inexistente, y `mount -t ext4` fallaba.
-2. **Fallback a `/bin/sh` inexistente.** Cuando el `mount` fallaba, el initrd ejecutaba `exec /bin/sh`, pero el initrd transformado no incluye `/bin/sh`: solo contiene `init` y `bin/busybox`, sin symlinks de applets. El `exec` devolvía 127, el init moría y el kernel lanzaba el panic.
-3. **Sin espera al dispositivo root.** El dispositivo de root podía no estar listo en el momento en que el init intentaba montarlo, haciendo el fallo intermitente.
+1. **Octal escape `\1` → SOH in the generated init.** The `sed` pattern used with `tail` was written in Python with a single backslash: `'s/.*root=\([^ ]*\).*/\1/p'`. Python interprets `\1` as the SOH control character (`0x01`), which was written literally in the generated `init` script. When executed, `sed` returned a non-existent root device, and `mount -t ext4` failed.
+2. **Fallback to non-existent `/bin/sh`.** When `mount` failed, the initrd executed `exec /bin/sh`, but the transformed initrd did not include `/bin/sh`: it only contained `init` and `bin/busybox`, without applet symlinks. The `exec` returned 127, init died, and the kernel raised the panic.
+3. **No wait for the root device.** The root device might not be ready when init tried to mount it, making the failure intermittent.
 
-### Solución (aios-install v1.1.2)
+### Solution (aios-install v1.1.2)
 
-- Se corrigió el patrón `sed`/`tail` con **doble backslash** (`\\(` y `\\1`) para que el `init` generado contenga `\(` y `\1` correctos, y `sed` extraiga el dispositivo root real.
-- Se añadió un **bucle de espera de hasta 30 segundos** hasta que aparezca el dispositivo root en `/dev`.
-- Se cambió el fallback a **`exec /bin/busybox sh`**, que sí está disponible en el initrd.
-- Se usa **`exec /bin/busybox switch_root /root /sbin/init`** para pasar el control al sistema instalado.
-- Se incluyó **`/bin/busybox` estático (2.1 MB, extraído del initrd)** en el squashfs del sistema live, porque `build_disk_initrd` lo necesita y el sistema live no lo tenía.
+- Fixed the `sed`/`tail` pattern with a **double backslash** (`\\(` and `\\1`) so the generated `init` contains `\(` and `\1` correctly, and `sed` extracts the real root device.
+- Added a **wait loop of up to 30 seconds** until the root device appears in `/dev`.
+- Changed the fallback to **`exec /bin/busybox sh`**, which is available in the initrd.
+- Uses **`exec /bin/busybox switch_root /root /sbin/init`** to hand control to the installed system.
+- Included a **static `/bin/busybox` (2.1 MB, extracted from the initrd)** in the live system squashfs, because `build_disk_initrd` needs it and the live system did not have it.
 
-### Verificación
+### Verification
 
-Reinstalando AIOS LFS a disco, el arranque desde disco funciona correctamente: aparece el logo AIOS y el sistema llega al prompt de login.
+Reinstalling AIOS LFS to disk, booting from disk works correctly: the AIOS logo appears and the system reaches the login prompt.
 
-> **Nota:** todavía se muestra el mensaje de GRUB `'Welcome to GRUB!'`. Queda pendiente pulirlo en el futuro usando `timeout_style=hidden` y `quiet_boot=1`.
+> **Note:** the GRUB message `'Welcome to GRUB!'` is still shown. It remains pending to polish in the future using `timeout_style=hidden` and `quiet_boot=1`.
 
-## Hito v12 - AIOS en hardware físico (2 Ago 2026)
+## v12 milestone — AIOS on physical hardware (2 Aug 2026)
 
-### Síntoma
+### Symptom
 
-Al arrancar la ISO de AIOS LFS desde USB en un portátil real, el sistema se detenía con un kernel panic porque el init del initrd live no encontraba el dispositivo de arranque.
+When booting the AIOS LFS ISO from USB on a real laptop, the system stopped with a kernel panic because the initrd live init did not find the boot device.
 
-### Causas
+### Causes
 
-- El script init no esperaba a que el kernel enumerara los dispositivos de bloque, por lo que el medio USB aún no existía cuando se buscaba el sistema live.
-- La lista de dispositivos candidatos era demasiado corta y no incluía controladores modernos como NVMe ni MMC.
-- Cuando se usaba Rufus en modo ISO, la partición USB se formateaba como FAT32, mientras que el init buscaba un sistema de archivos iso9660, provocando fallo silencioso.
+- The init script did not wait for the kernel to enumerate block devices, so the USB medium did not yet exist when the live system was searched.
+- The list of candidate devices was too short and did not include modern controllers such as NVMe or MMC.
+- When Rufus was used in ISO mode, the USB partition was formatted as FAT32, while the init looked for an iso9660 filesystem, causing a silent failure.
 
-### Solución
+### Solution
 
-- Se añadió un bucle de espera de hasta 30 segundos en el init del initrd live, comprobando `[ -b <dispositivo> ]` y saliendo con `break 2` al encontrarlo.
-- Se amplió la lista de dispositivos de búsqueda: `sdc`, `sdd`, discos `hd*`, `nvme*` y `mmcblk*`.
-- Se sustituyó el kernel panic por un mensaje legible: `AIOS: boot media not found`, seguido de una shell de emergencia busybox para diagnóstico.
-- Se documentó que, mientras tanto, la ISO debe grabarse con Rufus en modo DD para que el init encuentre un volumen iso9660.
+- Added a wait loop of up to 30 seconds in the initrd live init, checking `[ -b <device> ]` and exiting with `break 2` when found.
+- Expanded the search device list: `sdc`, `sdd`, `hd*` disks, `nvme*`, and `mmcblk*`.
+- Replaced the kernel panic with a readable message: `AIOS: boot media not found`, followed by a busybox emergency shell for diagnosis.
+- Documented that, meanwhile, the ISO must be written with Rufus in DD mode so the init finds an iso9660 volume.
 
-### Verificación
+### Verification
 
-- ISO escrita en USB con Rufus en modo DD.
-- Arranque live USB correcto en portátil físico con SSD SATA.
-- Instalación de AIOS LFS al disco SSD completada.
-- Reinicio y arranque desde disco con banner AIOS y prompt de login funcionando.
+- ISO written to USB with Rufus in DD mode.
+- Successful live USB boot on a physical laptop with SATA SSD.
+- AIOS LFS installation to the SSD disk completed.
+- Reboot and boot from disk with AIOS banner and login prompt working.
 
-### Pendientes (histórico — resueltos con el kernel #7)
-- ~~Soportar el modo ISO de Rufus (FAT32)~~ → resuelto: Rufus en modo DD es el método documentado
-- ~~Preparar el kernel #5 con controladores NVMe y UAS~~ → resuelto con el kernel #7 (config Ubuntu 6.18.10, ver 7 Ago)
+### Pending (historical — resolved with kernel #7)
+- ~~Support Rufus ISO mode (FAT32)~~ → resolved: Rufus in DD mode is the documented method
+- ~~Prepare kernel #5 with NVMe and UAS drivers~~ → resolved with kernel #7 (Ubuntu 6.18.10 config, 7 Aug)
 
-## 6 Ago 2026 — LLM local en portátil: SIGILL (RESUELTO el 8 Ago)
+## 6 Aug 2026 — Local LLM on laptop: SIGILL (RESOLVED 8 Aug)
 
-**Síntoma histórico**: `aios-llama.service` fallaba en bucle `status=4/ILL` (SIGILL core dump) en el HP AMD A8-7410 (sin AVX2/FMA3/AVX-512). Causas descartadas en su momento: GGUF corrupto, ISA de ggml (builds AVX1+F16C), mezcla glibc.
+**Historical symptom**: `aios-llama.service` repeatedly failed with `status=4/ILL` (SIGILL core dump) on the HP AMD A8-7410 (no AVX2/FMA3/AVX-512). Causes discarded at the time: corrupt GGUF, ggml ISA (AVX1+F16C builds), mixed glibc.
 
-**Resolución (8 Ago)**: el SIGILL se resolvió con la alineación de glibc (única 2.44 de sven, `/lib64` → `/usr/lib`) + el paquete sven `llama-cpp` (b10221, x86-64-baseline). Verificado: el LLM carga y genera **~1.2 tok/s** en el A8. Detalle de la investigación completa en la skill `aios-iso-build`.
+**Resolution (8 Aug)**: the SIGILL was resolved with glibc alignment (single 2.44 from sven, `/lib64` → `/usr/lib`) + the sven package `llama-cpp` (b10221, x86-64-baseline). Verified: the LLM loads and generates **~1.2 tok/s** on the A8. Full investigation detail in the `aios-iso-build` skill.
 
-## 6 Ago 2026 — Agente AIOS en VPS con Qwen local (funciona)
+## 6 Aug 2026 — AIOS agent on VPS with local Qwen (works)
 
-- Server local: `nohup env LD_LIBRARY_PATH=~/llama.cpp/build/bin ~/llama.cpp/build/bin/llama-server -m /home/ccmai/models/Qwen_Qwen3-8B-Q4_K_M.gguf -c 65536 -t 14 --host 127.0.0.1 --port 8083` + `~/.aios/config.yaml` con `mode: local` → `cd ~/sre-agent && python3 chat.py`.
-- El "cuelgue" del chat.py era el **historial de sesión**: `~/sre-agent/data/session_local.json` (20 KB → prompt ~6.2K tokens → ~2 min de prompt processing a ~52 tok/s). `rm session_local.json` → respuestas en 30-60 s.
-- El build del VPS es **SSE-only** (cache: `GGML_AVX=OFF`) → 17 tok/s gen / 31-57 tok/s prompt es el piso SSE; con `GGML_NATIVE=ON` en el EPYC ~2x (pendiente decisión; solo para el build local, nunca para distribuir).
-- El `import yaml` lento fue transitorio (contención CPU con la carga del modelo).
+- Local server: `nohup env LD_LIBRARY_PATH=~/llama.cpp/build/bin ~/llama.cpp/build/bin/llama-server -m /home/ccmai/models/Qwen_Qwen3-8B-Q4_K_M.gguf -c 65536 -t 14 --host 127.0.0.1 --port 8083` + `~/.aios/config.yaml` with `mode: local` → `cd ~/sre-agent && python3 chat.py`.
+- The `chat.py` "hang" was the **session history**: `~/sre-agent/data/session_local.json` (20 KB → prompt ~6.2K tokens → ~2 min prompt processing at ~52 tok/s). `rm session_local.json` → responses in 30-60 s.
+- The VPS build is **SSE-only** (cache: `GGML_AVX=OFF`) → 17 tok/s gen / 31-57 tok/s prompt is the SSE floor; with `GGML_NATIVE=ON` on EPYC ~2x (pending decision; only for local build, never for distribution).
+- The slow `import yaml` was transient (CPU contention with model loading).
 
-## 7 Ago 2026 — Saneamiento: kernel #7 (config Ubuntu 6.18.10) + módulos 157 MB + fixes
+## 7 Aug 2026 — Cleanup: kernel #7 (Ubuntu 6.18.10 config) + 157 MB modules + fixes
 
-**Kernel #7 — config de Ubuntu para el MISMO kernel (6.18.10)** (idea de Carlos: en vez de la lista manual de =m, usar la config que Ubuntu usa para ese kernel — el mainline build `v6.18.10` de kernel.ubuntu.com; la config va DENTRO del .deb `linux-headers-*`). Trae TODOS los drivers de distro (rtlwifi/rtl8723be, i915, amdgpu SI/CIK, HP_WMI, iwlwifi, snd-hda...) ya incluidos. Ajustes: `OVERLAY_FS=y`, `SQUASHFS=y` (live), `LOCALVERSION=""`, `SYSTEM_TRUSTED_KEYS=""` (la config referencia `debian/canonical-certs.pem` — no existe en el tree), BTF off, y **drivers de arranque =y** (ISO9660, SATA_AHCI, NVME, USB_STORAGE, XHCI/EHCI/OHCI — el initrd AIOS no carga módulos). Deps build host: libdwarf-dev + libdw-dev + symlinks dwarf.h (gendwarfksyms).
+**Kernel #7 — Ubuntu config for the SAME kernel (6.18.10)** (Carlos's idea: instead of the manual =m list, use the config Ubuntu uses for that kernel — the mainline build `v6.18.10` from kernel.ubuntu.com; the config is INSIDE the `linux-headers-*` .deb). Brings ALL distro drivers (rtlwifi/rtl8723be, i915, amdgpu SI/CIK, HP_WMI, iwlwifi, snd-hda...) already included. Adjustments: `OVERLAY_FS=y`, `SQUASHFS=y` (live), `LOCALVERSION=""`, `SYSTEM_TRUSTED_KEYS=""` (the config references `debian/canonical-certs.pem` — does not exist in the tree), BTF off, and **boot drivers =y** (ISO9660, SATA_AHCI, NVME, USB_STORAGE, XHCI/EHCI/OHCI — the AIOS initrd does not load modules). Build host deps: libdwarf-dev + libdw-dev + dwarf.h symlinks (gendwarfksyms).
 
-**Validado: arranca en VM y en AMBOS portátiles** (el viejo A8-7410 y el nuevo HP).
+**Validated: boots in VM and on BOTH laptops** (the old A8-7410 and the new HP).
 
-**Tamaño módulos: 8.1 GB → 157 MB** (mejor que Ubuntu: 172 MB), mecanismo oficial del kernel:
-1. `MODULE_COMPRESS_ZSTD=y` → compresión en `modules_install` (8.1 → 2.2 GB; requiere rebuild limpio para regenerar auto.conf)
-2. `INSTALL_MOD_STRIP=1` → quita el debug DWARF5 de la config mainline (2.2 GB → 157 MB) — el mismo módulo rtl8723be: 6.29 MB → 82.5 KB
+**Module size: 8.1 GB → 157 MB** (better than Ubuntu: 172 MB), official kernel mechanism:
+1. `MODULE_COMPRESS_ZSTD=y` → compression during `modules_install` (8.1 → 2.2 GB; requires clean rebuild to regenerate auto.conf)
+2. `INSTALL_MOD_STRIP=1` → removes the DWARF5 debug from the mainline config (2.2 GB → 157 MB) — same rtl8723be module: 6.29 MB → 82.5 KB
 
-**Fixes del saneamiento**:
-- glibc 2.44 única y alineada (`/lib64` → `/usr/lib`, cero Ubuntu) + protegida en sven
-- LLM: paquete `llama-cpp` de sven (b10221, baseline, GLIBC 2.34) — scripts adaptados (`/usr/bin/llama-server`, sin LD_LIBRARY_PATH); builds manuales eliminados (sin fallback)
-- Setup restaurado (una config.yaml de prueba en el árbol hacía saltar el wizard); aios-install v1.1.3 (grupos, passwords, silent boot disco); grub sin nokaslr
-- Pendiente histórico: ISO final ~1.5 GB (sin modelo — el GGUF 4.7 GB se copia aparte) — superado: el firmware completo (416 MB) sube la ISO a ~1.5-1.8 GB; el modelo LLM va aparte.
+**Cleanup fixes**:
+- Single aligned glibc 2.44 (`/lib64` → `/usr/lib`, zero Ubuntu) + protected in sven
+- LLM: sven `llama-cpp` package (b10221, baseline, GLIBC 2.34) — scripts adapted (`/usr/bin/llama-server`, no LD_LIBRARY_PATH); manual builds removed (no fallback)
+- Setup restored (a test config.yaml in the tree made the wizard skip); aios-install v1.1.3 (groups, passwords, silent boot disk); GRUB without nokaslr
+- Historical pending: final ISO ~1.5 GB (without model — the 4.7 GB GGUF copied separately) — surpassed: the full firmware (416 MB) brings the ISO to ~1.5-1.8 GB; the LLM model goes separately.
 
-## 8 Ago 2026 — Hardware validado (ISO #7 + LLM)
+## 8 Aug 2026 — Hardware validated (ISO #7 + LLM)
 
-| Portátil | Modelo | CPU | RAM | Resultado |
+| Laptop | Model | CPU | RAM | Result |
 |---|---|---|---|---|
-| Viejo (instalado) | HP con **AMD A8-7410** | AMD A8-7410 @ 2.2 GHz, 4C (Jaguar, sin AVX2) | 8 GB (6.7 GiB visibles — iGPU comparte) | ✅ Arranca + LLM carga y genera **~1.2 tok/s** (límite DDR3L single-channel); **SIGILL resuelto** |
-| Nuevo (probado desde USB, sin instalar) | **HP Laptop 15s-fq1xxx** | **Intel Core i5-1035G1** @ 1.0 GHz (boost 3.6), 4C/8T (Ice Lake, AVX2/AVX-512) | **8 GB** | ✅ Arranca y funciona; carga del modelo desde USB **7-8 min**; genera ~velocidad de tecleo (usable) |
+| Old (installed) | HP with **AMD A8-7410** | AMD A8-7410 @ 2.2 GHz, 4C (Jaguar, no AVX2) | 8 GB (6.7 GiB visible — iGPU shares) | ✅ Boots + LLM loads and generates **~1.2 tok/s** (DDR3L single-channel limit); **SIGILL resolved** |
+| New (tested from USB, not installed) | **HP Laptop 15s-fq1xxx** | **Intel Core i5-1035G1** @ 1.0 GHz (boost 3.6), 4C/8T (Ice Lake, AVX2/AVX-512) | **8 GB** | ✅ Boots and works; model load from USB **7-8 min**; generates at ~typing speed (usable) |
 
-**Notas (8 Ago)**:
-- El cuello de botella de los 7-8 min es la **carga del modelo desde el USB** (4.7 GB a ~10-15 MB/s). Desde el SSD NVMe (SK hynix BC511 512 GB) será ~100x más rápida (segundos).
-- El i5-1035G1 (AVX-512) aprovecha las variantes CPU del paquete ggml mucho más que el Jaguar (AVX1) — el rendimiento en el HP nuevo será muy superior al 1.2 tok/s del viejo.
-- Observación de Carlos: "contesta aproximadamente a la velocidad de una persona promedio tecleando" (el viejo).
+**Notes (8 Aug)**:
+- The 7-8 min bottleneck is **loading the model from USB** (4.7 GB at ~10-15 MB/s). From the NVMe SSD (SK hynix BC511 512 GB) it will be ~100x faster (seconds).
+- The i5-1035G1 (AVX-512) takes much more advantage of ggml CPU variants than the Jaguar (AVX1) — performance on the new HP will be far superior to the 1.2 tok/s of the old one.
+- Carlos's observation: "it replies at approximately the speed of an average person typing" (the old one).
 
-## 19-21 Ago 2026 — Arranque colgado, GPU/firmware completo, vbox condicionado, tema completo, instalador
+## 19-21 Aug 2026 — Stuck boot, full GPU/firmware, conditional vbox, full theme, installer
 
-### Arranque colgado en el logo (resuelto)
-- **Síntoma**: tras instalar a disco, el sistema se quedaba en el logo (~2 min) y luego arrancaba. **Causa raíz**: instalación a medias por el bug de `harden_sudo` (`glob` devuelve strings → `is_file()` fallaba → el instalador abortaba ANTES de `persist_wifi`) → disco sin wifi → `systemd-networkd-wait-online` bloqueaba el boot.
-- **Fixes (en árbol e ISO)**:
-  - `systemd-networkd-wait-online` **deshabilitado** en el árbol → el arranque nunca depende de la red
-  - `options rtl8723be ips=0 fwlps=0` en `/etc/modprobe.d/rtl8723be.conf` → sin soft lockups del wifi
-  - Instalador corregido: revert del autologin/harden_sudo + fix `Path.glob` + **aborts con `sys.exit(1)`** (antes exit 0 → el setup decía "installation complete" sin haber instalado) + **menú que re-pregunta ante entradas inválidas** (setup.py y aios-install)
-- Arranque verificado: **6.3 s** a multi-user, escritorio arriba, wifi conectado (persistencia OK).
+### Stuck boot on logo (resolved)
+- **Symptom**: after installing to disk, the system stayed on the logo (~2 min) and then booted. **Root cause**: partial installation due to the `harden_sudo` bug (`glob` returns strings → `is_file()` failed → installer aborted BEFORE `persist_wifi`) → disk without wifi → `systemd-networkd-wait-online` blocked boot.
+- **Fixes (in tree and ISO)**:
+  - `systemd-networkd-wait-online` **disabled** in the tree → boot never depends on network
+  - `options rtl8723be ips=0 fwlps=0` in `/etc/modprobe.d/rtl8723be.conf` → no wifi soft lockups
+  - Installer fixed: revert autologin/harden_sudo + fix `Path.glob` + **aborts with `sys.exit(1)`** (before exit 0 → setup said "installation complete" without having installed) + **menu that re-asks on invalid input** (setup.py and aios-install)
+- Boot verified: **6.3 s** to multi-user, desktop up, wifi connected (persistence OK).
 
-### GPU: firmware radeon MULLINS (resuelto — causa raíz de la "barra verde"/scrot congelado)
-- El árbol tenía una copia **parcial** de firmware (solo amdgpu, 534 MB, del 3 Ago) → el radeon de la APU A8 (MULLINS) no tenía sus `.bin` → `Fatal error during GPU init` → sin `/dev/dri` → X sin driver nativo → render por vesa congelado (scrot devolvía siempre la misma imagen; la "barra verde" era un frame viejo, no la barra real).
-- **Fix (vía oficial)**: `sven install linux-firmware` (paquete completo de Arch, `.zst` — el kernel 6.18.10 tiene `CONFIG_FW_LOADER_COMPRESS=y`) → `/usr/lib/firmware` 416 MB con TODO (radeon, amdgpu, iwlwifi, brcm, atheros…) + `regulatory.db` preservado. El `/lib/firmware` viejo (534 MB) se movió a backup (`~/aios-work/backups/backup-firmware-lib-20260821/`) → **~530 MB menos de ISO**.
-- **Regla del build**: el firmware se instala SIEMPRE con el paquete sven `linux-firmware` completo (nunca copias parciales manuales).
-- Verificado en caliente: `radeon` inicializado (`/dev/dri/card0` + `renderD128`), render fresco, barra correcta.
-- **Microcódigo CPU**: `amd-ucode` + `intel-ucode` (paquetes sven) en el árbol — parches de CPU para cualquier equipo.
+### GPU: radeon MULLINS firmware (resolved — root cause of the "green bar"/frozen scrot)
+- The tree had a **partial** firmware copy (only amdgpu, 534 MB, from 3 Aug) → the A8 APU radeon (MULLINS) did not have its `.bin` → `Fatal error during GPU init` → no `/dev/dri` → X without native driver → frozen vesa render (scrot always returned the same image; the "green bar" was an old frame, not the real bar).
+- **Fix (official route)**: `sven install linux-firmware` (full Arch package, `.zst` — kernel 6.18.10 has `CONFIG_FW_LOADER_COMPRESS=y`) → `/usr/lib/firmware` 416 MB with EVERYTHING (radeon, amdgpu, iwlwifi, brcm, atheros…) + `regulatory.db` preserved. The old `/lib/firmware` (534 MB) was moved to backup (`~/aios-work/backups/backup-firmware-lib-20260821/`) → **~530 MB less ISO**.
+- **Build rule**: firmware is ALWAYS installed with the complete sven `linux-firmware` package (never partial manual copies).
+- Verified live: `radeon` initialized (`/dev/dri/card0` + `renderD128`), fresh render, correct bar.
+- **CPU microcode**: `amd-ucode` + `intel-ucode` (sven packages) in the tree — CPU patches for any machine.
 
-### vboxadd: condicionado a VirtualBox (no es basura, es adaptativo)
-- Las units `vboxadd.service`, `vboxadd-service.service`, `vboxservice.service` llevan un drop-in con **`ConditionVirtualization=oracle`** → en hardware físico no se activan (arranque limpio, sin degraded); en VirtualBox real se levantan con los módulos del kernel de distro (`vboxguest.ko.zst` de 6.18.10 — los de las Guest Additions 7.2.6, incompatibles, se movieron a backup).
+### vboxadd: conditional on VirtualBox (not garbage, adaptive)
+- The `vboxadd.service`, `vboxadd-service.service`, `vboxservice.service` units have a drop-in with **`ConditionVirtualization=oracle`** → on real hardware they do not activate (clean boot, no degraded); in real VirtualBox they come up with the distro kernel modules (`vboxguest.ko.zst` from 6.18.10 — the 7.2.6 Guest Additions modules, incompatible, were moved to backup).
 
-### Tema de color completo (ver sección "Temas de color" más abajo)
-- `aios-theme` central + `status.py` lee el tema + i3 con `colors.conf` incluido — los 4 temas cambian TODO al momento (verificado en el portátil).
+### Full color theme (see "Color themes" below)
+- `aios-theme` central + `status.py` reads the theme + i3 with `colors.conf` included — the 4 themes change EVERYTHING instantly (verified on the laptop).
 
-### Push a GitHub (lección aprendida)
-- El token del VPS estaba caducado → los pushes de los últimos commits "parecían" funcionar por el `| tail -1` que **enmascara el error** (mismo pitfall que con xorriso). Fix: token nuevo en `~/.git-credentials` del VPS, remotos sin usuario en la URL (`https://github.com/...`), helper store en ambos repos. **Regla: nunca terminar un push con `| tail -1` sin verificar el resultado.**
+### Push to GitHub (lesson learned)
+- The VPS token had expired → recent pushes "seemed" to work because of the `| tail -1` that **masked the error** (same pitfall as with xorriso). Fix: new token in `~/.git-credentials` on the VPS, remotes without username in the URL (`https://github.com/...`), store helper in both repos. **Rule: never end a push with `| tail -1` without verifying the result.**
 
-## 21 Ago 2026 (tarde) — Web v1.4, estadísticas por correo, frases de Wargames, ISO 1.4
+## 21 Aug 2026 (evening) — Web v1.4, access stats by email, WarGames phrases, ISO 1.4
 
-### Publicación y web (ccmai.org)
-- **ISO v1.4 publicada** en `/var/www/ccmai.org/releases/aios-1.4.iso` (1.9 GB, 21 Ago 20:36) — la 1.3 queda en el servidor sin enlazar (decisión de Carlos).
-- **Backup de la web** en `~/aios-work/backups/web-ccmai-20260821/` (patrón de siempre).
-- **Rediseño completo estilo wargames/AIOS**: fondo negro, verde Matrix (`#00ff00`/`#006400`), tipografía mono, hexágono **SVG** (borde grueso 8 + círculo relleno — sustituye al ASCII de semitonos, sin pixelación), "Greetings, Professor Falken" con **typewriter + beep 850 Hz/35 ms** (Web Audio API, 8 frases rotativas cada ~6 s, toggle 🔊/🔇 abajo a la derecha — el navegador exige primer clic para el audio), cursor bloque sólido parpadeante, scanlines CRT sutiles (desktop), favicon SVG con hexágono+círculo, meta description + Open Graph (imagen `assets/hex.svg`).
-- **Estructura final**: hexágono → AIOS → "Artificial Intelligence Operating System" → frase rotativa → misión (2 frases + "Made with a nostalgic nod to WarGames (1983)") → descarga (sin aios-install, con mención físico/VirtualBox) → enlaces GitHub (corregidos a `ccarrillomanzanares`; **sre-agent fuera**) → footer (badge v1.4 · x86-64 + disclaimer "Proof of concept — beta stage · use at your own risk").
-- **Web versionada en el repo**: `aios-lfs/web/` (index.html + releases/index.html + assets/hex.svg) — antes solo vivía en el servidor.
+### Publication and web (ccmai.org)
+- **ISO v1.4 published** at `/var/www/ccmai.org/releases/aios-1.4.iso` (1.9 GB, 21 Aug 20:36) — 1.3 stays on the server without link (Carlos's decision).
+- **Backup of the website** at `~/aios-work/backups/web-ccmai-20260821/` (usual pattern).
+- **Full wargames/AIOS redesign**: black background, Matrix green (`#00ff00`/`#006400`), mono typography, **SVG** hexagon (thick 8 border + filled circle — replaces the ASCII halftone, no pixelation), "Greetings, Professor Falken" with **typewriter + 850 Hz/35 ms beep** (Web Audio API, 8 rotating phrases every ~6 s, 🔊/🔇 toggle at bottom right — browser requires first click for audio), solid blinking block cursor, subtle CRT scanlines (desktop), SVG favicon with hexagon+circle, meta description + Open Graph (image `assets/hex.svg`).
+- **Final structure**: hexagon → AIOS → "Artificial Intelligence Operating System" → rotating phrase → mission (2 phrases + "Made with a nostalgic nod to WarGames (1983)") → download (without aios-install, with physical/VirtualBox mention) → GitHub links (corrected to `ccarrillomanzanares`; **sre-agent removed**) → footer (v1.4 badge · x86-64 + disclaimer "Proof of concept — beta stage · use at your own risk").
+- **Web versioned in repo**: `aios-lfs/web/` (index.html + releases/index.html + assets/hex.svg) — before it only lived on the server.
 
-### Estadísticas de acceso (ccmai.org)
-- **Script `~/scripts/ccmai-stats-mail.py`**: informe diario (peticiones, IPs únicas, estados, top rutas, descargas ISO con bytes/completas, escaneos sospechosos) en **HTML responsive** (KPIs, barras, media query móvil) + alternativa texto plano; envía por **SMTP Zoho** (`smtp.zoho.eu:587`, app password en `~/info.txt` — ruta absoluta porque el cron corre como root).
-- **Cron diario root**: `30 7 * * *` (07:30) → correo a `ccarrillo@ccmai.org`.
-- Dato relevante: ~86% del tráfico son 404 de escaneos automáticos (`/.env`, `/.git/config`, `.aws/credentials`); la ISO se descarga en parciales (ninguna completa en 15 días); detrás de Cloudflare (IPs del edge, no reales — `CF-Connecting-IP` pendiente si se quiere).
+### Access statistics (ccmai.org)
+- **Script `~/scripts/ccmai-stats-mail.py`**: daily report (requests, unique IPs, statuses, top routes, ISO downloads with bytes/completed, suspicious scans) in **responsive HTML** (KPIs, bars, mobile media query) + plain text alternative; sent via **Zoho SMTP** (`smtp.zoho.eu:587`, app password in `~/info.txt` — absolute path because cron runs as root).
+- **Daily root cron**: `30 7 * * *` (07:30) → email to `ccarrillo@ccmai.org`.
+- Relevant data: ~86% of traffic is 404 from automated scans (`/.env`, `/.git/config`, `.aws/credentials`); the ISO is downloaded in partial chunks (none complete in 15 days); behind Cloudflare (edge IPs, not real ones — `CF-Connecting-IP` pending if desired).
 
-### Frases de Wargames rotativas (web + AIOS)
-- 8 frases míticas: "Greetings, Professor Falken", "Shall we play a game?", "Would you prefer a nice game of chess?", "A strange game. The only winning move is not to play.", "How about Global Thermonuclear War?", "What's the difference?", "To win the game.", "You are a hard man to reach."
-- **AIOS**: `setup.py` (wg con typewriter+beep) y `chat.py` (`_greet`) eligen frase aleatoria en cada arranque — commit `dba187e`. **La ISO v1.4 publicada NO lleva esto** (se regenera después).
-- **Web**: JS typewriter + beep por carácter.
+### Rotating WarGames phrases (web + AIOS)
+- 8 classic phrases: "Greetings, Professor Falken", "Shall we play a game?", "Would you prefer a nice game of chess?", "A strange game. The only winning move is not to play.", "How about Global Thermonuclear War?", "What's the difference?", "To win the game.", "You are a hard man to reach."
+- **AIOS**: `setup.py` (wg with typewriter+beep) and `chat.py` (`_greet`) choose a random phrase on each boot — commit `dba187e`. **The published ISO v1.4 does NOT carry this** (it will be regenerated later).
+- **Web**: JS typewriter + beep per character.
 
-### Incidente 522 intermitente (móvil de Carlos)
-- Síntoma: 522 de Cloudflare + error de certificado SOLO desde el móvil (wifi, sin wifi y datos); portátil OK.
-- Diagnóstico: origen sano (localhost 200 en 0.0008 s, workers OK, firewall abierto, DNS global apunta a Cloudflare en router/8.8.8.8/1.1.1.1); certificados válidos (CF: Let's Encrypt hasta Nov 2026; VPS: self-signed). Los 522 no llegan al Apache (no hay línea en el access log del momento).
-- Conclusión: **problema del móvil** (caché DNS / DNS privado / hora / VPN con inspección TLS) o ruta intermitente edge-CF→VPS. Pendiente: verificar en el móvil (otros https, DNS privado, hora, reinicio) — no es del servidor.
+### Intermittent 522 incident (Carlos's mobile)
+- Symptom: 522 from Cloudflare + certificate error ONLY from the mobile (wifi, no wifi, and mobile data); laptop OK.
+- Diagnosis: origin healthy (localhost 200 in 0.0008 s, workers OK, firewall open, global DNS points to Cloudflare on router/8.8.8.8/1.1.1.1); certificates valid (CF: Let's Encrypt until Nov 2026; VPS: self-signed). The 522s do not reach Apache (no access log line at the time).
+- Conclusion: **mobile issue** (DNS cache / private DNS / time / VPN with TLS inspection) or intermittent edge-CF→VPS route. Pending: verify on the mobile (other https, private DNS, time, reboot) — not the server.
 
-## 21-22 Ago 2026 (madrugada) — Cuatro bugs encadenados tras el firmware y sus fixes (ISO final 07:38)
+## 21-22 Aug 2026 (early morning) — Four chained bugs after firmware and their fixes (final ISO 07:38)
 
-### 1. ISO rota: kernel vanilla busca SOLO /lib/firmware
-- **Síntoma** (portátil 2014, live): la wifi "se encuentra" pero no levanta ni escanea; dmesg: `Direct firmware load for rtlwifi/rtl8723befw.bin failed with error -2` (ENOENT) — también radeon, regulatory.db, bluetooth.
-- **Causa**: al mover el `/lib/firmware` viejo (534 MB) a backup, el árbol quedó con el firmware solo en `/usr/lib/firmware` (paquete sven). El kernel de distro (vanilla 6.18.10 + config Ubuntu, **sin el parche de código de Ubuntu que añade /usr/lib/firmware**) busca SOLO en `/lib/firmware`. Error de proceso: asumir la ruta sin verificarla + publicar la ISO sin arrancarla.
-- **Fix (en el árbol)**: `sudo ln -s ../usr/lib/firmware $R/lib/firmware` — symlink, sin duplicación (mismo inodo); `sven install` sigue instalando en /usr/lib. Verificado con `stat -c %i` y `unsquashfs -ll`.
-- **Lección**: el puente /lib/firmware → /usr/lib/firmware es OBLIGATORIO en el árbol (regla añadida a la skill aios-distro-kernel).
+### 1. Broken ISO: vanilla kernel only looks for /lib/firmware
+- **Symptom** (2014 laptop, live): wifi "is found" but does not come up or scan; dmesg: `Direct firmware load for rtlwifi/rtl8723befw.bin failed with error -2` (ENOENT) — also radeon, regulatory.db, bluetooth.
+- **Cause**: when moving the old `/lib/firmware` (534 MB) to backup, the tree was left with firmware only in `/usr/lib/firmware` (sven package). The distro kernel (vanilla 6.18.10 + Ubuntu config, **without the Ubuntu code patch that adds /usr/lib/firmware**) only searches `/lib/firmware`. Process error: assuming the path without verifying it + publishing the ISO without booting it.
+- **Fix (in tree)**: `sudo ln -s ../usr/lib/firmware $R/lib/firmware` — symlink, no duplication (same inode); `sven install` keeps installing in /usr/lib. Verified with `stat -c %i` and `unsquashfs -ll`.
+- **Lesson**: the `/lib/firmware` → `/usr/lib/firmware` bridge is MANDATORY in the tree (rule added to the aios-distro-kernel skill).
 
-### 2. Tema parcial tras instalar: colors.conf root:root
-- **Síntoma**: el tema elegido se aplica en xterm y status.py pero NO en el borde i3 / rectángulo de workspace (quedan verde wargames).
-- **Causa**: `colors.conf` se subió al árbol con `sudo cp` (después del chown de la fase 2.2) → `root:root` → `aios-theme` (corre como aios) no podía escribirlo → PermissionError; y el script **no comprobaba el error** (decía "Theme applied" con exit 0, y el setup lo tragaba con capture_output).
-- **Fix**: `chown -R 1000:1000` en `.config/i3/` del árbol + `set -e` en aios-theme (ahora falla ruidoso). Comprobación del tema: `head -4 /home/aios/.config/i3/colors.conf` debe tener `(white)`/`(amber)`… en la primera línea.
+### 2. Partial theme after install: colors.conf root:root
+- **Symptom**: the chosen theme applied in xterm and status.py but NOT in the i3 border / workspace rectangle (stayed wargames green).
+- **Cause**: `colors.conf` was copied to the tree with `sudo cp` (after the phase 2.2 chown) → `root:root` → `aios-theme` (runs as aios) could not write it → PermissionError; and the script **did not check the error** (it said "Theme applied" with exit 0, and the setup swallowed it with capture_output).
+- **Fix**: `chown -R 1000:1000` on `.config/i3/` in the tree + `set -e` in aios-theme (now fails loudly). Theme check: `head -4 /home/aios/.config/i3/colors.conf` must have `(white)`/`(amber)`… on the first line.
 
-### 3. Escritorio muerto: carrera udev-trigger vs udevd (intermitente)
-- **Síntoma**: arranca el logo, autologin, X "se levanta" y nada más. Xorg.0.log: `(EE) open /dev/dri/card0: No such file or directory` + `Fatal server error`.
-- **Causa**: el kernel inicializa radeon bien (firmware OK), pero **/dev/dri/card0 lo crea udev** al procesar el uevent. El unit `systemd-udev-trigger.service` (systemd upstream) solo tiene `After=` de los **sockets** de udevd, no del **daemon** → en arranques lentos (HDD 2014) el trigger ejecuta `udevadm trigger` antes de que udevd escuche → los uevents se pierden → sin /dev/dri → X muere. **Carrera intermitente** (las ISOs anteriores la ganaron por casualidad).
-- **Diagnóstico en caliente**: `udevadm trigger --subsystem-match=drm` crea card0 al momento (prueba de la causa); journal muestra `Finished systemd-udev-trigger.service` ANTES de `Started systemd-udevd.service`.
-- **Fix (en el árbol)**: drop-in `/etc/systemd/system/systemd-udev-trigger.service.d/order.conf` con `[Unit]\nAfter=systemd-udevd.service`.
+### 3. Dead desktop: udev-trigger vs udevd race (intermittent)
+- **Symptom**: boot logo, autologin, X "starts" and nothing else. Xorg.0.log: `(EE) open /dev/dri/card0: No such file or directory` + `Fatal server error`.
+- **Cause**: the kernel initializes radeon fine (firmware OK), but **/dev/dri/card0 is created by udev** when processing the uevent. The unit `systemd-udev-trigger.service` (systemd upstream) only has `After=` for the udevd **sockets**, not the **daemon** → on slow boots (2014 HDD) the trigger runs `udevadm trigger` before udevd is listening → uevents are lost → no /dev/dri → X dies. **Intermittent race** (previous ISOs happened to win by chance).
+- **Live diagnosis**: `udevadm trigger --subsystem-match=drm` creates card0 instantly (proof of cause); journal shows `Finished systemd-udev-trigger.service` BEFORE `Started systemd-udevd.service`.
+- **Fix (in tree)**: drop-in `/etc/systemd/system/systemd-udev-trigger.service.d/order.conf` with `[Unit]\nAfter=systemd-udevd.service`.
 
-### 4. Xterm no aparece: -sr no existe en el xterm del build
-- **Síntoma**: tras añadir scroll, el live arranca el escritorio pero la xterm del menú no se muestra.
-- **Causa**: `xterm: bad command line option "-sr"` — la opción CLI de scrollbar-derecha no existe en el xterm del build LFS.
-- **Fix**: la derecha se configura por **recurso X**: `-xrm "*rightScrollBar: true"` (probado, exit 0). Wrapper final: `xterm -fa "Adwaita Mono" -fs 11 ... -sb -sl 2000 -xrm "*rightScrollBar: true"`.
+### 4. Xterm does not appear: -sr does not exist in the build xterm
+- **Symptom**: after adding scroll, the live starts the desktop but the menu xterm is not shown.
+- **Cause**: `xterm: bad command line option "-sr"` — the right-scrollbar CLI option does not exist in the LFS build xterm.
+- **Fix**: right scrollbar configured via **X resource**: `-xrm "*rightScrollBar: true"` (tested, exit 0). Final wrapper: `xterm -fa "Adwaita Mono" -fs 11 ... -sb -sl 2000 -xrm "*rightScrollBar: true"`.
 
-### ISO final de la ronda
-- `~/aios.iso` → `releases/aios-1.4.iso` (22 Ago 07:38, 1.9 GB): lleva los 4 fixes + firmware accesible + tema + frases Wargames + microcódigo + vbox adaptativo + instalador corregido.
-- Verificación post-build sistemática en esta ronda: `unsquashfs -cat/-ll` del squashfs (symlink, drop-in, aios-xterm, permisos colors.conf) antes de publicar.
+### Final ISO of the round
+- `~/aios.iso` → `releases/aios-1.4.iso` (22 Aug 07:38, 1.9 GB): includes the 4 fixes + accessible firmware + theme + WarGames phrases + microcode + adaptive vbox + corrected installer.
+- Systematic post-build verification this round: `unsquashfs -cat/-ll` of the squashfs (symlink, drop-in, aios-xterm, colors.conf permissions) before publishing.
 
-## 22 Ago 2026 (mañana) — Ronda final: login endurecido, audio, imagemagick, early microcode — ⚠️ PROBLEMA ABIERTO en el arranque
+## 22 Aug 2026 (morning) — Final round: hardened login, audio, imagemagick, early microcode — ⚠️ OPEN PROBLEM in boot
 
-### Hecho y verificado (en el árbol, repo y portátil donde aplica)
-- **Login en disco endurecido (punto 4 del plan)**: `harden_login` en `aios-install` — retira `/etc/sudoers.d/wheel-nopasswd` y el autologin de `getty@tty1` (por archivo, sin globs — lección 19 Ago), tras `set_passwords`, con verificación `visudo -c`. **Probado en el portátil 2014 (disco)**: sudo pide contraseña ("a password is required") + getty pide login. El live mantiene autologin+NOPASSWD (decisión Carlos). Backups de la prueba: `/root/backup-login-20260822/` en el disco. Contraseñas temporales pendientes de cambiar por Carlos.
-- **Audio / beep**: `/etc/asound.conf` → `pcm.!default { type plug; slave.pcm "plughw:1,0" }` + `ctl card 1` (sin esto aplay iba al HDMI — el beep se perdía; "Host is down" con `defaults.pcm.card` simple, la vía plug+plughw funciona). Probado en el live: beep audible.
-- **Volumen persistente**: `/etc/alsa/asound.state` (Master 64%, card "Generic" ALC3227) + **alsa-restore activado** (el unit era static sin `[Install]` → symlink en `multi-user.target.wants` — sin esto el restore nunca corría).
-- **Imagemagick**: `sven install imagemagick` (magick v7) en el árbol.
-- **.bak fuera del árbol**: 11 archivos → `~/aios-work/backups/bak-arbol-20260822/` (incluido `vmlinuz-6.18.10-lfs.bak-k6`).
-- Repos: `aios-agent` `c438861` (early microcode instalador) · `aios-lfs` `1d66b62` (asound.state + alsa-restore).
+### Done and verified (in tree, repo, and laptop where applicable)
+- **Hardened disk login (plan point 4)**: `harden_login` in `aios-install` — removes `/etc/sudoers.d/wheel-nopasswd` and the `getty@tty1` autologin (by file, no globs — 19 Aug lesson), after `set_passwords`, with `visudo -c` verification. **Tested on the 2014 laptop (disk)**: sudo asks password ("a password is required") + getty asks for login. Live keeps autologin+NOPASSWD (Carlos's decision). Backups from the test: `/root/backup-login-20260822/` on the disk. Temporary passwords pending change by Carlos.
+- **Audio / beep**: `/etc/asound.conf` → `pcm.!default { type plug; slave.pcm "plughw:1,0" }` + `ctl card 1` (without this aplay went to HDMI — the beep was lost; "Host is down" with simple `defaults.pcm.card`, plug+plughw works). Tested on live: audible beep.
+- **Persistent volume**: `/etc/alsa/asound.state` (Master 64%, card "Generic" ALC3227) + **alsa-restore enabled** (the unit was static without `[Install]` → symlink in `multi-user.target.wants` — without this restore never ran).
+- **Imagemagick**: `sven install imagemagick` (magick v7) in the tree.
+- **.bak out of tree**: 11 files → `~/aios-work/backups/bak-arbol-20260822/` (including `vmlinuz-6.18.10-lfs.bak-k6`).
+- Repos: `aios-agent` `c438861` (early microcode installer) · `aios-lfs` `1d66b62` (asound.state + alsa-restore).
 
-### ✅ RESUELTO (22 Ago tarde) — el early microcode era el culpable del arranque
-- **Aislamiento confirmado**: ISO de control sin early microcode (initrd original 1.1 MB `a349e10d`, todo lo demás igual) → **arranca en el 2014**. El initrd de 19 MB (cpio newc de microcode delante del gzip) rompía el `mounting /dev/loop0 on /squashfs failed`.
-- **Acción**: initrd con early → `~/aios-work/backups/initrd-originales/initrd.img-con-early-20260822` (19 MB, conservado); el tree `~/aios/boot/initrd.img` usa el bueno (`a349e10d`). El instalador copia el initrd del árbol → `build_disk_initrd` queda sin early de facto (validar si algún día se reintenta el microcódigo por la vía correcta).
+### ✅ RESOLVED (22 Aug evening) — early microcode was the culprit in boot
+- **Confirmed isolation**: control ISO without early microcode (original 1.1 MB initrd `a349e10d`, everything else equal) → **boots on the 2014**. The 19 MB initrd (newc cpio with microcode before gzip) broke the `mounting /dev/loop0 on /squashfs failed`.
+- **Action**: initrd with early → `~/aios-work/backups/initrd-originales/initrd.img-con-early-20260822` (19 MB, kept); the tree `~/aios/boot/initrd.img` uses the good one (`a349e10d`). The installer copies the tree initrd → `build_disk_initrd` is without early microcode by default (revisit if early microcode is ever retried the correct way).
 
-## 22 Ago 2026 (tarde-noche) — ISO nueva instalada OK, fix wifi, tema, chat molón, barra, NTP, web por productos
+## 22 Aug 2026 (evening-night) — New ISO installed OK, wifi fix, theme, cool chat, bar, NTP, web by products
 
-### 🔧 Wifi RTL8723BE rota con el firmware completo (RESUELTO)
-- **Síntoma**: wlo1 existe pero DOWN; `rtl8723be: Using firmware rtlwifi/rtl8723befw_36.bin` → `Polling FW ready fail!! REG_MCUFWDL:0x00000006` → `Firmware is not ready to run!` (solo en el boot; las recargas no repetían el fail → despiste).
-- **Causa**: el driver del kernel 6.18.10 de distro **prefiere `rtl8723befw_36.bin` cuando el archivo existe**; el chip 8723BE de 2014 no arranca con él. El firmware anterior (subconjunto manual) no lo tenía → usaba el base y funcionaba. El paquete sven `linux-firmware` completo (21 Ago) lo añadió → regresión "de repente".
-- **Fix**: `rtl8723befw_36.bin.zst` fuera del árbol → `backups/backup-firmware-lib-20260821/`. El driver cae al base (`Loading alternative firmware rtlwifi/rtl8723befw.bin`) y la radio funciona (validado en vivo: `ip link set wlo1 up` + `iw dev wlo1 scan` → ve redes).
-- **ISO 10:52 `933ecbd7`** con el fix → grabada por Carlos (Rufus DD) → **instalada OK en el 2014**.
+### 🔧 RTL8723BE wifi broken with full firmware (RESOLVED)
+- **Symptom**: wlo1 exists but DOWN; `rtl8723be: Using firmware rtlwifi/rtl8723befw_36.bin` → `Polling FW ready fail!! REG_MCUFWDL:0x00000006` → `Firmware is not ready to run!` (only at boot; reloads did not repeat the fail → red herring).
+- **Cause**: the distro kernel 6.18.10 driver **prefers `rtl8723befw_36.bin` when the file exists**; the 2014 8723BE chip does not boot with it. The previous firmware (manual subset) did not have it → used the base and worked. The full sven `linux-firmware` package (21 Aug) added it → sudden regression.
+- **Fix**: `rtl8723befw_36.bin.zst` removed from the tree → `backups/backup-firmware-lib-20260821/`. The driver falls back to the base (`Loading alternative firmware rtlwifi/rtl8723befw.bin`) and the radio works (validated live: `ip link set wlo1 up` + `iw dev wlo1 scan` → sees networks).
+- **ISO 10:52 `933ecbd7`** with the fix → written by Carlos (Rufus DD) → **installed OK on the 2014**.
 
-### 🎨 Tema parcial tras instalar (RESUELTO, causa real)
-- **Síntoma**: xterm y barra abajo en ámbar (leen config.yaml) pero títulos de ventana en verde (colors.conf del disco = wargames del árbol).
-- **Causa real**: el flujo de INSTALACIÓN (`_install_flow` → `aios-install --theme`) escribía config.yaml pero **nadie generaba colors.conf en el disco** (la llamada a `aios-theme` solo existía en los flujos post-instalación, que no corren tras instalar).
-- **Fix** (commit `20a150f`): `apply_theme(target, theme)` en aios-install — `chroot <target> env HOME=/home/aios aios-theme <tema>` + chown a uid/gid de aios de colors.conf y config.yaml.
-- **Pitfall**: el LFS NO tiene `su`/`runuser`/`setpriv` (el libro los deshabilita) → para ejecutar como aios desde root: `sudo -u aios <cmd>` (root no pide password).
-- Fix manual en disco ya instalado: `sudo -u aios aios-theme amber` + `sudo -u aios env DISPLAY=:0 i3-msg reload`.
+### 🎨 Partial theme after install (RESOLVED, real cause)
+- **Symptom**: xterm and bottom bar in amber (read config.yaml) but window titles in green (disk colors.conf = wargames from tree).
+- **Real cause**: the INSTALL flow (`_install_flow` → `aios-install --theme`) wrote config.yaml but **nobody generated colors.conf on the disk** (the call to `aios-theme` only existed in post-install flows, which do not run after installing).
+- **Fix** (commit `20a150f`): `apply_theme(target, theme)` in aios-install — `chroot <target> env HOME=/home/aios aios-theme <theme>` + chown of colors.conf and config.yaml to aios uid/gid.
+- **Pitfall**: LFS does NOT have `su`/`runuser`/`setpriv` (the book disables them) → to run as aios from root: `sudo -u aios <cmd>` (root does not ask for password).
+- Manual fix on already installed disk: `sudo -u aios aios-theme amber` + `sudo -u aios env DISPLAY=:0 i3-msg reload`.
 
-### 💬 Chat y typewriter
-- **Arranque limpio** (be8a467): fuera el banner técnico (`[LOCAL/CLOUD/HYBRID]...`, `Independent session`, `Type your query...`, `(Local model: EN, ZH...)`) y el `[Session resumed...]` (agent.py). Queda: `AIOS/1.4 — fecha` (BBS) + frase de película con typewriter.
-- **Skip con ESPACIO** (a65c0ae): pulsar espacio escribe el texto pendiente de golpe. ⚠️ El 22 Ago **NO funcionaba en terminal real** (select() en cooked no ve la tecla hasta Enter); **ARREGLADO el 23 Ago** con cbreak — ver sección 23 Ago.
-- **Lote molón** (17013ba):
-  - ~~Hexágono en el arranque del chat~~ → **ELIMINADO el 23 Ago** (el logo solo vive en el initrd): el chat arranca con `AIOS/1.4 — fecha` + frase.
-  - **Teclado con tics**: `_input_tic()` — termios raw, tic por tecla (máquina de escribir), backspace, Ctrl+C/D, historial ↑/↓ en sesión. Se desactiva con `/sound` (controla salida y entrada).
-  - **23 frases** (WarGames + Matrix + Tron + 2001), **aleatoria sin repetir la inmediatamente anterior** (como la web). Cotejadas contra Wikiquote vía Firecrawl (túnel 3002): corregida `Greetings, Programs!` (con S); `Daisy, Daisy, give me your answer, do...` (canto de HAL); `Wake up, Neo...` e `I fight for the Users!` no están en Wikiquote pero Carlos las comprobó personalmente → incluidas.
-  - **`/health`**: LOAD / MEM / DISK / UP / TEMP / NET / últimos errores del journal.
-  - **`/reset`** (sesión limpia) y **`/stats`** (mensajes/tokens/% del límite).
-  - **Aviso sin internet** en modo cloud al arrancar.
+### 💬 Chat and typewriter
+- **Clean startup** (be8a467): removed the technical banner (`[LOCAL/CLOUD/HYBRID]...`, `Independent session`, `Type your query...`, `(Local model: EN, ZH...)`) and `[Session resumed...]` (agent.py). Left: `AIOS/1.4 — date` (BBS) + movie phrase with typewriter.
+- **Skip with SPACE** (a65c0ae): pressing space writes the pending text at once. ⚠️ On 22 Aug it did NOT work on a real terminal (select() in cooked mode does not see the key until Enter); **FIXED on 23 Aug** with cbreak — see 23 Aug section.
+- **Cool batch** (17013ba):
+  - ~~Hexagon in chat startup~~ → **REMOVED on 23 Aug** (the logo only lives in the initrd): chat starts with `AIOS/1.4 — date` + phrase.
+  - **Keyboard with ticks**: `_input_tic()` — termios raw, tick per key (typewriter), backspace, Ctrl+C/D, history ↑/↓ in session. Disabled with `/sound` (controls output and input).
+  - **23 phrases** (WarGames + Matrix + Tron + 2001), **random without repeating the immediately previous one** (like the web). Cross-checked against Wikiquote via Firecrawl (tunnel 3002): corrected `Greetings, Programs!` (with S); `Daisy, Daisy, give me your answer, do...` (HAL's song); `Wake up, Neo...` and `I fight for the Users!` are not in Wikiquote but Carlos personally verified them → included.
+  - **`/health`**: LOAD / MEM / DISK / UP / TEMP / NET / latest journal errors.
+  - **`/reset`** (clean session) and **`/stats`** (messages/tokens/% of limit).
+  - **No internet warning** in cloud mode at startup.
 
-### 📊 Barra i3 (b424263)
-- `AIOS` → **`Help:F1`** (primer bloque; desde 23 Ago — Carlos comprobó la tecla real).
-- **% cobertura wifi** en el bloque WiFi (señal dBm → %, `_get_signal_pct`): `WiFi <ssid> <ip> 60%`.
-- **NET**: sin tráfico muestra el **link** (`NET 100M`); con uso, el % como antes (colores conservados).
+### 📊 i3 bar (b424263)
+- `AIOS` → **`Help:F1`** (first block; from 23 Aug — Carlos verified the real key).
+- **WiFi coverage %** in the WiFi block (signal dBm → %, `_get_signal_pct`): `WiFi <ssid> <ip> 60%`.
+- **NET**: no traffic shows the **link** (`NET 100M`); with usage, the % as before (colors preserved).
 
 ### 🕐 NTP (04657cd)
-- NTP (23 Ago): ya NO es opción del menú principal — se pregunta **dentro del flujo de instalación** (opción 2): `Configure NTP time sync (external server)? (y/N)` → `setup_ntp(standalone=False)` escribe `/etc/systemd/timesyncd.conf` (default `pool.ntp.org`), enable+restart timesyncd, `timedatectl set-ntp true`, muestra estado.
-- **`persist_ntp(target)`** en aios-install: copia la config del live al disco + habilita el servicio (patrón persist_wifi). Nota: en el disco ya instalado no hay vía desde el chat (Carlos rechazó /wifi y /ntp).
+- NTP (23 Aug): no longer a main menu option — it is asked **inside the installation flow** (option 2): `Configure NTP time sync (external server)? (y/N)` → `setup_ntp(standalone=False)` writes `/etc/systemd/timesyncd.conf` (default `pool.ntp.org`), enables+restarts timesyncd, `timedatectl set-ntp true`, shows status.
+- **`persist_ntp(target)`** in aios-install: copies live config to disk + enables the service (persist_wifi pattern). Note: on already installed disk there is no way from the chat (Carlos rejected /wifi and /ntp).
 
-### 🧹 setup.py único
-- Había DOS setup.py: el oficial (`/usr/local/bin/aios-agent/setup.py`) y una **reliquia del 4 Ago** en `/usr/local/bin/setup.py` (wizard con cajas) que se ejecutaba al teclear `setup.py` (PATH). Movida a `backups/setup.py-antiguo-20260822` — nada la referenciaba (el i3 usa la ruta completa).
-- **Requisitos local** (e389fab, frase retocada 23 Ago): `_check_local_requirements()` compara cores/RAM reales con el mínimo (4 cores / 8 GB) y muestra `This machine could run it (N cores, X GB RAM)` o `I have reviewed this machine's resources: N cores, X GB RAM. They are below the minimum required... Better not to use local mode.` en los flujos live e instalación.
+### 🧹 Single setup.py
+- There were TWO setup.py: the official one (`/usr/local/bin/aios-agent/setup.py`) and a **relic from 4 Aug** in `/usr/local/bin/setup.py` (wizard with boxes) that ran when typing `setup.py` (PATH). Moved to `backups/setup.py-antiguo-20260822` — nothing referenced it (i3 uses the full path).
+- **Local requirements** (e389fab, phrase retouched 23 Aug): `_check_local_requirements()` compares real cores/RAM with the minimum (4 cores / 8 GB) and shows `This machine could run it (N cores, X GB RAM)` or `I have reviewed this machine's resources: N cores, X GB RAM. They are below the minimum required... Better not to use local mode.` in live and install flows.
 
-### 🖼️ Arte y login
-- **El logo SOLO vive en el initrd** (23 Ago): el arte del chat se eliminó (chat.py sin `ART_FILE`) y `configs/aios-ascii.txt` se borró del repo (git rm, `60d9d83`). El banner del arranque sigue siendo el de semitonos ▒▓░ (el arte de 29 líneas no cabe en el initrd — intento revertido, ver 23 Ago).
-- **`/etc/issue` VACÍO** (d2dd217): login limpio sin texto. (Pendiente de decisión: centrar el prompt con ANSI en el issue — opción A propuesta.)
+### 🖼️ Art and login
+- **The logo ONLY lives in the initrd** (23 Aug): chat art removed (chat.py without `ART_FILE`) and `configs/aios-ascii.txt` deleted from the repo (git rm, `60d9d83`). The boot banner remains the halftone ▒▓░ (Carlos's 29-line art did not fit in the initrd — revert attempted, see 23 Aug).
+- **`/etc/issue` EMPTY** (d2dd217): clean login without text. (Pending decision: center the prompt with ANSI in the issue — option A proposed.)
 
-### 🌐 Web ccmai.org — estructura por productos
-- **ccmai.org = matriz; AIOS = producto en `/aios/`** (936b51b): movidos index.html, assets/, releases/ a `/var/www/ccmai.org/aios/`; `huerta/` intacto.
-- **Redirects Apache** (vhosts http+ssl): `^/$` → `/aios/` y `^/releases(/.*)?$` → `/aios/releases$1` (301). Verificado local y vía Cloudflare. Backup: `web-ccmai-20260822c`.
-- **Frases en la web** (572187c): 23 frases con typewriter+beep (ya era aleatoria sin repetir: `Math.random` + do-while contra idx) + `Made with nostalgia for classic AI movies (WarGames · The Matrix · Tron · 2001)`.
-- Repo: `aios-lfs/web/aios/` (git mv). Skill `ccmai-web-maintenance` actualizada.
+### 🌐 ccmai.org web — product structure
+- **ccmai.org = parent; AIOS = product at `/aios/`** (936b51b): moved index.html, assets/, releases/ to `/var/www/ccmai.org/aios/`; `huerta/` intact.
+- **Apache redirects** (http+ssl vhosts): `^/$` → `/aios/` and `^/releases(/.*)?$` → `/aios/releases$1` (301). Verified locally and through Cloudflare. Backup: `web-ccmai-20260822c`.
+- **Web phrases** (572187c): 23 phrases with typewriter+beep (already random without repeat: `Math.random` + do-while against idx) + `Made with nostalgia for classic AI movies (WarGames · The Matrix · Tron · 2001)`.
+- Repo: `aios-lfs/web/aios/` (git mv). Skill `ccmai-web-maintenance` updated.
 
-### 📦 Pendientes (próxima sesión)
-- **ISO 6.7 GB (23 Ago 18:48)** con TODO dentro (modelo Qwen3-8B Q4_K_M + fixes del día) — pendiente de grabar (Rufus DD) y probar en el 2014; NO desplegar nada en el portátil antes.
-- **Audio del tic** — suena "a altavoz estropeado" en el portátil → pendiente probar A/B/C/D (script `audio-test.sh` + WAV en aios-tmp).
-- **Login centrado** (idea ANSI) — pausado.
-- **Contraseñas temporales** del disco 2014 pendientes de cambiar por Carlos.
-- **ffmpeg** instalado en el árbol (23 Ago) — pendiente de probar la grabación x11grab; chafa/mpv/cmus en stand-by (decisión de Carlos).
+### 📦 Pending (next session)
+- **ISO 6.7 GB (23 Aug 18:48)** with EVERYTHING inside (Qwen3-8B Q4_K_M model + day fixes) — pending write (Rufus DD) and test on the 2014; do not deploy anything to the laptop before.
+- **Tick audio** — sounds like a "broken speaker" on the laptop → pending A/B/C/D test (script `audio-test.sh` + WAV in aios-tmp).
+- **Centered login** (ANSI idea) — paused.
+- **Temporary passwords** on the 2014 disk pending change by Carlos.
+- **ffmpeg** installed in the tree (23 Aug) — pending x11grab recording test; chafa/mpv/cmus on standby (Carlos's decision).
 
-## 23 Ago 2026 — LLM Qwen en la ISO, chat sin hexágono, skip ESPACIO arreglado, NTP al instalador
+## 23 Aug 2026 — Qwen LLM in the ISO, chat without hexagon, SPACE skip fixed, NTP to installer
 
-### 🧠 LLM local en la ISO (vuelve el modelo)
-- **Qwen3-8B Q4_K_M** (`Qwen_Qwen3-8B-Q4_K_M.gguf`, 4.7 GB, md5 `1f7c1dfa…`) copiado al árbol en `/usr/local/share/aios/models/` — la ruta exacta que espera llama-server (`MODELS_DIR` en `scripts/launch_llama.py` y `LOCAL_MODELS[0]["file"]` en setup.py).
-- **ISO ~6.7 GB** con `grub-mkrescue -iso-level 3` (obligatorio >4 GB) — primera ISO con LLM desde julio.
-- **ffmpeg instalado en el árbol** (sven): el primer intento falló con checksum mismatch (descargas truncadas — bases de sven desactualizadas); **`sven sync`** lo resolvió. Pendiente de probar x11grab.
+### 🧠 Local LLM in the ISO (model returns)
+- **Qwen3-8B Q4_K_M** (`Qwen_Qwen3-8B-Q4_K_M.gguf`, 4.7 GB, md5 `1f7c1dfa…`) copied to the tree in `/usr/local/share/aios/models/` — the exact path expected by llama-server (`MODELS_DIR` in `scripts/launch_llama.py` and `LOCAL_MODELS[0]["file"]` in setup.py).
+- **ISO ~6.7 GB** with `grub-mkrescue -iso-level 3` (mandatory >4 GB) — first ISO with LLM since July.
+- **ffmpeg installed in the tree** (sven): first attempt failed with checksum mismatch (truncated downloads — outdated sven bases); **`sven sync`** resolved it. Pending x11grab test.
 
-### ✂️ Chat: hexágono fuera (el logo solo vive en el initrd)
-- `_greet()` ya no lee el arte: sin `ART_FILE`, sin hexágono. El chat arranca con `AIOS/1.4 — fecha` (cabecera **alineada a la izquierda**, sin los 3 espacios) + frase de película.
-- `configs/aios-ascii.txt` eliminado del repo (git rm, `60d9d83`) y del árbol. El arte del arranque (initrd) NO se toca.
+### ✂️ Chat: hexagon out (the logo only lives in the initrd)
+- `_greet()` no longer reads art: no `ART_FILE`, no hexagon. Chat starts with `AIOS/1.4 — date` (header **left-aligned**, without the 3 spaces) + movie phrase.
+- `configs/aios-ascii.txt` removed from the repo (git rm, `60d9d83`) and the tree. The boot art (initrd) is NOT touched.
 
-### ⏩ Skip con ESPACIO — ARREGLADO (lección: select + cooked)
-- `_skip_pressed()` (select sobre stdin) **solo detecta la tecla en modo cbreak/raw**; en cooked el carácter queda retenido hasta Enter → el skip no funcionaba en ningún typewriter pese a estar implementado (a65c0ae).
-- Fix (commit `9aacd15`): helpers `_cbreak_on()`/`_cbreak_off()` en agent.py (`tty.setcbreak` + try/except, seguro sin tty) usados en `wg()`/`wg_input()` (setup.py), el stream (agent.py) y `_greet()` (chat.py — que además no tenía skip).
-- Verificación empírica (pty): cooked 1.51 s vs cbreak 0.53 s.
+### ⏩ SPACE skip — FIXED (lesson: select + cooked)
+- `_skip_pressed()` (select on stdin) **only detects the key in cbreak/raw mode**; in cooked mode the character is held until Enter → skip did not work in any typewriter despite being implemented (a65c0ae).
+- Fix (commit `9aacd15`): helpers `_cbreak_on()`/`_cbreak_off()` in agent.py (`tty.setcbreak` + try/except, safe without tty) used in `wg()`/`wg_input()` (setup.py), the stream (agent.py), and `_greet()` (chat.py — which also had no skip).
+- Empirical verification (pty): cooked 1.51 s vs cbreak 0.53 s.
 
-### ⚙️ NTP dentro del flujo de instalación
-- El menú principal queda con 2 opciones (live / instalar). NTP se pregunta en `_install_flow` (opción 2) antes de lanzar `aios-install`: `setup_ntp(standalone=False)`.
+### ⚙️ NTP inside the installation flow
+- The main menu stays with 2 options (live / install). NTP is asked in `_install_flow` (option 2) before launching `aios-install`: `setup_ntp(standalone=False)`.
 
-### 🖥️ Barra y atajos
-- Barra: **`Help:F1`** (status.py).
-- Frase nueva en setup.py y aios-install: **`Press F1 anytime to view the keyboard shortcuts`**; `shortcuts.txt` y comentario del config también a F1. Cero restos de Super+F1 (grep verificado).
+### 🖥️ Bar and shortcuts
+- Bar: **`Help:F1`** (status.py).
+- New phrase in setup.py and aios-install: **`Press F1 anytime to view the keyboard shortcuts`**; `shortcuts.txt` and config comment also point to F1. Zero remnants of Super+F1 (grep verified).
 
-### 📦 Backups y commits (23 Ago)
-- Backups: `lfs.squashfs-20260822-2234fixes.bak` · `aios-20260822-2253.iso.bak` · `aios-20260822-2144.iso.bak` · `initrd.img-20260822-1000-semitonos.bak` (el bueno) · intento de initrd con arte en `~/aios-work/tmp/initrd-new.img`.
-- Commits: `sre-agent` `9aacd15` · `aios-lfs` `60d9d83` (más `05a818f` y `b909411` del 22).
+### 📦 Backups and commits (23 Aug)
+- Backups: `lfs.squashfs-20260822-2234fixes.bak` · `aios-20260822-2253.iso.bak` · `aios-20260822-2144.iso.bak` · `initrd.img-20260822-1000-semitonos.bak` (the good one) · initrd art attempt at `~/aios-work/tmp/initrd-new.img`.
+- Commits: `sre-agent` `9aacd15` · `aios-lfs` `60d9d83` (plus `05a818f` and `b909411` from 22).
 
-## 24 Ago 2026 — Web v2 (terminal, sin sonido), badges partners, frases Blade Runner publicadas, ISO final, limpieza ISOs
+## 24 Aug 2026 — Web v2 (terminal, no sound), partner badges, Blade Runner phrases published, final ISO, ISO cleanup
 
-### 🌐 Web v2 — la web ES la terminal de AIOS (publicada en `/aios/`, commit `34ddd4c`)
-- Rediseño completo, desarrollado aparte en `/aios-dev/` (página de pruebas que se queda versionada). Caja terminal `aios@ccmai — /aios` (**SIN los 3 círculos** — Carlos: "en AIOS no salen"), hexágono 150px, título AIOS, frase rotativa typewriter (28 frases), `$ curl -O …aios-1.4.iso` + botón descarga grande, badges NVIDIA Inception (50px) + Lambda (36px) encima de links GitHub pequeños, pie de terminal. Todo en una pantalla (scroll natural si el viewport es pequeño — "sin scroll no es un must, es un si se puede").
-- **Sin sonido**: eliminados el beep (Web Audio) y el botón del altavoz 🔊 — decisión de Carlos. 0 restos verificados.
-- **Responsive** (<760px): la caja fluye (height auto, nunca corta), logo 100px, botón full-width, curl con word-break, badges reajustados.
-- Meta/OG/favicon correctos. Backup de la antigua: `backups/web-ccmai-20260824/index-antiguo.html`.
+### 🌐 Web v2 — the web IS the AIOS terminal (published at `/aios/`, commit `34ddd4c`)
+- Full redesign, developed separately in `/aios-dev/` (test page that remains versioned). Terminal box `aios@ccmai — /aios` (**WITHOUT the 3 circles** — Carlos: "they don't appear in AIOS"), 150px hexagon, AIOS title, rotating typewriter phrase (28 phrases), `$ curl -O …aios-1.4.iso` + big download button, NVIDIA Inception badge (50px) + Lambda (36px) above small GitHub links, terminal footer. All on one screen (natural scroll if viewport is small — "not a must, nice to have").
+- **No sound**: removed the beep (Web Audio) and the 🔊 speaker button — Carlos's decision. 0 remnants verified.
+- **Responsive** (<760px): box flows (height auto, never cuts), logo 100px, button full-width, curl word-break, badges adjusted.
+- Meta/OG/favicon correct. Backup of the old one: `backups/web-ccmai-20260824/index-antiguo.html`.
 
-### 🏅 Badges de partners (assets oficiales, commit `d6bd11f`)
-- **NVIDIA Inception**: badge oficial del ZIP de Carlos (`Downloads/Inception Badges.zip` → `for-screen/rgb-for-screen.svg`) → `assets/inception-badge.svg` (enlaza a nvidia.com/startups).
-- **Lambda**: wordmark oficial de lambda.ai (`logo-white` SVG) → `assets/lambda-logo.svg` (enlaza a lambda.ai).
-- ⚠️ **Lección**: los SVG como **data URI base64 no se veían** (badge NVIDIA invisible en el navegador) — servirlos como **archivos** en `assets/` (y en dev, rutas relativas). El HTML puede corromperse en reemplazos masivos — verificar estructura (tags balanceados) tras cada cambio.
+### 🏅 Partner badges (official assets, commit `d6bd11f`)
+- **NVIDIA Inception**: official badge from Carlos's ZIP (`Downloads/Inception Badges.zip` → `for-screen/rgb-for-screen.svg`) → `assets/inception-badge.svg` (links to nvidia.com/startups).
+- **Lambda**: official lambda.ai wordmark (`logo-white` SVG) → `assets/lambda-logo.svg` (links to lambda.ai).
+- ⚠️ **Lesson**: SVGs as **base64 data URIs were not visible** (NVIDIA badge invisible in browser) — serve them as **files** in `assets/` (and in dev, relative paths). HTML can be corrupted by mass replacements — verify structure (balanced tags) after each change.
 
-### 🎬 Frases Blade Runner (agente + web)
-- 5 frases (23 → **28**): monólogo completo "Tears in rain" (42 palabras, verificado por Wikipedia), "The light that burns twice as bright burns half as long.", "I want more life, father!", "It's too bad she won't live! But then again, who does?", "Wake up! Time to die!".
-- Nostalgia web: `(WarGames · The Matrix · Tron · 2001 · Blade Runner)`. Commits: sre-agent `b1c51a5`, aios-lfs `a064f63`.
+### 🎬 Blade Runner phrases (agent + web)
+- 5 phrases (23 → **28**): complete "Tears in rain" monologue (42 words, verified via Wikipedia), "The light that burns twice as bright burns half as long.", "I want more life, father!", "It's too bad she won't live! But then again, who does?", "Wake up! Time to die!".
+- Web nostalgia: `(WarGames · The Matrix · Tron · 2001 · Blade Runner)`. Commits: sre-agent `b1c51a5`, aios-lfs `a064f63`.
 
-### 💿 ISO final publicada (24 Ago 16:58, md5 `d1828ce0…`)
-- 6.7 GB, `-iso-level 3`, con: modelo Qwen3-8B Q4_K_M + todos los fixes + frases Blade Runner. Publicada en `releases/aios-1.4.iso` (200 vía CF). Tabla de releases: solo 1.4, fecha 2026-08-24 (`0ed1977`).
-- **Limpieza**: borradas TODAS las ISOs antiguas (16 archivos, ~40 GB) — quedan solo `~/aios.iso` y la de releases. (Squashfs y web antiguos se conservan en backups.)
+### 💿 Final ISO published (24 Aug 16:58, md5 `d1828ce0…`)
+- 6.7 GB, `-iso-level 3`, with: Qwen3-8B Q4_K_M model + all fixes + Blade Runner phrases. Published at `releases/aios-1.4.iso` (200 via CF). Release table: only 1.4, date 2026-08-24 (`0ed1977`).
+- **Cleanup**: deleted ALL old ISOs (16 files, ~40 GB) — only `~/aios.iso` and the release one remain. (Squashfs and old web kept in backups.)
 
 ### 🔧 Firecrawl self-hosted (VPS, `/opt/firecrawl`, docker compose)
-- El stack estaba **parado desde las 09:40 UTC del 23 Ago** (apagado limpio: logs con "Goodbye!", exit 0 — no fue crash; probablemente stop manual/script) + túnel local 3002 caído → web tools rotas.
-- Fix: `cd /opt/firecrawl && sudo docker compose up -d` (compose en `/opt/firecrawl/docker-compose.yaml`, NO en ~) + túnel SSH `-L 3002:localhost:3002` en background.
-- Portal Nous para web: **descartado** (Carlos: "no usaremos nousportal; cuando sea necesario usaremos firecrawl") — `web.use_gateway: false`.
-- Nota: el stack ollama-hardened (webuillama) también estaba parado (~23 Ago, 59 min antes) — **NO se tocó** (decisión de Carlos).
+- The stack was **stopped since 09:40 UTC on 23 Aug** (clean shutdown: logs with "Goodbye!", exit 0 — not a crash; probably manual/script stop) + local tunnel 3002 down → web tools broken.
+- Fix: `cd /opt/firecrawl && sudo docker compose up -d` (compose is in `/opt/firecrawl/docker-compose.yaml`, NOT in ~) + SSH background tunnel `-L 3002:localhost:3002`.
+- Nous portal for web: **discarded** (Carlos: "we won't use nousportal; when needed we'll use firecrawl") — `web.use_gateway: false`.
+- Note: the ollama-hardened stack (webuillama) was also stopped (~23 Aug, 59 min before) — **NOT touched** (Carlos's decision).
 
-### 🔐 Seguridad VPS + web (24 Ago — auditoría aplicada)
-- **Firecrawl**: bind cambiado de `0.0.0.0:3002` → `127.0.0.1:3002` (estaba expuesto a Internet; el proveedor Contabo lo bloqueaba, pero sin firewall local) + `BULL_AUTH_KEY` fuerte (antes CHANGEME) → **parado y deshabilitado** (`docker compose stop` + `docker update --restart=no`) — Carlos: "lo dejamos parado; cuando sea necesario lo levantamos" (`cd /opt/firecrawl && sudo docker compose up -d`). **web_search/web_extract de Hermes YA NO dependen de él**: se configuró el **Nous Tool Gateway** (suscripción activa — `hermes status`: "Web tools ✓ included by subscription"): `web.backend=firecrawl`, `web.provider=firecrawl`, `web.firecrawl_api_url=''` (sin config directa → el provider usa el gateway gestionado), `web.use_gateway=true`, `web.search_backend=''`. Verificado: search y extract funcionan. La vía canónica alternativa: `hermes tools` → Reconfigure provider → Web Search → "Nous Subscription".
-- **Firewall**: NO se toca (Carlos: "tenemos el de Contabo").
-- **fail2ban**: instalado y activo (jail sshd, maxretry 5, bantime 10m, findtime 10m). IP dinámica de Carlos: no es problema (a lo sumo 10 min baneado si falla 5 veces; `sudo fail2ban-client set sshd unbanip <ip>`).
-- **Apache**: `ServerTokens Prod` + `ServerSignature Off` (verificado: `Server: Apache` sin versión) + módulo `headers` habilitado.
-- **Headers web**: HSTS (`max-age=31536000`) + `X-Content-Type-Options: nosniff` en el vhost SSL (verificados vía CF). Backup: `backups/ccmai-ssl-20260824.bak`.
-- **`/aios-dev/`**: movido a `backups/aios-dev-20260824/` → 404 (Carlos: "que no se cargue; cuando sea necesario la cargamos en la config de apache"). Sigue versionado en el repo (`web/aios-dev/`).
+### 🔐 VPS + web security (24 Aug — audit applied)
+- **Firecrawl**: bind changed from `0.0.0.0:3002` → `127.0.0.1:3002` (was exposed to the Internet; Contabo provider was blocking it, but no local firewall) + strong `BULL_AUTH_KEY` (was CHANGEME) → **stopped and disabled** (`docker compose stop` + `docker update --restart=no`) — Carlos: "leave it stopped; when needed we start it" (`cd /opt/firecrawl && sudo docker compose up -d`). **Hermes web_search/web_extract NO LONGER depend on it**: configured the **Nous Tool Gateway** (active subscription — `hermes status`: "Web tools ✓ included by subscription"): `web.backend=firecrawl`, `web.provider=firecrawl`, `web.firecrawl_api_url=''` (no direct config → provider uses the managed gateway), `web.use_gateway=true`, `web.search_backend=''`. Verified: search and extract work. Alternative canonical path: `hermes tools` → Reconfigure provider → Web Search → "Nous Subscription".
+- **Firewall**: NOT touched (Carlos: "we use Contabo's").
+- **fail2ban**: installed and active (sshd jail, maxretry 5, bantime 10m, findtime 10m). Carlos's dynamic IP: not a problem (at most 10 min banned if it fails 5 times; `sudo fail2ban-client set sshd unbanip <ip>`).
+- **Apache**: `ServerTokens Prod` + `ServerSignature Off` (verified: `Server: Apache` without version) + `headers` module enabled.
+- **Web headers**: HSTS (`max-age=31536000`) + `X-Content-Type-Options: nosniff` in the SSL vhost (verified via CF). Backup: `backups/ccmai-ssl-20260824.bak`.
+- **`/aios-dev/`**: moved to `backups/aios-dev-20260824/` → 404 (Carlos: "don't serve it; when needed we load it in apache config"). Still versioned in the repo (`web/aios-dev/`).
 
-### 📦 Pendientes (24 Ago)
-- **Pantalla del navegador de Neo (Matrix)** — idea en stand-by: réplica del buscador retro "Global Search" con la foto de Morfeo en ASCII + "Searching..." + noticias ("Morpheus eludes Police at Heathrow Airport") — antes del contacto "Wake up, Neo". ⚠️ Revisar copyright (imágenes de la película = derivado protegido; ver decisión de Carlos).
-- **Grabar la ISO final** (Rufus DD) y probar en el 2014 — lleva modelo + frases + fixes.
-- Audio del tic en el portátil (A/B/C/D, `audio-test.sh`) — sigue pendiente.
-- Login centrado (ANSI) — pausado. Contraseñas temporales del disco 2014 — pendientes.
-- chafa/mpv/cmus — stand-by (decisión de Carlos). UEFI (hito 6) y resto de hitos del PLAN — pendientes.
+### 📦 Pending (24 Aug)
+- **Neo browser screen (Matrix)** — idea on standby: retro "Global Search" replica with Morpheus photo in ASCII + "Searching..." + news ("Morpheus eludes Police at Heathrow Airport") — before the "Wake up, Neo" contact. ⚠️ Check copyright (movie images = protected derivative; Carlos's decision).
+- **Write the final ISO** (Rufus DD) and test on the 2014 — includes model + phrases + fixes.
+- Laptop tick audio (A/B/C/D, `audio-test.sh`) — still pending.
+- Centered login (ANSI) — paused. Temporary passwords on the 2014 disk — pending.
+- chafa/mpv/cmus — on standby (Carlos's decision). UEFI (milestone 6) and remaining plan milestones — pending.
 
-## 25 Ago 2026 — Pruebas externas: Arnold (VirtualBox) — feedback y plan de mejoras
+## 25 Aug 2026 — External tests: Arnold (VirtualBox) — feedback and improvement plan
 
-Primer usuario externo probando AIOS en VirtualBox (ISO 1.4 final, live + intento de instalación).
+First external user testing AIOS in VirtualBox (ISO 1.4 final, live + installation attempt).
 
-### 🐞 Problemas reportados → mejoras (plan)
-- **P1-1 · Instalador no vuelve al menú** al fallar (disco mal informado / ABORTED) — hay que reiniciar la VM. **CONFIRMADO con captura (12:08)**: tras `Aborted.`/`Installation aborted or failed` y *"Press Enter to return to the menu..."*, Enter cae al shell `[aios@lfs aios-agent]$` — no al menú. → manejo de errores → volver al menú.
-- **P1-2 · Sin barra de progreso** en la instalación (media hora sin saber si avanza). → feedback de progreso (pasos numerados o barra).
-- **P1-3 · "Se paró en format disc porque no pude escribirlo"** — el input del disco (typo sin backspace) aborta. → validación con reintento.
-- **P1-4 · Agente en LOOP** listando directorios (el anti-bucle de 3 repeticiones idénticas no lo cortó — las llamadas variaban). → detectar mismo comando base repetido.
-- **P1-5 · Agente intenta comandos sin sudo** y fallan. **CONFIRMADO con captura (13:23)**: `dmesg | grep firefox` → "Opération non permise" (dmesg requiere root; NOPASSWD disponible). → regla sudo en el prompt del agente.
-- **P1-6 · NUEVO (capturas 13:17/13:23) — Firefox nunca abre**: el agente lanza GUI en FOREGROUND (`run_command({"command":"firefox"})`) → el tool espera 30s y mata (3× timeout). → el agente debe lanzar apps GUI en BACKGROUND (`setsid firefox >/dev/null 2>&1 &`) o tener tool de background.
-- **P2-6 · No backspace/ESC/SUPPR** en el input (solo ctrl+backspace). Conocido, sin fix aún.
-- **P2-7 · F1 no funciona** en su teclado (Win+F1 sí). → bindear AMBOS en i3 (`bindsym F1` + `$mod+F1`); texto a decidir ("F1 / Win+F1").
-- **P2-8 · VirtualBox** — la red NAT SÍ funciona (enp0s3 10.0.2.15/24 UP, captura 13:23); el "sin internet" de Arnold era el web_search del agente (sin backend en live), NO la red. Guía VBox: tipo Linux/Oracle 64-bit, NAT, 8 GB RAM con LLM.
-- **P3-9 · "Wargames es probablemente desconocido de los informáticos jóvenes"** → subtítulo explicativo.
-- **P3-10 · Firefox arranca 15 s y se cierra** → CAUSA raíz probable = P1-6 (timeout del tool, no arranque real). A re-test tras el fix.
-- **P3-11 · Contexto local pequeño** (Qwen3-8B en CPU/VM) → olvida cosas; posible aviso al usuario.
+### 🐞 Reported problems → improvements (plan)
+- **P1-1 · Installer does not return to menu** on failure (wrong disk / ABORTED) — VM must be rebooted. **CONFIRMED with screenshot (12:08)**: after `Aborted.`/`Installation aborted or failed` and *"Press Enter to return to the menu..."*, Enter falls to shell `[aios@lfs aios-agent]$` — not to the menu. → error handling → return to menu.
+- **P1-2 · No progress bar** during installation (~30 min without knowing if it advances). → progress feedback (numbered steps or bar).
+- **P1-3 · "Stopped at format disc because I couldn't write it"** — disk input (typo without backspace) aborts. → validation with retry.
+- **P1-4 · Agent in LOOP** listing directories (the anti-loop of 3 identical repetitions did not catch it — calls varied). → detect repeated base command.
+- **P1-5 · Agent tries commands without sudo** and fails. **CONFIRMED with screenshot (13:23)**: `dmesg | grep firefox` → "Opération non permise" (dmesg requires root; NOPASSWD available). → sudo rule in agent prompt.
+- **P1-6 · NEW (screenshots 13:17/13:23) — Firefox never opens**: agent launches GUI in FOREGROUND (`run_command({"command":"firefox"})`) → tool waits 30s and kills (3× timeout). → agent must launch GUI apps in BACKGROUND (`setsid firefox >/dev/null 2>&1 &`) or have a background tool.
+- **P2-6 · No backspace/ESC/SUPPR** in input (only ctrl+backspace). Known, no fix yet.
+- **P2-7 · F1 does not work** on his keyboard (Win+F1 does). → bind BOTH in i3 (`bindsym F1` + `$mod+F1`); text to decide ("F1 / Win+F1").
+- **P2-8 · VirtualBox** — NAT network DOES work (enp0s3 10.0.2.15/24 UP, screenshot 13:23); Arnold's "no internet" was the agent's web_search (no backend in live), NOT the network. VBox guide: Linux/Oracle 64-bit, NAT, 8 GB RAM with LLM.
+- **P3-9 · "WarGames is probably unknown to young IT people"** → explanatory subtitle.
+- **P3-10 · Firefox starts in 15 s and closes** → probable root cause = P1-6 (tool timeout, not real startup). Re-test after fix.
+- **P3-11 · Small local context** (Qwen3-8B on CPU/VM) → forgets things; possible user warning.
 
-### ✅ Lo que SÍ funcionó (validado en VM, vídeo 11:02)
-- Instalador flujo feliz: menú → "Installing AIOS to the hard disk..." → modo agente (LOCAL Qwen3-8B, requisitos mostrados) → "Select the color theme:" (1 Wargames / 2 Amber / 3 White).
-- Live mode + LLM local: el agente responde y ejecuta (cambiar teclado a francés, listar archivos, which firefox).
-- El LLM en VM es lento pero usable ("es lentisimo en VM pero funciona").
-- Interés real: Arnold pidió el enlace para un amigo; Carlos le pasará API key de DeepSeek (meet por la tarde).
+### ✅ What DID work (validated in VM, video 11:02)
+- Happy-path installer: menu → "Installing AIOS to the hard disk..." → agent mode (LOCAL Qwen3-8B, requirements shown) → "Select the color theme:" (1 Wargames / 2 Amber / 3 White).
+- Live mode + local LLM: agent responds and executes (change keyboard to French, list files, which firefox).
+- The LLM in VM is slow but usable ("it's very slow in VM but works").
+- Real interest: Arnold asked for the link for a friend; Carlos will give him a DeepSeek API key (meet in the evening).
 
-### ✅ Aplicado el 25 Ago (commits: sre-agent `e5df97f` · aios-lfs `a4994ed`)
-- **A.1** Regla sudo en `_RULES_COMMON`: "si falla con Permission denied, reintenta con sudo (passwordless)".
-- **A.2** GUI background: **DESCARTADO** por Carlos ("las aplicaciones gráficas es obvio que se tienen que ver en i3"). El timeout de Firefox en VM = recursos insuficientes (2 GB), no bug (verificado en hardware real funciona).
-- **B** Anti-bucle por **comando base** (`ls` aunque varien los args) + umbral **4** — probado: 4/4 casos (loop Arnold dispara a la 5ª; 3 ls legítimos + cat no dispara; 3× idéntico no dispara; comandos distintos no dispara).
-- **C.1** Menú con `0) Exit to shell`; tras live o instalación **vuelve al menú** (solo 0 sale); `returncode 2` = "Installation cancelled.".
-- **C.2** Instalador con pasos `[1/7]…[7/7]`.
-- **C.3** `select_disk`: vacío → cancelación (exit 2); nombre no encontrado → reintento (máx 3) → cancelación. Probado: 5/5 casos.
-- **D** i3: binds `F1` + `$mod+F1` (textos "F1" se mantienen — ahora F1 funciona universalmente).
-- **E** `docs/VIRTUALBOX.md` (tipo Linux/Oracle 64-bit, NAT, 8 GB RAM, 20 GB disco, ~30 min instalación, nota del web_search del agente).
-- Nota: estos cambios están en el árbol → **próxima ISO** (la actual ya publicada no los lleva).
+### ✅ Applied on 25 Aug (commits: sre-agent `e5df97f` · aios-lfs `a4994ed`)
+- **A.1** Sudo rule in `_RULES_COMMON`: "if it fails with Permission denied, retry with sudo (passwordless)".
+- **A.2** GUI background: **DISCARDED** by Carlos ("graphical applications obviously have to be seen in i3"). The Firefox timeout in VM = insufficient resources (2 GB), not a bug (verified on real hardware it works).
+- **B** Anti-loop by **base command** (`ls` even if args vary) + threshold **4** — tested: 4/4 cases (Arnold's loop triggers on the 5th; 3 legitimate ls + cat do not trigger; 3× identical does not trigger; different commands do not trigger).
+- **C.1** Menu with `0) Exit to shell`; after live or installation **returns to menu** (only 0 exits); `returncode 2` = "Installation cancelled.".
+- **C.2** Installer with steps `[1/7]…[7/7]`.
+- **C.3** `select_disk`: empty → cancellation (exit 2); name not found → retry (max 3) → cancellation. Tested: 5/5 cases.
+- **D** i3: binds `F1` + `$mod+F1` (texts "F1" kept — now F1 works universally).
+- **E** `docs/VIRTUALBOX.md` (Linux/Oracle 64-bit, NAT, 8 GB RAM, 20 GB disk, ~30 min installation, note about agent web_search).
+- Note: these changes are in the tree → **next ISO** (the currently published one does not have them).
 
-### ✅ Aplicado 2ª tanda el 25 Ago (commits: sre-agent `ea239a8` · aios-lfs `5de58bc`) — layouts + feedback Carlos/Arnold
-- **Layouts de teclado**: nueva pantalla en el setup (`Select keyboard layout: 1) US 2) French/AZERTY 3) Spanish 4) German 5) Other`) → aplica `loadkeys` (TTY) + `setxkbmap` (X) al momento, se persiste en `config.yaml` (`keyboard:`) y se reaplica en cada arranque de i3 vía el nuevo script `/usr/local/bin/aios-keyboard` (lee el config → setxkbmap). Resuelve el problema de usuarios con AZERTY/QWERTZ.
-- **Selección de disco por NÚMERO** en el instalador (`Select disk [1-N]`, fallback: nombre) — sin escribir → el layout no importa en el paso crítico. Probado: 6/6.
-- **Confirmaciones de formateo: 3 → 2** — fusionadas la #2 y la #3: `WARNING: This will DESTROY all data on this disk (type 'format disk' to confirm)` (petición de Arnold: demasiadas preguntas).
-- **Fix Enter tras fallo de instalación**: `wg_input` ahora hace `tcflush(TCIFLUSH)` antes de `input()` — descarta el Enter residual del subproceso (el prompt espera de verdad).
-- **Super+Shift+E (exit i3)**: nagbar con el formato oficial de i3 (el anterior `-m Exit? -B Yes i3-msg exit` no respondía al pulsar Yes).
-- **shortcuts.txt**: `F1/Super+F1`, alineación corregida (el "Show..." estaba 2 cols desplazado), y nota "In this list: press q (or Super+q) to close".
-- Nota: NO se regeneró ISO (decisión Carlos) — los cambios están en el árbol para la próxima.
+### ✅ Applied 2nd batch on 25 Aug (commits: sre-agent `ea239a8` · aios-lfs `5de58bc`) — layouts + Carlos/Arnold feedback
+- **Keyboard layouts**: new setup screen (`Select keyboard layout: 1) US 2) French/AZERTY 3) Spanish 4) German 5) Other`) → applies `loadkeys` (TTY) + `setxkbmap` (X) instantly, persisted in `config.yaml` (`keyboard:`) and reapplied on every i3 boot via the new script `/usr/local/bin/aios-keyboard` (reads config → setxkbmap). Solves AZERTY/QWERTZ user problems.
+- **Disk selection by NUMBER** in the installer (`Select disk [1-N]`, fallback: name) — no typing → layout does not matter at the critical step. Tested: 6/6.
+- **Format confirmations: 3 → 2** — merged #2 and #3: `WARNING: This will DESTROY all data on this disk (type 'format disk' to confirm)` (Arnold's request: too many questions).
+- **Fix Enter after install failure**: `wg_input` now does `tcflush(TCIFLUSH)` before `input()` — discards residual Enter from subprocess (the prompt really waits).
+- **Super+Shift+E (exit i3)**: nagbar with official i3 format (the previous `-m Exit? -B Yes i3-msg exit` did not respond when Yes was pressed).
+- **shortcuts.txt**: `F1/Super+F1`, alignment corrected (the "Show..." was 2 cols offset), and note "In this list: press q (or Super+q) to close".
+- Note: ISO was NOT regenerated (Carlos's decision) — changes are in the tree for the next one.
 
-### ✅ Aplicado 3ª tanda el 25 Ago (commits: sre-agent `d1a1f58`, `47d1d92`, `11ce11f`, `b081a60`, `1bf5a4e` · aios-lfs `ff73c31`)
-- **Fix NTP NameError** (`b081a60`): `setup_ntp` usaba `print_box` sin definir el alias (solo existía en `setup_wifi`) → crasheaba la instalación al responder "y" al NTP. Confirmado con captura de Carlos.
-- **Frase del NTP clara** (`1bf5a4e`): "Set the correct time automatically using an internet time server? (y/N)" (antes "Configure NTP time sync (external server)?" — "muy pro", petición Carlos).
-- **Input robusto `_read_line()`** (`11ce11f`, setup.py + aios-install): raw mode con gestión manual — backspace funciona SIEMPRE (sin `^`/letras raras, solo ctrl+backspace ya no hace falta), **el prompt `>` es inviolable** (el buffer empieza vacío), Ctrl+C interrumpe, Ctrl+D = fin. Resuelve el P2-6 (reportado 3 veces).
-- **loadkeys con sudo** (`11ce11f`): el layout del TTY necesita root — antes fallaba en silencio (solo setxkbmap funcionaba en X).
-- **Saludo reordenado** (`d1a1f58`): frase de película → "You have just booted..." → "Press F1 or Super+F1 (Super = the Windows key) to view the keyboard shortcuts" → Select keyboard layout → menú limpio.
-- **Barra de progreso monótona** (`47d1d92`): el % de rsync `--info=progress2` se recalcula (total estimado) y bajaba (90→40→70…) → ahora solo sube; termina en 100%.
-- **umount/sudo**: reportado por Carlos y descartado por él ("olvida lo del umount") — el inventario de binarios con sudo está completo (todos existen en el árbol; secure_path correcto).
+### ✅ Applied 3rd batch on 25 Aug (commits: sre-agent `d1a1f58`, `47d1d92`, `11ce11f`, `b081a60`, `1bf5a4e` · aios-lfs `ff73c31`)
+- **Fix NTP NameError** (`b081a60`): `setup_ntp` used `print_box` without defining the alias (only existed in `setup_wifi`) → crashed installation when answering "y" to NTP. Confirmed with Carlos's screenshot.
+- **Clear NTP phrase** (`1bf5a4e`): "Set the correct time automatically using an internet time server? (y/N)" (before "Configure NTP time sync (external server)?" — "too pro", Carlos's request).
+- **Robust input `_read_line()`** (`11ce11f`, setup.py + aios-install): raw mode with manual handling — backspace ALWAYS works (no `^`/weird letters, ctrl+backspace no longer needed), **the `>` prompt is inviolable** (buffer starts empty), Ctrl+C interrupts, Ctrl+D = EOF. Solves P2-6 (reported 3 times).
+- **loadkeys with sudo** (`11ce11f`): the TTY layout needs root — before it silently failed (only setxkbmap worked in X).
+- **Greeting reordered** (`d1a1f58`): movie phrase → "You have just booted..." → "Press F1 or Super+F1 (Super = the Windows key) to view the keyboard shortcuts" → Select keyboard layout → clean menu.
+- **Monotonic progress bar** (`47d1d92`): rsync `--info=progress2` % was recalculated (estimated total) and went down (90→40→70…) → now only goes up; ends at 100%.
+- **umount/sudo**: reported by Carlos and discarded by him ("forget the umount thing") — the inventory of binaries with sudo is complete (all exist in the tree; secure_path correct).
 
-### 💿 ISOs 25 Ago 23:47 (con todos los fixes; NO descargadas por petición)
-- `~/aios.iso` (con LLM): 6.7 GB · md5 `899325f5d5b120468d6332f22b146801`
-- `~/aios-nollm.iso` (sin LLM): 2.1 GB · md5 `16986c5b25e7bb5f207426cf67dd1a77`
-- Backups: `aios-20260825-2219.iso.bak` · `aios-nollm-20260825-2221.iso.bak` · servidas 1.4/nollm `-20260825-2.iso.bak`.
-- La web sigue publicando las de las 22:22 (md5 `7f59d9d4` / `e3162f28`) — las nuevas NO se han publicado.
+### 💿 ISOs 25 Aug 23:47 (with all fixes; NOT downloaded by request)
+- `~/aios.iso` (with LLM): 6.7 GB · md5 `899325f5d5b120468d6332f22b146801`
+- `~/aios-nollm.iso` (without LLM): 2.1 GB · md5 `16986c5b25e7bb5f207426cf67dd1a77`
+- Backups: `aios-20260825-2219.iso.bak` · `aios-nollm-20260825-2221.iso.bak` · served 1.4/nollm `-20260825-2.iso.bak`.
+- The web still serves the 22:22 ones (md5 `7f59d9d4` / `e3162f28`) — the new ones have not been published.
 
-### 📝 Sesión 26 Ago (commits: sre-agent `b081a60`→`8589eed` · aios-lfs `5d9e37c`→`e1ec0dc`)
+### 📝 26 Aug session (commits: sre-agent `b081a60`→`8589eed` · aios-lfs `5d9e37c`→`e1ec0dc`)
 
-**Backspace global (reportado 3 veces, resuelto)**: erase char del tty ≠ tecla → "^ y letras" en sudo/getpass/login. Fix en 4 capas: `/etc/profile.d/aios-tty.sh` (stty erase ^?), `/home/aios/.bashrc`, `_fix_erase()` en setup.py+aios-install (VERASE=b"\x7f" al arrancar — probado en chroot pty real: ^H→^? OK), y `keycode 14 = Delete` en `_apply_layout` (consola con fr/es manda ^H). Cobertura completa: consola, xterm, setup, instalador (getpass incluido).
+**Global backspace (reported 3 times, resolved)**: tty erase char ≠ key → "^ and letters" in sudo/getpass/login. Fix in 4 layers: `/etc/profile.d/aios-tty.sh` (stty erase ^?), `/home/aios/.bashrc`, `_fix_erase()` in setup.py+aios-install (VERASE=b"\x7f" at startup — tested in real chroot pty: ^H→^? OK), and `keycode 14 = Delete` in `_apply_layout` (console with fr/es sends ^H). Full coverage: console, xterm, setup, installer (getpass included).
 
-**Check internet robusto + lógica cloud/local** (`4c2e892`, `3a6649b`): TCP a 6 destinos + **DNS UDP** como último recurso (redes con TCP filtrado — el caso "tengo IP pero no hay conexión" del 2014). `_net_summary()` muestra IP/Gateway en el fallo (rutas absolutas de ip — /usr/sbin fuera del PATH de usuario en Debian). Fallback cloud→local ahora PREGUNTA (Y/n) en vez de sorprender. Probado 4/4 escenarios (Windows + VPS Linux real).
+**Robust internet check + cloud/local logic** (`4c2e892`, `3a6649b`): TCP to 6 destinations + **DNS UDP** as last resort (networks with filtered TCP — the 2014 "I have IP but no connection" case). `_net_summary()` shows IP/Gateway on failure (absolute ip routes — /usr/sbin outside Debian user PATH). Fallback cloud→local now ASKS (Y/n) instead of surprising. Tested 4/4 scenarios (Windows + real Linux VPS).
 
-**Barra de progreso definitiva** (`578ad4c`): adiós % global (rsync lo recalcula y oscila) → `--out-format=%f` muestra el ARCHIVO actual + contador, todo en la misma línea (probado con rsync real).
+**Definitive progress bar** (`578ad4c`): goodbye global % (rsync recalculates and oscillates) → `--out-format=%f` shows the CURRENT file + counter, all on one line (tested with real rsync).
 
-**sven update/upgrade (investigado a fondo)**: el upgrade SÍ funciona (70 paquetes aplicados en 2 tandas; 1er intento falló por checksums truncados transitorios — reintentar resuelve). El "ciclo de los 35" es COSMÉTICO: son los paquetes **LFS/BLFS** (acl, krb5, openssl, nettle, glibc, libgcc...) que sven adoptó sin instalar → "skipped strict version checks" → los re-ofrece siempre aunque estén actualizados (To Download: 0). **NO reinstalar** (rompería la cadena LFS — lección glibc 4 Ago). ⚠️ El upgrade SÍ reemplazó glibc/libgcc/libffi/systemd-libs por versiones de Arch (dualidad /lib64 LFS vs /usr/lib Arch — el árbol NO es usrmerge) → **PENDIENTE DECISIÓN: rollback del árbol al snapshot pre-upgrade o mantener** (recomendación: rollback + BD fresca; usrmerge como migración futura programada).
+**sven update/upgrade (investigated in depth)**: upgrade DOES work (70 packages applied in 2 batches; 1st attempt failed due to transient truncated checksums — retry resolves). The "cycle of 35" is COSMETIC: those are the **LFS/BLFS** packages (acl, krb5, openssl, nettle, glibc, libgcc...) that sven adopted without installing → "skipped strict version checks" → re-offers them always even if up to date (To Download: 0). **DO NOT reinstall** (would break the LFS chain — glibc lesson 4 Aug). ⚠️ The upgrade DID replace glibc/libgcc/libffi/systemd-libs with Arch versions (duality /lib64 LFS vs /usr/lib Arch — the tree is NOT usrmerge) → **PENDING DECISION: rollback the tree to pre-upgrade snapshot or keep** (recommendation: rollback + fresh DB; usrmerge as a planned future migration).
 
-**Backup del árbol para la migración**: `backups/bak-arbol-20260826-usrmerge.tar.zst` (tar zstd, excluye modelo 4.7G — intacto en ~/models — y caché sven; árbol = 9.0 GB, backup ~4.5 GB; VPS con 104 GB libres).
+**Tree backup for migration**: `backups/bak-arbol-20260826-usrmerge.tar.zst` (zstd tar, excludes 4.7G model — intact in ~/models — and sven cache; tree = 9.0 GB, backup ~4.5 GB; VPS with 104 GB free).
 
-**Grabación de pantalla** (desde el portátil — rama `feat/grabacion-pantalla` mergeada `e8134c5`): `scripts/grabar.sh` (ffmpeg x11grab → /tmp/grabacion.mp4), `toggle-grabacion.sh`, `parar_grabacion.sh`, `instalar-grabacion.sh`. Incorporada al árbol + binding `$mod+Print` en i3 + shortcut en la ayuda + personalidad LLM ("e.g. /tmp/grabacion.mp4").
+**Screen recording** (from laptop — `feat/grabacion-pantalla` branch merged `e8134c5`): `scripts/grabar.sh` (ffmpeg x11grab → /tmp/grabacion.mp4), `toggle-grabacion.sh`, `parar_grabacion.sh`, `instalar-grabacion.sh`. Incorporated into the tree + `$mod+Print` binding in i3 + shortcut in help + LLM personality ("e.g. /tmp/grabacion.mp4").
 
-**aios-update** (`8589eed` → fix `060e98d`): script oficial de actualización del sistema instalado (git clone/pull + manifest md5-sync + backups + avisos). ✅ **BUG RESUELTO (26 Ago tarde)**: el split `${entry%% *}`/`${entry#* }` del manifest con espacios de alineación dejaba los espacios pegados a `dst` → `[ -f '       /path' ]` falso → nunca actualizaba. **Fix aplicado: `read -r src dst <<< "$entry"`** (colapsa espacios; rutas destino sin espacios → seguro). **Verificado en chroot**: chat.py corrompido → aios-update lo detectó, backup en `/var/backups/aios-update/<fecha>/` y restauración (md5 = repo); de paso actualizó agent.py y aios-session que estaban desincronizados del árbol. Cache/backups de prueba del chroot: los de esta verificación limpiados (quedan los del test original 1542/1543/1548).
+**aios-update** (`8589eed` → fix `060e98d`): official system installed update script (git clone/pull + manifest md5-sync + backups + warnings). ✅ **BUG RESOLVED (26 Aug evening)**: manifest split `${entry%% *}`/`${entry#* }` with alignment spaces left spaces attached to `dst` → `[ -f '       /path' ]` false → never updated. **Fix applied: `read -r src dst <<< "$entry"`** (collapses spaces; destination paths have no spaces → safe). **Verified in chroot**: corrupted chat.py → aios-update detected it, backup in `/var/backups/aios-update/<date>/` and restore (md5 = repo); it also updated agent.py and aios-session that were out of sync with the tree. Test cache/backups cleaned (test originals 1542/1543/1548 remain).
 
-**Teclado persistente en disco (fix 26 Ago, commit `065a3d9`)**: el layout elegido en el live NO llegaba al disco — la consola usaba el `KEYMAP=es` del árbol (`/etc/vconsole.conf`) y X11 caía a "us" (el config.yaml local del disco se creaba sin `keyboard:`). Síntoma: el login (consola, vconsole.conf del árbol) parecía tener el teclado y el escritorio no. Fix: `setup.py` pasa `--layout _KB_LAYOUT` al instalador; `aios-install` acepta `--layout`, `setup_aios_config` escribe `keyboard:` en el config del disco (local y cloud — de paso arreglado el bug latente de cloud: leía `Path.home()`=/root en vez de `/home/aios`, así que ni siquiera copiaba el config del live), y nueva `persist_keyboard()` reemplaza `KEYMAP=` en `/etc/vconsole.conf` del disco preservando `FONT=` (con validación: si el keymap no existe en el árbol, avisa y deja el actual). Verificado con target falso (5 casos: fr válido, zz inválido, local, cloud/sin-layout vía `_live_layout()`, None conservador).
+**Persistent keyboard on disk (fix 26 Aug, commit `065a3d9`)**: the layout chosen in live did NOT reach the disk — console used the tree's `KEYMAP=es` (`/etc/vconsole.conf`) and X11 fell back to "us" (the disk's local config.yaml was created without `keyboard:`). Symptom: login (console, tree vconsole.conf) seemed to have the keyboard and the desktop did not. Fix: `setup.py` passes `--layout _KB_LAYOUT` to the installer; `aios-install` accepts `--layout`, `setup_aios_config` writes `keyboard:` in the disk config (local and cloud — also fixed the latent cloud bug: it read `Path.home()`=/root instead of `/home/aios`, so it didn't even copy the live config), and new `persist_keyboard()` replaces `KEYMAP=` in the disk `/etc/vconsole.conf` preserving `FONT=` (with validation: if the keymap does not exist in the tree, warns and keeps the current one). Verified with fake target (5 cases: fr valid, zz invalid, local, cloud/no-layout via `_live_layout()`, None conservative).
 
-**sven — CICLO COSMÉTICO RESUELTO DE RAÍZ (26 Ago tarde, commits + árbol)**: el "Ready to upgrade 35 eterno" NO era (solo) la protección — era un **bug de sven 2.1.1**: `register()` crea el dir nuevo en `installed/` **sin borrar el viejo** → 64 paquetes con DUPLICADOS → `LocalDB.load()` resuelve por orden de `readdir` (arbitrario) → a veces ganaba la versión VIEJA → re-ofrecía el upgrade eterno. Bug conocido del autor (issue #2 de haroldmth/sven: "extracting for already-installed packages (reinstall/update)"), sin fix (2.1.1 = última release, jul 2026). **Fix aplicado**: ① `scripts/sven-dedup.py` (nuevo, vercmp embebido) eliminó 64+1 duplicados → 393 entradas únicas; ② `sven.conf` `protected_packages` reducido a `filesystem linux-api-headers linux-firmware ca-certificates` (el resto de la base pasa a gestionarse como paquetería normal); ③ **usrmerge aplicado** (`/bin /sbin /lib` → symlinks a `/usr/*`; `/lib64` ya estaba alineado vía symlinks); ④ `sven upgrade` aplicado (31 paquetes + llama-cpp a release 0.2.0-1) → **"Everything is up to date"**. El aviso "skipped strict version checks" desapareció. ⚠️ Pitfall del dedup: el vercmp embebido falla en alfa-vs-numérico (`b10221-1` vs `0.2.0-1`) — casos raros resolver a mano. ⚠️ **Backup del árbol `bak-arbol-20260826-usrmerge.tar.zst` TRUNCADO** (9.7 GB, matado en plena escritura 19:34 — era de la sesión anterior en background) → **descartado por Carlos (no rehacer por ahora)**. El VPS se reinició a las 19:41 (causa externa; sin pérdida). Higiene: `/dev` del árbol limpiado de 459 nodos del host VPS (bind del 23 Ago) y nodos estáticos recreados (null/console/zero/full/random/urandom/tty/ptmx).
+**sven — COSMETIC CYCLE RESOLVED AT THE ROOT (26 Aug evening, commits + tree)**: the "Ready to upgrade 35 forever" was NOT (only) the protection — it was a **sven 2.1.1 bug**: `register()` creates the new dir in `installed/` **without deleting the old one** → 64 packages with DUPLICATES → `LocalDB.load()` resolves by `readdir` order (arbitrary) → sometimes the OLD version won → re-offered the eternal upgrade. Known bug by the author (haroldmth/sven issue #2: "extracting for already-installed packages (reinstall/update)"), no fix (2.1.1 = latest release, Jul 2026). **Fix applied**: ① `scripts/sven-dedup.py` (new, embedded vercmp) removed 64+1 duplicates → 393 unique entries; ② `sven.conf` `protected_packages` reduced to `filesystem linux-api-headers linux-firmware ca-certificates` (the rest of the base is managed as normal packages); ③ **usrmerge applied** (`/bin /sbin /lib` → symlinks to `/usr/*`; `/lib64` was already aligned via symlinks); ④ `sven upgrade` applied (31 packages + llama-cpp to release 0.2.0-1) → **"Everything is up to date"**. The "skipped strict version checks" warning disappeared. ⚠️ Pitfall of dedup: embedded vercmp fails on alpha-vs-numeric (`b10221-1` vs `0.2.0-1`) — rare cases resolve manually. ⚠️ **Tree backup `bak-arbol-20260826-usrmerge.tar.zst` TRUNCATED** (9.7 GB, killed mid-write 19:34 — it was from the previous session in background) → **discarded by Carlos (won't redo for now)**. VPS rebooted at 19:41 (external cause; no data loss). Hygiene: tree `/dev` cleaned of 459 host VPS device nodes (bind from 23 Aug) and static nodes recreated (null/console/zero/full/random/urandom/tty/ptmx).
 
-**Orden de arranque live (fix 26 Ago noche, commit `e1c9888`)**: el `aios-session` ejecutaba el setup en la CONSOLA (tty1) antes de startx cuando no había config (diseño desde el 24 Jul, commit `c5f7a1f`) → el menú aparecía sin i3. Eliminado el setup-before-X: el live arranca **autologin → startx+i3 → setup en xterm** (línea 54 del i3 config). El árbol NO lleva config.yaml (solo lo crea la instalación al disco — `setup_aios_config`). Fuente del login: `FONT=ter-232n` SOLO en el disco (persist_keyboard); el live mantiene `ter-112n`. ISOs finales del día: `aios-1.4.iso` 6.0 GB + `aios-nollm.iso` 1.4 GB, publicadas y PROBADAS por Carlos (nollm, 26 Ago noche).
+**Live boot order (fix 26 Aug night, commit `e1c9888`)**: `aios-session` ran setup on the CONSOLE (tty1) before startx when there was no config (design since 24 Jul, commit `c5f7a1f`) → menu appeared without i3. Removed setup-before-X: live boots **autologin → startx+i3 → setup in xterm** (i3 config line 54). The tree does NOT carry config.yaml (only disk installation creates it via `setup_aios_config`). Login font: `FONT=ter-232n` ONLY on disk (persist_keyboard); live keeps `ter-112n`. Final ISOs of the day: `aios-1.4.iso` 6.0 GB + `aios-nollm.iso` 1.4 GB, published and TESTED by Carlos (nollm, 26 Aug night).
 
-**Pendientes**: descartados por Carlos el 26 Ago (visibilidad del agente y acceso al portátil incluidos) — sin lista activa.
+**Pending**: discarded by Carlos on 26 Aug (agent visibility and laptop access included) — no active list.
 
-**Publicación ISOs 26 Ago (noche)**: con el árbol final del día (usrmerge, BD sven 393, teclado, FONT=ter-232n, /dev limpio) se generaron y publicaron `aios-1.4.iso` (**6.0 GB**, con LLM) y `aios-nollm.iso` (**1.4 GB**, sin LLM) en `/var/www/ccmai.org/aios/releases/` (backups de las servidas en `backups/aios-*-servida-20260826.iso.bak`; web index+releases actualizadas a los tamaños/fechas nuevos, repo `web/` sincronizado `9b59414`). ⚠️ **Lección de tamaño**: el caché de sven (`var/cache/sven/pkgs`, ~950 MB tras upgrades) se empaqueta en la ISO — limpiarlo ANTES de mksquashfs (`rm -rf var/cache/sven/pkgs/*`) o las ISOs engordan ~1 GB. La nollm se descargó al PC de Carlos como `aios.iso` (anterior → `aios.iso.anterior-20260826`) para probar.
+**ISO publication 26 Aug (night)**: with the final tree of the day (usrmerge, sven DB 393, keyboard, FONT=ter-232n, clean /dev) the ISOs `aios-1.4.iso` (**6.0 GB**, with LLM) and `aios-nollm.iso` (**1.4 GB**, without LLM) were generated and published in `/var/www/ccmai.org/aios/releases/` (backups of the served ones in `backups/aios-*-servida-20260826.iso.bak`; web index+releases updated to the new sizes/dates, repo `web/` synced `9b59414`). ⚠️ **Size lesson**: the sven cache (`var/cache/sven/pkgs`, ~950 MB after upgrades) gets packaged into the ISO — clean it BEFORE mksquashfs (`rm -rf var/cache/sven/pkgs/*`) or the ISOs grow ~1 GB. The nollm was downloaded to Carlos's PC as `aios.iso` (previous → `aios.iso.anterior-20260826`) for testing.
 
 ## Changelog
 
-### v10 — agosto 2026
+### v10 — August 2026
 
-- **setup.py**: validación de API key en hilo con timeout de 12 s (corrige bloqueo por DNS sin límite y Ctrl+C sin respuesta por SA_RESTART).
-- **setup.py**: API key guardada en `~/.aios/.env` en lugar de `config.yaml`.
-- **setup.py**: `os._exit(0)` al final para terminar sin esperar hilos residuales.
-- **setup.py**: menú LOCAL actualizado a `Qwen3-8B-Instruct` y texto `1) LOCAL (no internet) / Simple tasks`; eliminado `Works 100% offline`.
-- **setup.py** y **aios-install**: menús centrados en pantalla usando `os.get_terminal_size()` con padding horizontal y vertical.
-- **Flujo setup → agente**: al completar el setup se ejecuta `aios` automáticamente en la misma ventana xterm sin `-hold`, usando `&& [ -f $HOME/.aios/config.yaml ] && aios || exec bash`.
-- **aios-install v1.1.1**: al finalizar pregunta si cambiar las passwords de root y aios, con validación de 8 caracteres vía `getpass` y `chpasswd` por stdin dentro del chroot del disco.
-- **Silent boot en disco**: el sistema instalado arranca igual que el live (fondo negro + banner AIOS). Nuevo initrd generado por `build_disk_initrd` que monta la partición real y hace `switch_root`.
-- **Squashfs**: ahora incluye `boot/vmlinuz-6.18.10-lfs` y `boot/initrd.img` para facilitar la instalación a disco.
-- **Seguridad**: eliminado `nokaslr` del live y del instalador a disco.
-- **Kernel #4 real**: compilado con gcc 15.2.0 del host VPS; config con `CONFIG_X86_VERBOSE_BOOTUP=n`, `CONFIG_OVERLAY_FS=y`, `CONFIG_FB_VESA=y`; sin `VMWGFX`/`VBOXVIDEO`/`FBDEV_EMULATION`.
-- **Locale**: `/etc/locale.conf` fijado a `LANG=C.UTF-8` para evitar mojibake de caracteres de caja.
-- **xterm**: fuente `Adwaita Mono` a 11 pt, sin `-hold`.
-- **Plymouth**: descartado definitivamente por falta de framebuffer en la VM con el kernel #4.
+- **setup.py**: API key validation in a thread with a 12 s timeout (fixes hang due to DNS without limit and Ctrl+C not responding due to SA_RESTART).
+- **setup.py**: API key saved in `~/.aios/.env` instead of `config.yaml`.
+- **setup.py**: `os._exit(0)` at the end to finish without waiting for residual threads.
+- **setup.py**: LOCAL menu updated to `Qwen3-8B-Instruct` and text `1) LOCAL (no internet) / Simple tasks`; removed `Works 100% offline`.
+- **setup.py** and **aios-install**: menus centered on screen using `os.get_terminal_size()` with horizontal and vertical padding.
+- **Setup → agent flow**: after completing setup, `aios` runs automatically in the same xterm window without `-hold`, using `&& [ -f $HOME/.aios/config.yaml ] && aios || exec bash`.
+- **aios-install v1.1.1**: at the end asks whether to change root and aios passwords, with 8-character validation via `getpass` and `chpasswd` through stdin inside the disk chroot.
+- **Silent boot on disk**: the installed system boots like the live one (black background + AIOS banner). New initrd generated by `build_disk_initrd` that mounts the real partition and does `switch_root`.
+- **Squashfs**: now includes `boot/vmlinuz-6.18.10-lfs` and `boot/initrd.img` to facilitate disk installation.
+- **Security**: removed `nokaslr` from live and disk installer.
+- **Real kernel #4**: compiled with host VPS gcc 15.2.0; config with `CONFIG_X86_VERBOSE_BOOTUP=n`, `CONFIG_OVERLAY_FS=y`, `CONFIG_FB_VESA=y`; without `VMWGFX`/`VBOXVIDEO`/`FBDEV_EMULATION`.
+- **Locale**: `/etc/locale.conf` set to `LANG=C.UTF-8` to avoid box-character mojibake.
+- **xterm**: `Adwaita Mono` font at 11 pt, without `-hold`.
+- **Plymouth**: definitively discarded due to lack of framebuffer in the VM with kernel #4.
 
-### v9 y anteriores
+### v9 and earlier
 
-- Base LFS 13.0-systemd con OverlayFS rw.
-- Integración de Sven para paquetes Arch.
-- Instalación de OpenSSH, X11, i3, xterm.
-- Cliente AIOS wargame con estilo Matrix.
-- Instalador a disco inicial (`aios-install`).
-- Intentos previos de Plymouth y logo de kernel.
+- Base LFS 13.0-systemd with rw OverlayFS.
+- Sven integration for Arch packages.
+- OpenSSH, X11, i3, xterm installation.
+- AIOS wargame client with Matrix style.
+- Initial disk installer (`aios-install`).
+- Previous attempts at Plymouth and kernel logo.
 
 ---
 
-## Licencia
+## License
 
-MIT — ver el archivo `LICENSE` del repositorio.
+MIT — see the `LICENSE` file in the repository.
 
-## Menú Wargames y agente — cambios v12 (Ago 2026)
+## WarGames menu and agent — v12 changes (Aug 2026)
 
-### Menú de arranque (setup.py)
-- Saludo **"Greetings, Professor Falken"** con efecto teletipo: tic de 850 Hz / 35 ms por carácter (PCM sintetizado vía `aplay` persistente por stdin — sin archivos de audio)
-- El saludo sale **SIEMPRE**: en el arranque del setup y **al iniciar el chat** (aios-agent) cada vez
-- **Beep fiable desde el primer carácter**: buffer/period ALSA mínimos (512 frames ~11.6 ms) + **warm-up de 0.2 s de silencio** al abrir aplay (fuerza a ALSA a abrir el dispositivo antes del primer tic — si no, los primeros tics se acumulan en el pipe y suenan tarde)
-- **`/sound`** en el chat: activa/desactiva el tic (`SOUND_ON` es atributo de clase `Agent`)
-- El saludo va **seguido directamente del menú** (sin limpiar pantalla): `Greetings, Professor Falken` → `You have just booted Artificial Intelligence Operating System.`
-- **Sin cajas** (`print_box` eliminado de todos los menús; `aios-install` idem — solo queda la definición inerte)
-- **Menú inicial insistente**: una opción inválida repite la pregunta (`Invalid option. Please choose 1 or 2.`) — nunca cae a live
-- **Backspace fiable**: `readline` con `^H` y `DEL` mapeados a `backward-delete-char` (setup.py y chat.py — cubre los dos códigos que envían los terminales)
+### Boot menu (setup.py)
+- **"Greetings, Professor Falken"** greeting with typewriter effect: 850 Hz / 35 ms tick per character (PCM synthesized via `aplay` persisted through stdin — no audio files)
+- The greeting is shown **ALWAYS**: at setup boot and **every time chat starts** (aios-agent)
+- **Reliable beep from the first character**: minimum ALSA buffer/period (512 frames ~11.6 ms) + **0.2 s silence warm-up** when opening aplay (forces ALSA to open the device before the first tick — otherwise the first ticks accumulate in the pipe and sound late)
+- **`/sound`** in chat: enables/disables the tick (`SOUND_ON` is an `Agent` class attribute)
+- The greeting is **directly followed by the menu** (without clearing the screen): `Greetings, Professor Falken` → `You have just booted Artificial Intelligence Operating System.`
+- **No boxes** (`print_box` removed from all menus; `aios-install` too — only the inert definition remains)
+- **Insistent initial menu**: an invalid option repeats the question (`Invalid option. Please choose 1 or 2.`) — never falls to live
+- **Reliable backspace**: `readline` with `^H` and `DEL` mapped to `backward-delete-char` (setup.py and chat.py — covers the two codes sent by terminals)
 
-### Check de internet honesto
-- **Cascada de 6 destinos TCP**: 1.1.1.1:443, 1.0.0.1:443, 8.8.8.8:53, google.com:443, google.es:443, archlinux.org:443 — IPs sin DNS + dominios reales con DNS (una red que filtra IPs — como la de Carlos — no da falso negativo)
-- **OpenDNS** (208.67.222.222 / 208.67.220.220) en todo el sistema: live e instalado, eth + wifi (`.network` con `[DHCP] UseDNS=no` + `_ensure_dns` del wizard wifi + `persist_wifi` del instalador)
+### Honest internet check
+- **Cascade of 6 TCP destinations**: 1.1.1.1:443, 1.0.0.1:443, 8.8.8.8:53, google.com:443, google.es:443, archlinux.org:443 — IPs without DNS + real domains with DNS (a network that filters IPs — like Carlos's — does not give a false negative)
+- **OpenDNS** (208.67.222.222 / 208.67.220.220) across the system: live and installed, eth + wifi (`.network` with `[DHCP] UseDNS=no` + wizard wifi `_ensure_dns` + installer `persist_wifi`)
 
-### Temas de color (completado el 21 Ago 2026)
-- **4 temas**: `wargames` (verde oscuro `#006400`, por defecto), `amber` (`#ffb000`), `white` (`#ffffff`), `cyan` (`#00cccc`)
-- **`aios-theme <tema>`** (script central en `/usr/local/bin`): escribe `theme:` en `~/.aios/config.yaml`, genera `~/.config/i3/colors.conf` (colores `client.*` + barra) y **aplica al momento** (reinicia la barra `status.py` + `i3-msg reload`) — una sola vía para TODO
-- **Wrapper `/usr/local/bin/aios-xterm`**: lee `theme:` de `config.yaml` y lanza xterm con los colores — usado por el menú, el chat y `$mod+Return`
-- **`status.py`** (barra i3): lee `theme:` del `config.yaml` y emite los colores del tema (las alertas rojas/naranjas se mantienen — semántica)
-- **i3 config**: los colores viven en `include /home/aios/.config/i3/colors.conf` (generado por aios-theme)
-- Selección: **setup** (al configurar pregunta el tema y lo aplica), **`/theme`** en el chat (**aplica al momento**, sin reiniciar), o `aios-theme <tema>` manual
-- El instalador acepta **`--theme`** (el disco conserva el tema elegido)
+### Color themes (completed 21 Aug 2026)
+- **4 themes**: `wargames` (dark green `#006400`, default), `amber` (`#ffb000`), `white` (`#ffffff`), `cyan` (`#00cccc`)
+- **`aios-theme <theme>`** (central script in `/usr/local/bin`): writes `theme:` in `~/.aios/config.yaml`, generates `~/.config/i3/colors.conf` (`client.*` colors + bar) and **applies instantly** (restarts bar `status.py` + `i3-msg reload`) — a single path for EVERYTHING
+- **Wrapper `/usr/local/bin/aios-xterm`**: reads `theme:` from `config.yaml` and launches xterm with the colors — used by the menu, chat, and `$mod+Return`
+- **`status.py`** (i3 bar): reads `theme:` from `config.yaml` and emits the theme colors (red/orange alerts preserved — semantics)
+- **i3 config**: colors live in `include /home/aios/.config/i3/colors.conf` (generated by aios-theme)
+- Selection: **setup** (asks for the theme while configuring and applies it), **`/theme`** in chat (**applies instantly**, no restart), or `aios-theme <theme>` manually
+- The installer accepts **`--theme`** (the disk keeps the chosen theme)
 
-### Proveedor "Other"
-- Opción **8) Other** en el menú de proveedores: nombre + endpoint URL (chat completions) + modelo + **API key validada contra ese endpoint** (`GET <base>/models`)
-- La config guarda `cloud.base_url` y el chat lo usa (endpoint custom en vez de `CLOUD_ENDPOINTS`)
+### "Other" provider
+- **Option 8) Other** in the provider menu: name + endpoint URL (chat completions) + model + **API key validated against that endpoint** (`GET <base>/models`)
+- The config saves `cloud.base_url` and chat uses it (custom endpoint instead of `CLOUD_ENDPOINTS`)
 
-### Contexto del agente (agent.py)
-- **Prompt según modo**: `cloud` = identidad completa (qué es AIOS, LFS + sven, capacidades: comandos/archivos/procesos, búsqueda web, visión OCR/screenshots/xdotool, paquetes sven, red, servicios, LLM local en 8083); `local` = muy resumido (1 línea de identidad + capacidades esenciales) — el límite de contexto es el del proveedor elegido
-- Regla de idioma: **"Always respond in the same language the user writes in"** — el LLM responde en el idioma del usuario
-- Todo el texto de interfaz en **inglés** (modelos, mensajes, docstrings); el prompt del agente en inglés
+### Agent context (agent.py)
+- **Prompt per mode**: `cloud` = full identity (what AIOS is, LFS + sven, capabilities: commands/files/processes, web search, vision OCR/screenshots/xdotool, sven packages, network, services, local LLM at 8083); `local` = very summarized (1 line of identity + essential capabilities) — the context limit is that of the chosen provider
+- Language rule: **"Always respond in the same language the user writes in"** — the LLM responds in the user's language
+- All interface text in **English** (models, messages, docstrings); the agent prompt in English
 
-### Instalación a disco (aios-install) — login y sudo
-- ⚠️ **REVERTIDO el 19 Ago 2026**: el disco instalado **conserva el autologin y el NOPASSWD del live** (disco = live). El intento de endurecer (disable_autologin + harden_sudo) se revirtió porque introdujo un bug (`harden_sudo` con `glob` → `is_file()` fallaba) que **abortaba el instalador a mitad** → disco sin wifi persistido → `systemd-networkd-wait-online` bloqueaba el arranque (logo colgado ~2 min). El instalador corregido (21 Ago) ya no toca autologin ni sudoers.
-- El instalador es **ÚNICO**: `/usr/local/bin/aios-install` (versionado en el repo `sre-agent`; el de `scripts/` era un duplicado obsoleto — eliminado)
+### Disk installation (aios-install) — login and sudo
+- ⚠️ **REVERTED on 19 Aug 2026**: the installed disk **keeps live autologin and NOPASSWD** (disk = live). The hardening attempt (disable_autologin + harden_sudo) was reverted because it introduced a bug (`harden_sudo` with `glob` → `is_file()` failed) that **aborted the installer halfway** → disk without persisted wifi → `systemd-networkd-wait-online` blocked boot (logo stuck ~2 min). The corrected installer (21 Aug) no longer touches autologin or sudoers.
+- The installer is **UNIQUE**: `/usr/local/bin/aios-install` (versioned in the `sre-agent` repo; the one in `scripts/` was an obsolete duplicate — removed)
 
-### Nota de requisitos LOCAL
-- En el menú (live e instalar):
+### LOCAL requirements note
+- In the menu (live and install):
 ```
   1) LOCAL - the built-in Qwen3-8B model (no internet needed)
      Requires: CPU at least like an Intel i5-1035G1 (4 cores / 8 threads,
@@ -861,4 +861,4 @@ MIT — ver el archivo `LICENSE` del repositorio.
 ```
 
 ### Initrd (banner)
-- El banner sigue siendo el **original de semitonos ▒▓░** (md5 `a349e10d`). El 23 Ago se intentó poner el arte de Carlos (█ + AI*OS, 29 líneas) → **rompía el arranque** (logo visible, autologin, luego pantalla negra — desborde de las ~25 líneas de pantalla) → REVERTIDO. Procedimiento para reintentar con un arte que quepa: `build_initrd_art.py` (extrae gzip+cpio, reemplaza el bloque `\033[2J`→`\033[0m`, re-empaqueta).
+- The banner remains the **original halftone ▒▓░** (md5 `a349e10d`). On 23 Aug an attempt was made to put Carlos's art (█ + AI*OS, 29 lines) → **broke boot** (logo visible, autologin, then black screen — overflow of ~25 screen lines) → REVERTED. Procedure to retry with art that fits: `build_initrd_art.py` (extract gzip+cpio, replace the `\033[2J`→`\033[0m` block, repack).
