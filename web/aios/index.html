@@ -170,6 +170,7 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
           </div>
         </div>
         <div class="versions">
+          <div class="ver" data-ver="0.17"><span class="v">v0.17</span><span class="sz">2026-08-30</span></div>
           <div class="ver" data-ver="0.16"><span class="v">v0.16</span><span class="sz">2026-08-29</span></div>
         </div>
         <a class="changelog-link" href="/aios/changelog.html">CHANGELOG &rarr;</a>
@@ -183,7 +184,7 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
         <p class="github"><a href="https://github.com/ccarrillomanzanares/aios-lfs" target="_blank" rel="noopener">GitHub: aios-lfs</a> · <a href="https://github.com/ccarrillomanzanares/aios-agent" target="_blank" rel="noopener">GitHub: aios-agent</a> · <a href="mailto:contact@ccmai.org">contact@ccmai.org</a></p>
       </section>
     </div>
-    <div class="term-foot"><span>© 2026 CCMAI</span><span>v0.16</span><span>ultrabeta</span></div>
+    <div class="term-foot"><span>© 2026 CCMAI</span><span>v0.17</span><span>ultrabeta</span></div>
   </div>
 
 
@@ -225,7 +226,7 @@ function type(q){
 function next(){if(!typing)type(pick())}
 type(pick());
 
-const CHANGELOG={"0.16":"voice (TTS/STT) — independent `voice:` section from chat\n\n- Config: `voice:` section in config.yaml (tts/stt/tts_lang), separate from chat; keys in ~/.aios/.env\n- TTS (voice.py): espeak-ng local, Gemini, OpenAI — skips code blocks, speaks in a thread\n- STT (voice.py): vosk local, Gemini, OpenAI (arecord)\n- Commands: /voice (toggle, persists), /mic (record + transcribe + send)\n- Icon: VOX/MIC in the i3 bar\n\nfixes\n- Beep/tic: aplay --buffer/--period (buffer==period) removed\n- Loading bar text in English"};
+const CHANGELOG={"0.17":"2 new Matrix quotes: the full red pill / blue pill monologue and Whoa. Déjà vu. — changelog dates corrected, README version-agnostic, ejecutivo.pdf regenerated","0.16":"voice (TTS/STT) — independent `voice:` section from chat\n\n- Config: `voice:` section in config.yaml (tts/stt/tts_lang), separate from chat; keys in ~/.aios/.env\n- TTS (voice.py): espeak-ng local, Gemini, OpenAI — skips code blocks, speaks in a thread\n- STT (voice.py): vosk local, Gemini, OpenAI (arecord)\n- Commands: /voice (toggle, persists), /mic (record + transcribe + send)\n- Icon: VOX/MIC in the i3 bar\n\nfixes\n- Beep/tic: aplay --buffer/--period (buffer==period) removed\n- Loading bar text in English"};
 const tip=document.createElement("div");tip.className="changelog-tip";document.body.appendChild(tip);
 function showTip(el){const v=el.dataset.ver;tip.textContent="v"+v+" — changelog\n\n"+(CHANGELOG[v]||"—");tip.style.display="block";const r=el.getBoundingClientRect();const tw=tip.offsetWidth,th=tip.offsetHeight;let x=r.right+12;if(x+tw>innerWidth-8)x=Math.max(8,r.left-tw-12);let y=r.top;if(y+th>innerHeight-8)y=Math.max(8,innerHeight-th-8);tip.style.left=x+"px";tip.style.top=y+"px"}
 document.querySelectorAll(".ver").forEach(el=>{
