@@ -3,3 +3,6 @@
 *.gguf
 vmlinuz*
 initrd.img
+
+__pycache__/
+*.pyc
