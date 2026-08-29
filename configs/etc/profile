@@ -1,0 +1,29 @@
+export LANG=es_ES.UTF-8
+
+# System path
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+
+# Arch-style path helpers (perlbin.sh y otros profile.d los usan)
+append_path () {
+    case ":$PATH:" in
+        *:"$1":*)
+            ;;
+        *)
+            PATH="${PATH:+$PATH:}$1"
+    esac
+}
+
+prepend_path () {
+    case ":$PATH:" in
+        *:"$1":*)
+            ;;
+        *)
+            PATH="$1${PATH:+:$PATH}"
+    esac
+}
+
+# Load profile.d scripts
+for script in /etc/profile.d/*.sh; do
+    if [ -r "$script" ]; then . "$script"; fi
+done
