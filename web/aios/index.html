@@ -212,7 +212,7 @@ function type(q){
   typing=true;el.textContent="";let i=0;
   const t=setInterval(()=>{
     el.textContent=q.slice(0,++i);
-    if(i>=q.length){clearInterval(t);typing=false;setTimeout(next,6000)}
+    if(i>=q.length){clearInterval(t);typing=false;setTimeout(next,Math.max(6000,q.length*100))}
   },28);
 }
 function next(){if(!typing)type(pick())}
