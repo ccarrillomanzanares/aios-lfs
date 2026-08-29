@@ -100,7 +100,7 @@ def _iface_ip(iface):
 
 
 def _get_ssid_iw(iface):
-    """SSID vía `iw dev <iface> link` (wpa_supplicant corre SIN ctrl_interface en AIOS)."""
+    """SSID vía `iw dev <iface> link` (wpa_supplicant runs WITHOUT ctrl_interface on AIOS)."""
     try:
         result = subprocess.run(
             ["iw", "dev", iface, "link"],
@@ -201,7 +201,7 @@ def get_network_blocks():
         return []
 
 
-# Límites de contexto por proveedor (tabla fija, espejo de setup.py)
+# Context limits per provider (fixed table, mirror of setup.py)
 PROVIDER_CONTEXT_LIMITS = {
     "DeepSeek": 1048576,
     "OpenAI": 128000,
@@ -262,10 +262,10 @@ def get_llm_context():
         mode, provider = _read_config()
 
         if mode == "cloud":
-            # Límite fijo según proveedor (no leer el context_limit del config)
+            # Fixed limit per provider (do not read context_limit from config)
             limit = PROVIDER_CONTEXT_LIMITS.get(provider, DEFAULT_CLOUD_LIMIT)
         elif mode == "local":
-            # Auto-context según RAM del equipo (espejo de setup.py auto_context)
+            # Auto-context by machine RAM (mirror of setup.py auto_context)
             limit = _auto_context_local(_ram_gb())
         else:
             return _item("CTX --")
@@ -357,7 +357,7 @@ def get_datetime():
 
     # Fallback: UTC+2 with Spanish weekday/month abbreviations.
     t = time.gmtime(time.time() + 2 * 3600)
-    dias = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+    dias = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     meses = ["ene", "feb", "mar", "abr", "may", "jun",
              "jul", "ago", "sep", "oct", "nov", "dic"]
     return f"{dias[t.tm_wday]} {t.tm_mday:02d} {meses[t.tm_mon - 1]} {t.tm_hour:02d}:{t.tm_min:02d}"
@@ -377,7 +377,7 @@ def _net_rate_bps(iface):
         prev = _net_last.get(iface)
         _net_last[iface] = (now, rx, tx)
         if not prev:
-            return None  # primera muestra: sin dato todavía
+            return None  # first sample: no data yet
         dt = now - prev[0]
         if dt <= 0:
             return None
@@ -435,7 +435,7 @@ def get_net_usage_block():
 
 
 def get_agent_busy_block():
-    """⏳ si el agente está trabajando (marcador /tmp/aios-agent.busy creado por agent.py)."""
+    """⏳ if the agent is working (marker /tmp/aios-agent.busy created by agent.py)."""
     try:
         if os.path.isfile("/tmp/aios-agent.busy"):
             return _item("⏳", color=COLOR_TEXT)

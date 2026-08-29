@@ -1,4 +1,4 @@
-# /etc/group del squashfs (estado de fábrica + grupos de escritorio para LIVE)
+# /etc/group from squashfs (factory state + desktop groups for LIVE)
 root:x:0:
 bin:x:1:
 daemon:x:6:
