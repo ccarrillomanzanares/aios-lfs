@@ -117,7 +117,11 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
 .ver .sz{color:var(--dim);font-size:.66rem}
 .changelog-link{display:inline-block;color:var(--bright);text-decoration:none;font-size:.8rem;margin-top:.35rem;margin-bottom:.9rem}
 .changelog-link:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
-.changelog-tip{position:fixed;z-index:999;max-width:380px;max-height:300px;overflow:auto;background:#000800;border:1px solid var(--bright);border-radius:4px;padding:.7rem .9rem;font-size:.7rem;line-height:1.45;color:var(--ink);box-shadow:0 0 20px rgba(0,255,0,.25);display:none;white-space:pre-wrap}
+.changelog-tip{position:fixed;z-index:999;max-width:380px;max-height:300px;overflow:auto;background:#000800;border:1px solid var(--bright);border-radius:4px;padding:.7rem .9rem;font-size:.7rem;line-height:1.45;color:var(--ink);box-shadow:0 0 20px rgba(0,255,0,.25);display:none;white-space:pre-wrap;scrollbar-width:thin;scrollbar-color:#00ff00 #002200}
+.changelog-tip::-webkit-scrollbar{width:8px;height:8px}
+.changelog-tip::-webkit-scrollbar-track{background:#002200}
+.changelog-tip::-webkit-scrollbar-thumb{background:#00ff00;border-radius:4px}
+.changelog-tip::-webkit-scrollbar-thumb:hover{background:#33ff33}
 @media (max-width:480px){.downloads{grid-template-columns:1fr}}
 /* ---------- responsive ---------- */
 @media (max-width:760px){
@@ -172,6 +176,7 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
         <div class="partners">
           <a href="https://www.nvidia.com/en-us/startups/" target="_blank" rel="noopener" title="NVIDIA Inception member"><img src="assets/inception-badge.svg" alt="NVIDIA Inception member" class="inception"></a>
           <a href="https://lambda.ai" target="_blank" rel="noopener" title="Lambda Labs"><img src="assets/lambda-logo.svg" alt="Lambda Labs"></a>
+          <a href="https://github.com/QwenLM/Qwen" target="_blank" rel="noopener" title="Powered by Qwen"><img src="assets/qwen-logo.svg" alt="Qwen"></a>
         </div>
         <p class="github"><a href="https://github.com/ccarrillomanzanares/aios-lfs" target="_blank" rel="noopener">GitHub: aios-lfs</a> · <a href="https://github.com/ccarrillomanzanares/aios-agent" target="_blank" rel="noopener">GitHub: aios-agent</a></p>
       </section>
