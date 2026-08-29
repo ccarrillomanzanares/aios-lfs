@@ -63,4 +63,4 @@ bindsym F1 exec /usr/local/bin/aios-xterm -e less /home/aios/.config/i3/shortcut
 bindsym $mod+Print exec /usr/local/bin/aios-agent/scripts/toggle-grabacion.sh
 
 # Screenshot (Print) — pantallazo a ~/screenshots/
-bindsym Print exec --no-startup-id "mkdir -p $HOME/screenshots && scrot \"$HOME/screenshots/shot-%Y-%m-%d_%H%M%S.png\""
+bindsym Print exec --no-startup-id /usr/local/bin/aios-agent/scripts/screenshot.sh
