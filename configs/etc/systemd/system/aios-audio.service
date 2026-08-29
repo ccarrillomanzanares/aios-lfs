@@ -1,0 +1,11 @@
+[Unit]
+Description=AIOS audio: detect analog card and write asound.conf
+Before=aios-agent.service aios-llama.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/aios-agent/scripts/audio-detect.py
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
