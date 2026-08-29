@@ -478,6 +478,19 @@ def get_volume_block():
         return None
 
 
+def get_voice_block():
+    """VOX/MIC status (green = active, dim = off) from data/voice_state.json."""
+    try:
+        with open(os.path.join(AIOS_SESSION_DIR, "voice_state.json")) as f:
+            st = json.load(f)
+    except Exception:
+        st = {}
+    vox = st.get("tts") not in (None, "off")
+    mic = st.get("stt") not in (None, "off")
+    s = ("VOX" if vox else "vox") + " " + ("MIC" if mic else "mic")
+    return _item(s, color=COLOR_TEXT if (vox or mic) else "#555555")
+
+
 def build_blocks():
     items = []
     busy = get_agent_busy_block()
@@ -496,6 +509,7 @@ def build_blocks():
     vol = get_volume_block()
     if vol is not None:
         items.append(vol)
+    items.append(get_voice_block())
     items.append(get_llm_context())
     items.append(_item(get_datetime()))
 

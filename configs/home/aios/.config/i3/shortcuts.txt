@@ -18,6 +18,8 @@ AIOS keyboard shortcuts
 In the chat:
   SPACE                Skip the typewriter (write the pending text instantly)
   /sound               Toggle the typewriter sound
+  /voice               Toggle the agent voice (speaks responses)
+  /mic                 Speak a message with the microphone
   /theme               Change the color theme
   /think               Toggle thinking mode (local model; more precise, slower)
   /reset               Clear the conversation
