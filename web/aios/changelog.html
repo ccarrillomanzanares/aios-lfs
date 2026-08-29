@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIOS — Changelog · CCMAI</title>
+<meta name="description" content="AIOS changelog — full history of the custom Linux distribution built from scratch.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 116'%3E%3Cpolygon points='50,4 92,30 92,86 50,112 8,86 8,30' fill='%23001100' stroke='%2300ff00' stroke-width='8'/%3E%3Ccircle cx='50' cy='58' r='16' fill='%2300ff00' opacity='0.9'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#000000;--ink:#33ff33;--bright:#00ff00;--dim:#008800;--dim2:#006600;--line:#006400;--panel:#001100;--mono:"Consolas","Menlo","DejaVu Sans Mono",monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--mono);background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+.screen{width:min(880px,95vw);background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;box-shadow:0 0 30px rgba(0,255,0,.05)}
+.term-bar{display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line)}
+.term-title{color:var(--dim);font-size:.72rem;letter-spacing:.05em}
+.term-body{padding:1.2rem 1.8rem;overflow:hidden}
+.brand{text-align:center}
+.hex{display:inline-block;filter:drop-shadow(0 0 10px rgba(0,255,0,.4))}
+h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2rem;text-shadow:0 0 14px rgba(0,255,0,.45)}
+.tagline{color:var(--dim);font-size:.85rem;letter-spacing:.06em;margin-bottom:1.4rem}
+.changelog{max-height:70vh;overflow-y:auto;padding-right:.5rem}
+.ver-block{border-left:2px solid var(--line);padding:.2rem 0 1.2rem 1.1rem;margin-bottom:.4rem}
+.ver-block h2{color:var(--bright);font-size:1.05rem;letter-spacing:.06em;margin:.6rem 0 .4rem;text-shadow:0 0 8px rgba(0,255,0,.35)}
+.ver-block h3{color:#00cc00;font-size:.82rem;margin:.5rem 0 .3rem}
+.ver-block ul{list-style:none}
+.ver-block li{font-size:.78rem;line-height:1.5;color:#22cc22;padding-left:1rem;position:relative;margin:.15rem 0}
+.ver-block li::before{content:"›";position:absolute;left:0;color:var(--dim)}
+.ver-block code{color:var(--bright)}
+.back{display:inline-block;margin-top:1.4rem;color:var(--bright);text-decoration:none;font-size:.85rem}
+.back:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
+.term-foot{padding:.5rem 1.8rem .7rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--dim2);font-size:.68rem}
+@media(max-width:760px){.term-body{padding:1rem 1rem}.ver-block li{font-size:.72rem}}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="term-bar"><span class="term-title">aios@ccmai — /aios/changelog</span></div>
+  <div class="term-body">
+    <header class="brand">
+      <span class="hex"><svg viewBox="0 0 100 116" width="70" height="81" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 92,30 92,86 50,112 8,86 8,30" fill="#001100" stroke="#00ff00" stroke-width="8"/><circle cx="50" cy="58" r="16" fill="#00ff00" opacity="0.9"/></svg></span>
+      <h1>AIOS</h1>
+      <p class="tagline">changelog — full history from the start</p>
+    </header>
+    <div class="changelog">
+
+<div class="ver-block">
+<h2>v0.16 — August 2026</h2>
+<h3>voice (TTS/STT) — independent <code>voice:</code> section from chat</h3>
+<ul>
+<li><b>Config</b>: <code>voice:</code> section in <code>config.yaml</code> (tts/stt/tts_lang), separate from <code>cloud:</code> (chat). Setup (live and <code>aios-install</code>) lets you choose TTS (off/espeak/gemini/openai), STT (off/vosk/gemini/openai) and language; voice keys go to <code>~/.aios/.env</code> apart from the chat key.</li>
+<li><b>TTS</b> (<code>voice.py</code>): local espeak-ng (no key), Gemini <code>gemini-2.5-flash-tts</code> and OpenAI <code>gpt-4o-mini-tts</code>. Skips code blocks/tables and speaks in a thread. <code>espeak-ng</code> installed via sven.</li>
+<li><b>STT</b> (<code>voice.py</code>): local vosk, Gemini and OpenAI (records with <code>arecord</code>).</li>
+<li><b>Commands</b>: <code>/voice</code> (toggles, persists) and <code>/mic</code> (records + transcribes + sends).</li>
+<li><b>Icon</b>: <code>VOX/MIC</code> block in the i3 bar.</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b>Beep/tic did not sound</b>: <code>aplay --buffer-size=512 --period-size=512</code> (buffer == period) failed silently on some codecs; removed. <code>aios-diag</code> now collects audio state.</li>
+<li><b>Loading bar in English</b>: the LLM progress bar text switched to English.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.15 — August 2026</h2>
+<h3>fixes for LLM boot and screenshot</h3>
+<ul>
+<li><b>LLM loading stuck at 85%</b>: <code>select</code> + buffered <code>readline</code> left <code>listening</code> stuck; fix: reader thread + queue (no select).</li>
+<li><b>Printscreen (<code>Print</code>)</b>: inline <code>scrot</code> with <code>%</code> + <code>&amp;&amp;</code> + nested quotes broke the i3 parser; fix: dedicated <code>scripts/screenshot.sh</code>.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.14 — August 2026</h2>
+<h3>agent: executes real tools</h3>
+<ul>
+<li><b><code>import sys</code> in <code>agent.py</code></b>: fixed <code>NameError</code> swallowed by the stream <code>except</code> (the agent seemed "mute").</li>
+<li><b>Tool visible before executing</b>: the <code>⚙ tool(...)</code> is shown before <code>execute_tool</code>.</li>
+<li><b><code>run_command</code> with correct stdin</b>: <code>/dev/null</code> by default + auto-<code>y</code> for sven prompts.</li>
+<li><b>Tool <code>list_desktop_apps</code></b>: parses <code>/usr/share/applications/*.desktop</code>.</li>
+<li><b>Grounding</b>: sven always with sudo, never end the turn with a promise.</li>
+</ul>
+<h3>local LLM loading</h3>
+<ul><li><b>Real progress bar</b> in <code>_start_local_model</code>: real phases from the llama-server log.</li></ul>
+<h3>screenshots and diagnostics</h3>
+<ul>
+<li><b>Printscreen</b>: <code>scrot</code> to <code>~/screenshots/</code>; documented in <code>shortcuts.txt</code>.</li>
+<li><b><code>aios-diag</code></b>: collects diagnostics, redacts keys, uploads <code>tar.zst</code> via rsync to a write-only <code>diag</code> account.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.13 — August 2026</h2>
+<h3>stability fixes</h3>
+<ul>
+<li><b>Live→menu loop</b>: <code>_live_flow</code> returns <code>True</code> and <code>main()</code> breaks.</li>
+<li><b>Internet with retry</b>: waits for DHCP after WiFi association.</li>
+<li><b>Delete/arrows in <code>_read_line</code></b>: escape sequences handled.</li>
+<li><b>sven timeout 600s</b>: generous timeout for <code>sven install/upgrade/sync</code>.</li>
+<li><b>Chat without staircase effect</b>: <code>_out()</code> writes explicit CRLF.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.12 — August 2026</h2>
+<h3>ollama-hardened support (Moonlight)</h3>
+<ul>
+<li><b>X-API-Key</b>: <code>auth_type</code> (bearer/x-api-key); <code>verify=False</code> only for x-api-key.</li>
+<li><b>Provider "Ollama Hardened"</b>: <code>webuillama.ccmai.org:8443</code>, Moonlight-16B-A3B.</li>
+<li><b>Fix reading key</b> of custom provider; hardened Caddyfile → 401 without a valid key.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.11 — August 2026</h2>
+<h3>local LLM improvements (accuracy / anti-hallucination)</h3>
+<ul>
+<li><b>AIOS grounding</b>: <code>_AIOS_GROUNDING</code> injects AIOS invariants into the system prompt.</li>
+<li><b>Verification discipline</b>: check current state with a tool first.</li>
+<li><b>Sampling per official Qwen3 doc</b>: thinking 0.6/0.95, no-thinking 0.7/0.8.</li>
+<li><b>Reasoning_content echo</b>: captured and returned in multi-turn history.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.10 — August 2026</h2>
+<h3>local thinking switch + relative context/threads</h3>
+<ul>
+<li><b>Local thinking mode (Qwen3-8B)</b>: ON/OFF via <code>local.think</code> (default OFF).</li>
+<li><b>Empirically verified</b>: Qwen3 reasoning goes in <code>delta.reasoning_content</code>, not <code>delta.content</code>.</li>
+<li><b>Fix context/threads in disk install</b>: uses <code>_detect_cpu()</code> + <code>_auto_context()</code>.</li>
+<li><b>Hot <code>/think</code> command</b>: toggle without leaving the agent.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.9 — August 2026</h2>
+<h3>fix: mute agent</h3>
+<ul>
+<li><b>Symptom</b>: agent stopped responding (blank response) on long tool calls with vision coordinates.</li>
+<li><b>Root cause</b>: <code>chat.py</code> swallowed <code>agent.run()</code> return; stream cut left empty content.</li>
+<li><b>Fixes</b>: show run() return, raw SSE stream log in <code>/tmp/aios-stream.log</code>, single retry on empty stream.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.8 — August 2026</h2>
+<h3>distro kernel (#5) — generic hardware</h3>
+<ul>
+<li>Kernel 6.18.10 config expanded: wifi, DRM, NVMe, UAS, ethernet, ALSA HDA + USB audio.</li>
+<li>linux-firmware in <code>/lib/firmware</code> (~534MB) + iwlwifi symlinks.</li>
+<li>Verified on HP Notebook (AMD APU + RTL8723BE + RTL8106E).</li>
+</ul>
+<h3>setup.py — option 5 WIFI SETUP</h3>
+<ul>
+<li>Scans SSIDs, generates wpa_supplicant config, connects and verifies.</li>
+<li>Persistence on installed system via systemd-networkd.</li>
+<li>Bug fix: <code>aios-wifi.service</code> path → replaced by networkd.</li>
+</ul>
+<h3>infrastructure</h3>
+<ul><li>sven DB sync + ghost-state registry; libinput chain; busybox applets. <b>MILESTONE</b>: complete AIOS on real hardware.</li></ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.7 — August 2026</h2>
+<h3>physical milestone</h3>
+<ul>
+<li>Full boot of AIOS LFS on real hardware verified (2 Aug 2026).</li>
+<li>ISO boots from USB with Rufus in DD mode.</li>
+<li>Installer copies to SSD; machine boots from disk with AIOS banner and login.</li>
+<li>Fixed live initrd init to wait for the boot device (30 s, <code>[ -b ]</code> loop).</li>
+<li>Expanded device list (<code>sdc</code>, <code>sdd</code>, <code>hd*</code>, <code>nvme*</code>, <code>mmcblk*</code>).</li>
+<li>Clear message <code>AIOS: boot media not found</code> + busybox shell.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.6 — August 2026</h2>
+<h3>aios-install v1.1.2 — kernel panic fix</h3>
+<ul>
+<li><b>Fix: kernel panic when booting from hard disk</b> (<code>exit code=0x7f00</code>).</li>
+<li>Octal escape in <code>sed</code> pattern → double backslash fix.</li>
+<li>Fallback <code>exec /bin/sh</code> → <code>exec /bin/busybox sh</code>.</li>
+<li>Active wait loop (30 s) for the root device; <code>switch_root</code>.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.5 — August 2026</h2>
+<h3>aios-install</h3>
+<ul>
+<li><b>v1.1.0</b>: change root/aios passwords during install (<code>getpass</code>, <code>chpasswd</code>).</li>
+<li><b>v1.1.1</b>: silent boot on disk (timeout=0, quiet, real root=).</li>
+<li>Removed <code>nokaslr</code>; <code>print_box</code> centered.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.4 — August 2026</h2>
+<h3>setup.py</h3>
+<ul>
+<li><code>validate_api_key</code> in a daemon thread with <code>join(timeout=12)</code>.</li>
+<li><code>os._exit(0)</code> at the end to force exit.</li>
+<li>API key saved correctly in <code>~/.aios/.env</code>.</li>
+<li>LOCAL menu with Qwen3-8B-Instruct; <code>print_box</code> centered.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.3 — August 2026</h2>
+<h3>fix GRUB bootloader on disk installs</h3>
+<ul>
+<li><code>grub-mkconfig</code> (graphical, hung in VirtualBox) replaced by a fixed text-mode <code>grub.cfg</code>.</li>
+<li><code>set default=0</code>, <code>set timeout=5</code>, <code>menuentry "AIOS LFS"</code>.</li>
+<li>UUIDs and "Arch Linux" references removed.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.2 — August 2026</h2>
+<h3>SRE Agent with native function calling on Qwen2.5-7B-Instruct</h3>
+<ul>
+<li>Model fixed to Qwen2.5-7B-Instruct; 13 tools.</li>
+<li>Procedural Skill-Pro memory, context compression via <code>/v1/tokenize</code>.</li>
+<li>Setup wizard with 7 providers; RAM detection and auto context scaling.</li>
+<li>Anti-loop; readline history; Ctrl+C interrupt.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.1 — August 2026</h2>
+<h3>SRE Agent with native function calling on Qwen3-8B</h3>
+<ul>
+<li>Complete repository rewrite; lightweight SRE agent via llama.cpp server.</li>
+<li>Tools: <code>run_command</code>, <code>read_file</code>, <code>write_file</code>.</li>
+<li>Conversational support; basic security (destructive-command warning).</li>
+</ul>
+</div>
+
+    </div>
+    <a class="back" href="/">&larr; back to ccmai.org</a>
+  </div>
+  <div class="term-foot"><span>&copy; 2026 CCMAI</span><span>v0.16 &middot; x86-64</span><span>proof of concept</span></div>
+</div>
+</body>
+</html>
