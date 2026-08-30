@@ -1,6 +1,8 @@
 AIOS keyboard shortcuts
 ========================
 
+  (The "In the chat" commands below work AFTER setup — once the agent/LLM starts.)
+
   Super+Return         Open a terminal
   F1/Super+F1          Show this shortcut list
   Super+q              Close the focused window

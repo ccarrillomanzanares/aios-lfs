@@ -445,26 +445,20 @@ def get_agent_busy_block():
 
 
 def get_volume_block():
-    """VOL % del sink por defecto via pactl (PipeWire). Fallback amixer si no hay pactl."""
+    """VOL % del Master ALSA via amixer (el mismo mixer que usa aplay/plughw)."""
     try:
-        env = dict(os.environ)
-        env.setdefault("XDG_RUNTIME_DIR", "/run/user/1000")
-        r = subprocess.run(["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
-                           capture_output=True, text=True, timeout=5, env=env)
+        r = subprocess.run(["amixer", "get", "Master"],
+                           capture_output=True, text=True, timeout=5)
         if r.returncode != 0:
             return None
-        # "Volume: front-left: 29490 /  45% / -20.81 dB, ..." -> 45
+        # "  Front Left: Playback 55 [63%] [-25.00dB] [on]" -> 63
         import re
-        m = re.search(r"(\d+)%", r.stdout)
+        m = re.search(r"\[(\d+)%\]", r.stdout)
         if not m:
             return None
         pct = int(m.group(1))
-        # estado mute
-        muted = False
-        rm = subprocess.run(["pactl", "get-sink-mute", "@DEFAULT_SINK@"],
-                            capture_output=True, text=True, timeout=5, env=env)
-        if rm.returncode == 0 and "yes" in rm.stdout.lower():
-            muted = True
+        # estado mute (switch Master -> "[off]")
+        muted = "[off]" in r.stdout
         if muted:
             return _item(f"VOL {pct}% 🔇", color="#ff8800")
         if pct > 95:
