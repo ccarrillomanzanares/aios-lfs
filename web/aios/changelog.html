@@ -33,6 +33,13 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 .dl{font-size:.72rem;color:var(--dim);margin:.1rem 0 .4rem}
 .dl a{color:var(--bright);text-decoration:none}
 .dl a:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
+.changelog{scrollbar-color:#00ff00 #002200}
+.changelog::-webkit-scrollbar{width:8px}
+.changelog::-webkit-scrollbar-track{background:#002200}
+.changelog::-webkit-scrollbar-thumb{background:#00ff00;border-radius:4px}
+.md5{color:var(--dim2);font-size:.6rem}
+.term-foot a{color:var(--dim);text-decoration:none}
+.term-foot a:hover{color:var(--bright)}
 </style>
 </head>
 <body>
@@ -48,7 +55,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.17.1 — 2026-08-30 14:10</h2>
-<div class="dl">↓ <a href="/aios/releases/aios.iso">no LLM</a> · <a href="/aios/releases/aios-withllm.iso">with Qwen</a></div>
+<div class="dl">↓ <a href="/aios/releases/aios.iso">no LLM</a> <span class="md5">d6d942c698304ab06f5f18375a6a91ac</span> · <a href="/aios/releases/aios-withllm.iso">with Qwen</a> <span class="md5">767268c82d19416a4c1a75e7e5f8d8b4</span></div>
 <h3>fixes</h3>
 <ul>
 <li><b>audio</b>: <code>aios-audio.service</code> was never enabled (missing <code>multi-user.target.wants</code> symlink) — <code>audio-detect.py</code> didn't run at boot and <code>asound.conf</code> kept the hardcoded <code>plughw:1,0</code>. Now enabled, analog card auto-detected.</li>
@@ -59,7 +66,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.17 — 2026-08-30 01:48</h2>
-<div class="dl">↓ <a href="/aios/releases/aios-v0.17.iso">no LLM</a> · <a href="/aios/releases/aios-withllm-v0.17.iso">with Qwen</a></div>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.17.iso">no LLM</a> <span class="md5">056e8457f260453fdd615e86c7af7b21</span> · <a href="/aios/releases/aios-withllm-v0.17.iso">with Qwen</a> <span class="md5">f2b1608e520653ad1f5af544aa92979b</span></div>
 <h3>new features</h3>
 <ul>
 <li><b>sudo with password</b>: <code>/sudo &lt;password&gt;</code> (cached in session) + <code>run_command</code> uses <code>sudo -S</code>; the agent accepts the password in local and cloud modes (no NOPASSWD needed).</li>
@@ -88,7 +95,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.16 — August 2026</h2>
-<div class="dl">↓ <a href="/aios/releases/aios-v0.16.iso">no LLM</a> · <a href="/aios/releases/aios-withllm-v0.16.iso">with Qwen</a></div>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.16.iso">no LLM</a> <span class="md5">2f6b6f898d68df17f1f988b572c50b5d</span> · <a href="/aios/releases/aios-withllm-v0.16.iso">with Qwen</a> <span class="md5">4a2e2ca255eab7c141c73b071f2519ce</span></div>
 <h3>voice (TTS/STT) — independent <code>voice:</code> section from chat</h3>
 <ul>
 <li><b>Config</b>: <code>voice:</code> section in <code>config.yaml</code> (tts/stt/tts_lang), separate from <code>cloud:</code> (chat). Setup (live and <code>aios-install</code>) lets you choose TTS (off/espeak/gemini/openai), STT (off/vosk/gemini/openai) and language; voice keys go to <code>~/.aios/.env</code> apart from the chat key.</li>
@@ -106,7 +113,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.15 — August 2026</h2>
-<div class="dl">↓ <a href="/aios/releases/aios-v0.15.iso">no LLM</a> · <a href="/aios/releases/aios-withllm-v0.15.iso">with Qwen</a></div>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.15.iso">no LLM</a> <span class="md5">3e2cee39411c80c8d63669577a7be858</span> · <a href="/aios/releases/aios-withllm-v0.15.iso">with Qwen</a> <span class="md5">715a34b398e34d1487a0b0c496917967</span></div>
 <h3>fixes for LLM boot and screenshot</h3>
 <ul>
 <li><b>LLM loading stuck at 85%</b>: <code>select</code> + buffered <code>readline</code> left <code>listening</code> stuck; fix: reader thread + queue (no select).</li>
@@ -284,7 +291,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     </div>
     <a class="back" href="/">&larr; back to ccmai.org</a>
   </div>
-  <div class="term-foot"><span>&copy; 2026 CCMAI</span><span>v0.17</span><span>ultrabeta</span></div>
+  <div class="term-foot"><span>&copy; 2026 CCMAI</span><span><a href="https://github.com/ccarrillomanzanares/aios-agent/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a></span><span>v0.17.1</span><span>ultrabeta</span></div>
 </div>
 </body>
 </html>
