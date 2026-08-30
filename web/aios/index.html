@@ -110,18 +110,8 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
 .dl-head{color:var(--bright);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;text-align:center;margin-bottom:.7rem}
 .dl-col .cmdline{font-size:.64rem;margin-bottom:.55rem;word-break:break-all;text-align:center}
 .dl-col .btn{width:100%;text-align:center}
-.versions{margin-top:.75rem;display:flex;flex-direction:column}
-.ver{display:flex;justify-content:space-between;align-items:center;padding:.34rem .5rem;border-top:1px solid #003300;color:var(--ink);font-size:.74rem;cursor:pointer}
-.ver:hover{background:#002200;color:var(--bright)}
-.ver .v{color:var(--bright)}
-.ver .sz{color:var(--dim);font-size:.66rem}
 .changelog-link{display:inline-block;color:var(--bright);text-decoration:none;font-size:.8rem;margin-top:.35rem;margin-bottom:.9rem}
 .changelog-link:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
-.changelog-tip{position:fixed;z-index:999;max-width:380px;max-height:300px;overflow:auto;background:#000800;border:1px solid var(--bright);border-radius:4px;padding:.7rem .9rem;font-size:.7rem;line-height:1.45;color:var(--ink);box-shadow:0 0 20px rgba(0,255,0,.25);display:none;white-space:pre-wrap;scrollbar-width:thin;scrollbar-color:#00ff00 #002200}
-.changelog-tip::-webkit-scrollbar{width:8px;height:8px}
-.changelog-tip::-webkit-scrollbar-track{background:#002200}
-.changelog-tip::-webkit-scrollbar-thumb{background:#00ff00;border-radius:4px}
-.changelog-tip::-webkit-scrollbar-thumb:hover{background:#33ff33}
 @media (max-width:480px){.downloads{grid-template-columns:1fr}}
 /* ---------- responsive ---------- */
 @media (max-width:760px){
@@ -168,10 +158,6 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
             <p class="cmdline"><span class="prompt">$</span> <span class="cmd">curl -O https://ccmai.org/aios/releases/aios-withllm.iso</span></p>
             <a class="btn" href="https://ccmai.org/aios/releases/aios-withllm.iso">Download AIOS (with Qwen)<small>ISO with Qwen · 6.0 GB · md5 f2b1608e520653ad1f5af544aa92979b</small></a>
           </div>
-        </div>
-        <div class="versions">
-          <div class="ver" data-ver="0.17"><span class="v">v0.17</span><span class="sz">2026-08-30</span></div>
-          <div class="ver" data-ver="0.16"><span class="v">v0.16</span><span class="sz">2026-08-29</span></div>
         </div>
         <a class="changelog-link" href="/aios/changelog.html">CHANGELOG &amp; OLDER VERSIONS &rarr;</a>
         <div class="partners">
@@ -225,14 +211,6 @@ function type(q){
 }
 function next(){if(!typing)type(pick())}
 type(pick());
-
-const CHANGELOG={"0.17":"new: sudo with password (/sudo + sudo -S); audio-detect.py; i18n all to English; 5 Terminator + 2 Matrix quotes; MIT license; fixes (Firefox, login cursor, audio, aios-diag)","0.16":"voice (TTS/STT) — independent `voice:` section from chat\n\n- Config: `voice:` section in config.yaml (tts/stt/tts_lang), separate from chat; keys in ~/.aios/.env\n- TTS (voice.py): espeak-ng local, Gemini, OpenAI — skips code blocks, speaks in a thread\n- STT (voice.py): vosk local, Gemini, OpenAI (arecord)\n- Commands: /voice (toggle, persists), /mic (record + transcribe + send)\n- Icon: VOX/MIC in the i3 bar\n\nfixes\n- Beep/tic: aplay --buffer/--period (buffer==period) removed\n- Loading bar text in English"};
-const tip=document.createElement("div");tip.className="changelog-tip";document.body.appendChild(tip);
-function showTip(el){const v=el.dataset.ver;tip.textContent="v"+v+" — changelog\n\n"+(CHANGELOG[v]||"—");tip.style.display="block";const r=el.getBoundingClientRect();const tw=tip.offsetWidth,th=tip.offsetHeight;let x=r.right+12;if(x+tw>innerWidth-8)x=Math.max(8,r.left-tw-12);let y=r.top;if(y+th>innerHeight-8)y=Math.max(8,innerHeight-th-8);tip.style.left=x+"px";tip.style.top=y+"px"}
-document.querySelectorAll(".ver").forEach(el=>{
-  el.addEventListener("mouseenter",()=>showTip(el));
-  el.addEventListener("mouseleave",()=>{setTimeout(()=>{if(!tip.matches(":hover"))tip.style.display="none"},300)});
-});
 </script>
 </body>
 </html>
