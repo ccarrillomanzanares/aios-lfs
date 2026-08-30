@@ -209,6 +209,7 @@ PROVIDER_CONTEXT_LIMITS = {
     "Google Gemini": 1048576,
     "Kimi / Moonshot": 128000,
     "Ollama Cloud": 128000,
+    "Ollama Hardened": 32768,
     "OpenRouter": 128000,
 }
 DEFAULT_CLOUD_LIMIT = 128000
