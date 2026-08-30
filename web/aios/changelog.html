@@ -30,6 +30,9 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 .back:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
 .term-foot{padding:.5rem 1.8rem .7rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--dim2);font-size:.68rem}
 @media(max-width:760px){.term-body{padding:1rem 1rem}.ver-block li{font-size:.72rem}}
+.dl{font-size:.72rem;color:var(--dim);margin:.1rem 0 .4rem}
+.dl a{color:var(--bright);text-decoration:none}
+.dl a:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
 </style>
 </head>
 <body>
@@ -45,6 +48,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.17 — 2026-08-30 01:48</h2>
+<div class="dl">↓ <a href="/aios/releases/aios.iso">no LLM</a> · <a href="/aios/releases/aios-withllm.iso">with Qwen</a></div>
 <h3>new features</h3>
 <ul>
 <li><b>sudo with password</b>: <code>/sudo &lt;password&gt;</code> (cached in session) + <code>run_command</code> uses <code>sudo -S</code>; the agent accepts the password in local and cloud modes (no NOPASSWD needed).</li>
@@ -73,6 +77,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.16 — August 2026</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.16.iso">no LLM</a> · <a href="/aios/releases/aios-withllm-v0.16.iso">with Qwen</a></div>
 <h3>voice (TTS/STT) — independent <code>voice:</code> section from chat</h3>
 <ul>
 <li><b>Config</b>: <code>voice:</code> section in <code>config.yaml</code> (tts/stt/tts_lang), separate from <code>cloud:</code> (chat). Setup (live and <code>aios-install</code>) lets you choose TTS (off/espeak/gemini/openai), STT (off/vosk/gemini/openai) and language; voice keys go to <code>~/.aios/.env</code> apart from the chat key.</li>
@@ -90,6 +95,7 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 
 <div class="ver-block">
 <h2>v0.15 — August 2026</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.15.iso">no LLM</a> · <a href="/aios/releases/aios-withllm-v0.15.iso">with Qwen</a></div>
 <h3>fixes for LLM boot and screenshot</h3>
 <ul>
 <li><b>LLM loading stuck at 85%</b>: <code>select</code> + buffered <code>readline</code> left <code>listening</code> stuck; fix: reader thread + queue (no select).</li>
