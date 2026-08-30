@@ -47,8 +47,19 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     <div class="changelog">
 
 <div class="ver-block">
-<h2>v0.17 — 2026-08-30 01:48</h2>
+<h2>v0.17.1 — 2026-08-30 14:10</h2>
 <div class="dl">↓ <a href="/aios/releases/aios.iso">no LLM</a> · <a href="/aios/releases/aios-withllm.iso">with Qwen</a></div>
+<h3>fixes</h3>
+<ul>
+<li><b>audio</b>: <code>aios-audio.service</code> was never enabled (missing <code>multi-user.target.wants</code> symlink) — <code>audio-detect.py</code> didn't run at boot and <code>asound.conf</code> kept the hardcoded <code>plughw:1,0</code>. Now enabled, analog card auto-detected.</li>
+<li><b>sven</b>: <code>run_command</code> passed both <code>stdin</code> and <code>input</code> to <code>subprocess.run</code> — <code>sven update</code>/<code>upgrade</code>/<code>install</code> failed with "stdin and input arguments may not both be used". Fixed.</li>
+<li><b>sudo</b>: agent now detects NOPASSWD (<code>sudo -n true</code>). Live runs <code>sudo</code> directly; installed asks for <code>/sudo &lt;password&gt;</code> (in-memory only, never persisted).</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.17 — 2026-08-30 01:48</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.17.iso">no LLM</a> · <a href="/aios/releases/aios-withllm-v0.17.iso">with Qwen</a></div>
 <h3>new features</h3>
 <ul>
 <li><b>sudo with password</b>: <code>/sudo &lt;password&gt;</code> (cached in session) + <code>run_command</code> uses <code>sudo -S</code>; the agent accepts the password in local and cloud modes (no NOPASSWD needed).</li>
