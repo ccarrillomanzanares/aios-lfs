@@ -54,6 +54,20 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     <div class="changelog">
 
 <div class="ver-block">
+<h2>v0.18 — 2026-08-31 19:48</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.18.iso">no LLM</a> <span class="md5">76179b138ab6c706a3d7863222941193</span> · <a href="/aios/releases/aios-withllm-v0.18.iso">with Qwen</a> <span class="md5">712edc7f0663069b18eded912fe327d6</span></div>
+<h3>new features</h3>
+<ul>
+<li><b>local LLM — Qwen3.5-9B</b>: the bundled local model is now <code>Qwen3.5-9B</code> (Q4_K_M), replacing Qwen3-8B — better reasoning and tool calling. <code>llama-server</code> upgraded to <b>b10655</b> (CPU-dispatched: runs on any x86-64, from SSE4.2 to AVX-512).</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b>cloud empty responses</b>: the Ollama Hardened server now serves <code>qwen3.5:9b</code> with a <b>32K context window</b> (<code>OLLAMA_CONTEXT_LENGTH=32768</code>) instead of the 4K default — fixes empty responses where reasoning + tool-calling exhausted the context.</li>
+<li><b>agent empty-response diagnostics</b>: on an empty response the agent now reports the cause (<code>finish_reason</code>, reasoning characters emitted) instead of the generic "(empty model response)".</li>
+</ul>
+</div>
+
+<div class="ver-block">
 <h2>v0.17.1 — 2026-08-30 14:10</h2>
 <div class="dl">↓ <a href="/aios/releases/aios.iso">no LLM</a> <span class="md5">d6d942c698304ab06f5f18375a6a91ac</span> · <a href="/aios/releases/aios-withllm.iso">with Qwen</a> <span class="md5">767268c82d19416a4c1a75e7e5f8d8b4</span></div>
 <h3>fixes</h3>
