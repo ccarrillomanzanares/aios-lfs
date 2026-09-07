@@ -121,6 +121,15 @@ session   include     system-session
 EOF
 ```
 
+## Known limitation: user@.service (systemd --user) fails
+
+`user@1000.service` fails with `Trying to run as user instance, but $XDG_RUNTIME_DIR is not set.`
+on every login (SSH/tty). Root cause: `pam_systemd.so` does not set `XDG_RUNTIME_DIR` in the
+`user@.service` flow (it works in the sshd flow). The service is cosmetic — the agent uses
+`dbus-run-session`, not systemd --user. Do NOT try to fix by copying `/usr/lib/pam.d/systemd-user`
+to `/etc/pam.d/` — PAM already finds it (systemd --user runs, then exits). Investigate only if
+user services are ever needed.
+
 ## sudo NOPASSWD for live ISO
 
 ```bash
