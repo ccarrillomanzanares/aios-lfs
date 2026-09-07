@@ -54,6 +54,17 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     <div class="changelog">
 
 <div class="ver-block">
+<h2>v0.18.4 — 2026-09-07 15:58</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.18.4.iso">no LLM</a> <span class="md5">6596430daaf3f71efd368d72645fda58</span> · <a href="/aios/releases/aios-withllm-v0.18.4.iso">with Qwen</a> <span class="md5">023cd3eb772c2984e419f1f3189ba748</span></div>
+<h3>fixes</h3>
+<ul>
+<li><b>arranque en portátiles (race en boot)</b>: el getty@tty1 lanzaba X antes de que udev aplicara permisos a <code>/dev/dri/card0</code> → <code>open /dev/dri/card0: Permission denied</code> → <code>no screens found</code> → getty en bucle → <code>start-limit-hit</code> → cursor parpadeando sin sesión. <code>aios-session</code> ahora espera hasta 30s a que <code>/dev/dri/card0</code> sea legible/escribible antes de <code>startx</code>.</li>
+<li><b>audio en portátiles (misma race)</b>: <code>audio-detect.py</code> corría a los 9s del boot, cuando solo se veía la tarjeta HDMI → escribía <code>plughw:0,0</code> (HDMI) en vez de la analógica. Ahora si la única tarjeta detectada es HDMI, espera y reintenta (hasta 15s) hasta que aparezca la analógica.</li>
+<li><b>deploy</b>: <code>aios-deploy-and-build.sh</code> ahora copia <code>scripts/aios-session</code> y <code>scripts/audio-detect.py</code> al árbol (antes no llegaban a la ISO).</li>
+</ul>
+</div>
+
+<div class="ver-block">
 <h2>v0.18.3 — 2026-09-07 08:06</h2>
 <div class="dl">↓ <a href="/aios/releases/aios-v0.18.3.iso">no LLM</a> <span class="md5">299e40cc6d6c5cd345310f46c0a7004a</span> · <a href="/aios/releases/aios-withllm-v0.18.3.iso">with Qwen</a> <span class="md5">7db111fd2eabb3e46809f7f00a16e910</span></div>
 <h3>fixes</h3>
