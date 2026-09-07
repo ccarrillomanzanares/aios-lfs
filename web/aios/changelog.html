@@ -54,6 +54,47 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     <div class="changelog">
 
 <div class="ver-block">
+<h2>v0.18.3 — 2026-09-07 08:06</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.18.3.iso">no LLM</a> <span class="md5">299e40cc6d6c5cd345310f46c0a7004a</span> · <a href="/aios/releases/aios-withllm-v0.18.3.iso">with Qwen</a> <span class="md5">7db111fd2eabb3e46809f7f00a16e910</span></div>
+<h3>fixes</h3>
+<ul>
+<li><b>timeout HTTP 120s → 300s</b>: long generations on CPU (stories, long answers) exceeded the 120s limit and the agent cut with <code>Read timed out</code>.</li>
+<li><b>compression summary as <code>user</code> (not <code>system</code>)</b>: the no-thinking model <code>frob/qwen3.5-instruct:9b</code> requires <code>system</code> at the start of the history; a summary inserted as <code>system</code> in the middle caused 500 <code>Jinja Exception: System message must be at the beginning</code>.</li>
+<li><b>cloud compression threshold 20% → 10%</b>: keeps prompt-eval (~25 tok/s on CPU) under the timeout with large contexts.</li>
+<li><b>tool output cap</b>: ANSI strip + truncation to 1200/1000 chars (was 5000/2000) — command outputs no longer bloat the context.</li>
+<li><b>MAX_TURNS 10 → 25</b> + when exhausted the agent asks <code>(continue) Aún no he terminado... ¿Quieres que continúe?</code> instead of <code>(no response)</code>.</li>
+<li><b>procedural memory filter</b>: no longer caches greetings/trivial queries, short answers (&lt;80 chars) or <code>(continue)</code> status messages.</li>
+<li><b>OCR eng+spa</b>: tesseract with Spanish for Spanish pages.</li>
+<li><b>bracketed paste in <code>_read_line()</code></b> (setup.py): copy/paste works in the API key prompt.</li>
+<li><b>dynamic version banner</b>: <code>AIOS/v0.18.3</code> is read from the CHANGELOG (auto-updates with each release) instead of the hardcoded <code>AIOS/1.4</code>.</li>
+<li><b>Wargames teletype tick</b>: 4kHz transient + 250Hz body, half volume, <code>--period-size=128</code> (tick per character, no bursts); the user-typing tick is removed (only the agent's typewriter sounds).</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.18.2 — 2026-09-04 23:21</h2>
+<h3>fixes</h3>
+<ul>
+<li><b>docker group not created on install</b>: missing systemd ALPM hooks (<code>20-systemd-sysusers</code> etc.) — added to the tree; <code>sven install docker</code> now creates the <code>docker</code> group automatically.</li>
+<li><b>docker socket not connecting</b>: LFS symlinks <code>/var/run → /run</code>, <code>/var/lock → /run/lock</code>, <code>/etc/mtab → /proc/self/mounts</code> were missing (lost by an old mksquashfs over overlay) — recreated in tree and installed disks.</li>
+<li><b>build hardening</b>: <code>aios-deploy-and-build.sh</code> verifies/recreates the 3 LFS symlinks before every <code>mksquashfs</code>.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.18.1 — 2026-09-04 17:58</h2>
+<h3>fixes</h3>
+<ul>
+<li><b>installer password bug (critical)</b>: <code>getpass</code> read passwords corruptly on a dirty raw terminal — replaced with a self-contained <code>_read_password()</code> that masks input and controls the tty directly.</li>
+<li><b>installer chroot ordering bug (critical)</b>: <code>cleanup_chroot()</code> ran before <code>set_passwords()</code>/<code>harden_*</code> — reordered so it runs last, just before the final <code>umount</code>.</li>
+<li><b>installer password — real root cause (PAM)</b>: <code>/etc/pam.d/system-auth</code> was truncated to a single line with no <code>password</code> stack — <code>chpasswd</code> never wrote to <code>/etc/shadow</code>. Restored the full BLFS <code>system-auth</code>.</li>
+<li><b>agent anti-loop removed</b>: the "3 identical tool calls" detector caused false positives — replaced with a simpler guard that only refuses to re-run a <code>run_command</code> that already failed.</li>
+<li><b>sudo password asked inline</b>: removed the <code>/sudo</code> round-trip; <code>run_command</code> prompts for the sudo password (masked) directly.</li>
+<li><b>timezone selector</b>: hierarchical picker (continent → region → city) integrated with NTP; persisted to disk on install.</li>
+</ul>
+</div>
+
+<div class="ver-block">
 <h2>v0.18 — 2026-08-31 19:48</h2>
 <div class="dl">↓ <a href="/aios/releases/aios-v0.18.iso">no LLM</a> <span class="md5">76179b138ab6c706a3d7863222941193</span> · <a href="/aios/releases/aios-withllm-v0.18.iso">with Qwen</a> <span class="md5">712edc7f0663069b18eded912fe327d6</span></div>
 <h3>new features</h3>
