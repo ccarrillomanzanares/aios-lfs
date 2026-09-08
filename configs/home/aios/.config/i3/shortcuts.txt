@@ -19,6 +19,8 @@ AIOS keyboard shortcuts
 
 In the chat:
   SPACE                Skip the typewriter (write the pending text instantly)
+  Tab                  Interrupt the agent to add more info (text)
+  Ctrl+R               Interrupt the agent to add more info (voice)
   /sound               Toggle the typewriter sound
   /voice               Toggle the agent voice (speaks responses)
   /mic                 Speak a message with the microphone
