@@ -6,3 +6,5 @@ initrd.img
 
 __pycache__/
 *.pyc
+*.bak-*
+*.bak
