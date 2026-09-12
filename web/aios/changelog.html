@@ -34,6 +34,8 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 .dl a{color:var(--bright);text-decoration:none}
 .dl a:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
 .dl.retired{color:#005500}
+li.sub{margin-left:1.4rem;list-style:none;position:relative}
+li.sub:before{content:"– ";color:var(--dim)}
 .changelog{scrollbar-color:#00ff00 #002200}
 .changelog::-webkit-scrollbar{width:8px}
 .changelog::-webkit-scrollbar-track{background:#002200}
@@ -69,6 +71,123 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 <li><b>A wrong answer can no longer kick you out of the installer.</b> Ten places were audited and fixed: <code>_read_line</code> span forever on EOF, an empty password was accepted and silently skipped by <code>chpasswd</code> (leaving the factory password on the installed disk), the disk selector cancelled after three bad answers, and a typo in the wipe confirmation aborted the installation. Now they re-ask, and cancelling is explicit.</li>
 <li><b>Silent boot on the installed disk too</b>: GRUB menu hidden and the console cursor off, as in live mode.</li>
 <li><b>Real download of the AIOS local model</b> — resumes if interrupted, verifies the size, and reports decimal units (22.1 GB).</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.23.0 — 2026-09-12 19:12</h2>
+<h3>features</h3>
+<ul>
+<li><b>The AIOS LLM is now Qwen3.6-35B-A3B</b> (MoE, ~3B active of 35B, multimodal) instead of the fine-tuned Nemotron-3.5-Lightning. It does <b>text AND vision in one model</b>, so the separate vision container is gone.</li>
+<li class="sub">Chosen over the Nemotron for three measured reasons: <b>Apache 2.0 license</b> (the Nemotron was OpenMDW-1.1, with a patent clause — relevant for a globally distributed ISO), <b>identical behaviour in thinking ON and OFF</b> (94.3% in both modes, vs 97.1%/91.4% for the Nemotron), and <b>better tool-call discipline</b> (<code>CONFIRM</code> 3/4 vs 2/4, <code>TOOL</code> 17/17 vs 16/17 in the OFF mode).</li>
+<li class="sub">The Nemotron was faster (~26 tok/s vs ~9 tok/s on the CPU-only VPS) and scored slightly higher on thinking ON. Both trade-offs were accepted by Carlos after using it: <i>"lo noto muchísimo mejor que cualquier otro agente/llm que hemos probado"</i>.</li>
+<li class="sub">Weights: <code>Qwen3.6-35B-A3B-UD-Q4_K_M.gguf</code> (21.1 GB) + <code>mmproj-qwen3.6-F16.gguf</code> (858 MB).</li>
+<li><b>Vision now goes through the same model.</b> <code>describe_screen()</code> points at the chat endpoint, so there is one model to run and one route to maintain instead of two.</li>
+<li class="sub">Verified with a purpose-made image (text <code>RACK 7 TEMP 63C</code>) — the model read it back exactly.</li>
+<li class="sub">Verified on a real desktop: it reported the <b>window title</b> (<code>bios@aios:~</code>), the user, the hostname and what the terminal was doing. The previous 4B model could not do this.</li>
+<li class="sub">The <code>/vision/*</code> route and the <code>llama-vision</code> container (Gemma-3-4B + mmproj) were removed; the <code>vision.endpoint</code> default now points at the chat endpoint.</li>
+<li><b><code>/v1</code> is kept as a legacy alias</b> and now serves the same model as <code>/ollama</code>, so existing configurations and any client pointed at <code>/v1</code> keep working unchanged.</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b><code>describe_screen()</code> returned an EMPTY description.</b> It was the only LLM call in the agent that did <b>not</b> send <code>enable_thinking</code>; the model reasoned by default, spent all 400 <code>max_tokens</code> on <code>reasoning_content</code> and returned an empty <code>content</code>. Fixed by sending <code>enable_thinking: false</code>, like every other call in the agent. This bug existed before this release — the previous model happened to work anyway.</li>
+<li><b><code>setup.py</code> would configure a broken installation.</b> The model list for the VPS provider still offered <code>nemotron-3.5-lightning</code> (removed) and <code>qwen3.5:9b</code> (no longer served), and the vision option wrote the now-removed <code>/vision</code> endpoint. Both corrected to the live model and endpoint.</li>
+</ul>
+<h3>infra</h3>
+<ul>
+<li>The <code>llama-hardened</code> stack is now <b>two containers</b> (<code>proxy</code> + <code>qwen</code>) instead of four. Removed: the <code>llama</code> (Nemotron) and <code>vision</code> (Gemma) services, their entrypoints, their Dockerfile <code>COPY</code> lines, the <code>/vision</code> Caddy block, the <code>depends_on</code> that referenced the removed service, the two Nemotron GGUFs (48 GB), the two Gemma GGUFs (3.3 GB), a stray second Gemma server that had been running unattended on port 8095 for 3 days, and the dead <code>k2-test</code> tree.</li>
+<li>Free space on the VPS went from <b>60 GB to 136 GB</b>; RAM in use dropped from 30.5 GB to ~15 GB.</li>
+<li>Backups of every file touched are in <code>~/llama-hardened/.bak-qwen36/</code>.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.22.0 — 2026-09-11 23:55</h2>
+<h3>fixes</h3>
+<ul>
+<li><b>The AIOS LLM (Nemotron-3.5-Lightning, fine-tuned) now works with thinking ON <i>and</i> OFF, both with tool calling.</b> The previous fine-tune returned an <b>empty response</b> (1 token, <code>finish=stop</code>) whenever <code>enable_thinking=false</code>: the agent went mute on any request that needed a tool call ("hello" answered, "check the running containers" did not).</li>
+<li class="sub">Root cause: at training time the chat template was rendered <b>without</b> <code>enable_thinking</code>, so it emitted a <b>closed, empty reasoning block</b> (<code> thinking</code>) in front of the tool call. The model learned that transition and was out of distribution when a real reasoning block opened at inference.</li>
+<li class="sub">Fix in the re-training: <code>mask_generation_prompt: true</code> + <code>mask_reasoning_content: true</code> (the template's own tokens are no longer supervised), tool-call <code>arguments</code> kept as a <b>mapping</b> (the Nemotron template iterates them with <code>|items</code>), and <code>model.output_hidden_states: true</code>.</li>
+<li class="sub">Verified against the public endpoint in <b>both</b> modes: <code>run_command {"command":"sven install vim"}</code> — with <code>enable_thinking: true</code> and <code>false</code>.</li>
+<li><b>Model, dataset, recipes and scripts are now versioned</b> in the <code>aios-model</code> repo: behaviour dataset (249 pairs, 154 with real <code>tool_calls</code>), NeMo AutoModel recipes, the manual tensor-merge script and the training/deploy scripts.</li>
+<li>The <code>enable_thinking</code> cloud patch in <code>agent.py</code> is no longer required: the model handles both modes, so <code>/think on</code> and <code>/think off</code> both work.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.21.0 — 2026-09-11 22:30</h2>
+<h3>features</h3>
+<ul>
+<li><b>BitTorrent client with media playback</b> (new module <code>torrent.py</code> + 5 agent tools). The user asks in plain language ("I want to watch Metropolis by Fritz Lang") and the agent searches, downloads and plays — no GUI needed.</li>
+<li class="sub"><code>torrent_search(query)</code> — searches <b>apibay.org</b> (The Pirate Bay API) and <b>torrents-csv.com</b>, merges and ranks by seeders, caches the numbered list so <code>torrent_download("&lt;number&gt;")</code> just works. Verified: "Metropolis 1927 Fritz Lang" → restored 1080p release, 115 seeders.</li>
+<li class="sub"><code>torrent_download</code> / <code>torrent_status</code> / <code>torrent_control</code> (start|stop|verify|remove|remove-data) — driven through the <b>transmission-daemon</b> RPC on 127.0.0.1:9091.</li>
+<li class="sub"><code>torrent_play([id])</code> — plays with <b>mpv</b> fullscreen (ffmpeg does the decoding); with no id it plays the newest media file downloaded.</li>
+<li class="sub">Verified end-to-end on the build tree: 263 MB torrent downloaded to 100% in 70 s (9.76 MB/s, 50 peers), then stop + remove-data clean.</li>
+<li><b>aria2c</b> for plain HTTP/FTP/FTP-magnet documents (PDFs, archives) — <code>torrent.fetch()</code>.</li>
+<li>New packages installed with sven (official repos only): <code>transmission-cli</code> 4.1.3-2, <code>aria2</code> 1.37.0-3, <code>mpv</code> 0.41.0-6 (+ <code>ffmpeg</code>/<code>libbluray</code> refreshed to the same upstream so <code>libbluray.so.4</code> and <code>so.3</code> coexist).</li>
+<li>Config in <code>/etc/aios-torrent.conf</code> (system defaults, shipped in aios-lfs) with a per-user override in <code>~/.aios/torrent.conf</code>; downloads default to <code>~/Downloads</code>.</li>
+<li><code>aios-update</code> deploys <code>torrent.py</code> and the new system configs (previously the manifest would have silently skipped them).</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b>transmission-daemon runs as the desktop user</b>: the Arch unit uses <code>User=transmission</code> (uid 169) and <code>/var/lib/transmission</code>, so downloads would not be readable/deletable by the user who watches them. New drop-in <code>transmission-daemon.service.d/user.conf</code> (aios-lfs) sets <code>User=aios</code>, <code>HOME</code>/XDG under <code>/home/aios</code> and <code>--download-dir /home/aios/Downloads</code>. No <code>Group=</code> line: AIOS' user aios has primary group <code>wheel</code>, and a wrong <code>Group=</code> fails the unit with 216/GROUP.</li>
+<li>The daemon is <b>not enabled at boot</b> — <code>torrent.py</code> starts it on demand (systemctl, NOPASSWD in the AIOS live/installed model, with a direct-launch fallback), so an unused system keeps no extra service or open peer port.</li>
+<li>Magnet building: Transmission 4.1.3 rejects a percent-encoded <code>xt=urn%3Abtih%3A&lt;hash&gt;</code> with "unrecognized info" — the xt value is now emitted verbatim (raw colons), only <code>dn</code>/<code>tr</code> are encoded.</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.20.0 — 2026-09-09 12:45</h2>
+<h3>features</h3>
+<ul>
+<li><b>AI vision (optional)</b>: new <code>describe_screen()</code> tool — captures the screen and describes it with <b>Gemma-3-4B</b> (multimodal VLM) on the VPS. Recognizes apps, logos and UI text (verified: identified the Grafana editor, "Prometheus default", "Kick start your query"...).</li>
+<li><b>llama-hardened stack extended</b>: third container <code>llama-vision</code> (Gemma-3-4B Q4_K_M + mmproj) on <code>/vision/*</code> with the same X-API-Key. Analysis takes ~43s (12.6s prompt + 30.8s gen).</li>
+<li><b>Optional for privacy</b>: setup asks <i>"Enable vision?"</i> (only for the LLM VPS provider). If declined, the agent keeps using browser/OCR. Config stores <code>vision.enabled</code> + endpoint + key.</li>
+<li><b>Model ladder tested</b>: SmolVLM-256M (175MB) ❌, SmolVLM-500M (437MB) ❌, SmolVLM2-2.2B (1.9GB) ⚠️ imprecise, <b>Gemma-3-4B (2.5GB) ✅</b> — the smallest that works.</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b>Anti-hallucination compression</b>: the LLM summary is verified against real keywords from the history; if it does not mention them (K2 invented a fake Node.js/MongoDB conversation), it is rejected and an honest summary is used.</li>
+<li><b>K2 tamed</b>: <code>MAX_TOKENS</code> 2048 + <code>reasoning_effort: low</code> + 240s watchdog + no retry — a turn no longer burns 40 min thinking.</li>
+<li><b>API-FIRST prompt</b>: <code>fetch()</code> from <code>browser_eval</code> for authenticated web apps (Grafana, Prometheus, Jenkins, GitLab...).</li>
+<li><b>browser_eval prompt</b>: returns value (not console.log) + small steps in UI.</li>
+<li><b>OCR</b>: uses only installed languages (eng) instead of eng+spa which failed.</li>
+<li><b>Software inventory</b>: auto-record installs/removals + <code>get_installed_info</code> tool + markdown fact sheets.</li>
+<li><b>Anti-loop order fix</b>: the loop guard now runs BEFORE the "command previously failed" guard (which used <code>break</code> and skipped the counter — K2 looped ~18x on the same failing command). <code>continue</code> (not <code>break</code>) + whitespace-stripped args.</li>
+<li><b>Cleanup</b>: removed dead tools from the registry and code (<code>mcp_call</code>, <code>run_playbook</code>, <code>process_send</code>, module <code>playbook.py</code>); deleted the discarded vision-ladder GGUFs on the VPS (SmolVLM 256M/500M/2.2B) — only K2 + Gemma-3-4B remain; vision policy added to the prompt (describe_screen → browser_eval → ocr → screenshot).</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.19.0 — 2026-09-08 22:40</h2>
+<div class="dl">↓ <a href="/aios/releases/aios-v0.19.0.iso">one ISO · 1.6 GB</a> <span class="md5">365fe462dd03e2c8eb2ea3605f10df55</span></div>
+<h3>features</h3>
+<ul>
+<li><b>"LLM VPS (llama-hardened)" provider</b> in setup: selectable alongside cloud providers, with two models:</li>
+<li class="sub"><code>k2-horizon:7b</code> → <code>webuillama.ccmai.org/v1/chat/completions</code> (K2-Horizon-7B Q4_K_M, llama-server fork MBZUAI-IFM)</li>
+<li class="sub"><code>qwen3.5:9b</code> → <code>webuillama.ccmai.org/ollama/v1/chat/completions</code> (Qwen3.5-9B, same stack, separate route)</li>
+<li class="sub">Same <code>X-API-Key</code> for both; the menu propagates the URL per model (3rd tuple element).</li>
+</ul>
+<h3>breaking change</h3>
+<ul>
+<li><b>Ollama Hardened → llama-hardened</b>: the VPS stack changes engine. <code>ollama-core</code> (Ollama 0.32.15) cannot serve K2 (MoVA architecture not yet supported in its llama.cpp), so the stack moves to <b>llama-server from the MBZUAI-IFM fork</b> behind Caddy X-API-Key. <code>/v1</code> serves K2 and <code>/ollama/*</code> serves Qwen3.5. Ollama stays stopped as reserve (models intact in its volume).</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.18.6 — 2026-09-08 17:05</h2>
+<h3>features</h3>
+<ul>
+<li><b>Barge-in (interrupt the agent)</b>: during the agent's turn (while it writes or runs tools), <b>Tab</b> pauses and opens a mini-input to add more information by text; <b>Ctrl+R</b> captures info by voice (microphone + STT). The turn is cut gently and the agent relaunches with the info as a new query, keeping context. No Ctrl+C. Documented in <code>shortcuts.txt</code> (F1).</li>
+<li><b>browser_elements</b>: new tool that inventories the page's interactive elements (buttons, links, inputs) as readable refs (<code>btn-create-dashboard</code>, <code>inp-search</code>) with visible text and CSS selector — the agent SEES the page before clicking (like Hermes <code>drive_preview action="elements"</code>).</li>
+<li><b>browser_click/browser_type with text fallback</b>: if the selector doesn't exist, it searches by visible text (<code>innerText</code>/<code>aria-label</code>/<code>value</code>/<code>placeholder</code>, case-insensitive) — click by what you SEE ("Create your first dashboard") without guessing selectors.</li>
+<li><b>Browser prompt updated</b>: the agent must call <code>browser_elements()</code> BEFORE clicking/typing (workflow navigate → elements → click/type).</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b>token estimator len//2</b> (overestimates for all European languages, measured 2.8-4.4 chars/token real vs 2 estimated): compresses earlier, never reaches Cloudflare's 100s limit.</li>
+<li><b>compression loop (max 3 passes)</b>: if after compressing the history is still above the threshold, compress again — the final prompt always fits.</li>
+<li><b>2000 char cap on the text to summarize</b>: the compression call is light (~15-20s) even with a huge history.</li>
 </ul>
 </div>
 
@@ -152,6 +271,19 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
 <ul>
 <li><b>cloud empty responses</b>: the Ollama Hardened server now serves <code>qwen3.5:9b</code> with a <b>32K context window</b> (<code>OLLAMA_CONTEXT_LENGTH=32768</code>) instead of the 4K default — fixes empty responses where reasoning + tool-calling exhausted the context.</li>
 <li><b>agent empty-response diagnostics</b>: on an empty response the agent now reports the cause (<code>finish_reason</code>, reasoning characters emitted) instead of the generic "(empty model response)".</li>
+</ul>
+</div>
+
+<div class="ver-block">
+<h2>v0.17.2 — 2026-08-30 22:49</h2>
+<h3>fixes</h3>
+<ul>
+<li><b>audio</b>: <code>aplay</code> now uses a minimal period/buffer (<code>--period-size=512 --buffer-size=1024</code>) so the typewriter tic sounds per-character instead of accumulating into a continuous beep.</li>
+<li><b>volume keys</b>: the i3 volume bindings now use <code>amixer set Master</code> (the same ALSA mixer <code>aplay</code>/<code>plughw</code> uses) instead of <code>pactl</code> (PipeWire), so the keys actually change the volume.</li>
+<li><b>setup note</b>: keyboard shortcuts indicate that chat commands (<code>/sound</code>, <code>/voice</code>, <code>/theme</code>) work after setup (once the agent/LLM starts).</li>
+<li><b>Ollama Hardened provider</b>: endpoint moved to <code>:443</code> (valid cert via Cloudflare) and TLS verification enabled by default (<code>VERIFY_TLS</code> no longer tied to <code>x-api-key</code>); model switched from Moonlight (no function calling) to <code>qwen3.5:9b</code>.</li>
+<li><b>context/tokens</b>: cloud <code>max_tokens</code> now scales with the context (<code>_cloud_context // 4</code>) instead of a fixed 4096, and the Ollama Hardened <code>context_limit</code> raised 8K → 32K — fixes empty responses from reasoning models exhausting the token budget.</li>
+<li><b>status bar</b>: <code>CTX</code> block now resolves the Ollama Hardened context limit (32K) instead of the 128K default.</li>
 </ul>
 </div>
 
