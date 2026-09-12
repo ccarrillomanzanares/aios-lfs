@@ -9,7 +9,7 @@ set -euo pipefail
 ISO_BACKUP="${HOME}/lfs-rw-sven.iso"
 AIOS_DIR="${HOME}/aios"
 SQUASHFS="${AIOS_DIR}/live/lfs.squashfs"
-SRE_AGENT_DIR="${HOME}/sre-agent"
+SRE_AGENT_DIR="${HOME}/aios-agent"
 SQ_FINAL_DIR="/tmp/sq-final"
 SQUASHFS_ROOT="${SQ_FINAL_DIR}/squashfs-root"
 FINAL_ISO="${HOME}/aios.iso"
