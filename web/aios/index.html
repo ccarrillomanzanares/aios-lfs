@@ -106,14 +106,14 @@ h1{color:var(--bright);letter-spacing:.18em;text-shadow:0 0 14px rgba(0,255,0,.4
 .v3 .github{margin-top:.2rem}
 .v3 .foot{margin-top:1.4rem}
 /* ---------- downloads: 2 columns + versions ---------- */
-.downloads{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;width:100%}
-.dl-col{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem .8rem;display:flex;flex-direction:column}
+.downloads{display:flex;flex-wrap:wrap;justify-content:center;gap:1.1rem;width:100%}
+.dl-col{width:min(440px,100%);margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1rem 1.1rem .8rem;display:flex;flex-direction:column}
 .dl-head{color:var(--bright);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;text-align:center;margin-bottom:.7rem}
 .dl-col .cmdline{font-size:.64rem;margin-bottom:.55rem;word-break:break-all;text-align:center}
 .dl-col .btn{width:100%;text-align:center}
-.changelog-link{display:inline-block;color:var(--bright);text-decoration:none;font-size:.8rem;margin-top:.35rem;margin-bottom:.9rem}
+.changelog-link{display:inline-block;color:var(--bright);text-decoration:none;font-size:.8rem;margin-top:.7rem;margin-bottom:.9rem}
 .changelog-link:hover{text-shadow:0 0 8px rgba(0,255,0,.6)}
-@media (max-width:480px){.downloads{grid-template-columns:1fr}}
+@media (max-width:480px){.dl-col{width:100%}}
 /* ---------- responsive ---------- */
 @media (max-width:760px){
   .v2 .screen{grid-template-columns:1fr;gap:1.2rem}
