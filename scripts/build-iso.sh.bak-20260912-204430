@@ -65,10 +65,7 @@ extract_squashfs() {
     ok "Squashfs extracted"
 }
 
-# Deploy the AIOS agent files into the squashfs root.
-# NOTE (12 Sep 2026): this used to copy only setup.py and aios-install, so any
-# other agent change (tools.py, agent.py, the new aios-time / aio_download.py)
-# never reached the ISO. It now mirrors the whole agent tree.
+# Deploy the AIOS agent files into the squashfs root
 deploy_agent() {
     info "Deploying AIOS agent into squashfs root..."
     if [[ ! -d "${SRE_AGENT_DIR}" ]]; then
@@ -76,64 +73,14 @@ deploy_agent() {
         exit 1
     fi
 
-    local AGENT_DST="${SQUASHFS_ROOT}/usr/local/bin/aios-agent"
-    local BIN_DST="${SQUASHFS_ROOT}/usr/local/bin"
-
-    # 1. Agent core (.py) + CHANGELOG -> aios-agent/
-    sudo mkdir -p "${AGENT_DST}/scripts"
-    for f in "${SRE_AGENT_DIR}"/*.py "${SRE_AGENT_DIR}/CHANGELOG.md"; do
-        [[ -f "$f" ]] || continue
-        sudo cp -f "$f" "${AGENT_DST}/$(basename "$f")"
-    done
-    # LF only: these run on Linux
-    sudo find "${AGENT_DST}" -maxdepth 1 -type f -name "*.py" -exec sed -i 's/\r$//' {} \;
-
-    # 2. scripts/ -> aios-agent/scripts/
-    for f in "${SRE_AGENT_DIR}"/scripts/*; do
-        [[ -f "$f" ]] || continue
-        sudo cp -f "$f" "${AGENT_DST}/scripts/$(basename "$f")"
-    done
-    sudo find "${AGENT_DST}/scripts" -maxdepth 1 -type f \
-        -exec sed -i 's/\r$//' {} \; -exec chmod 755 {} \;
-
-    # 3. System wrappers and commands -> /usr/local/bin/
-    #    aios-keyboard / aios-session live in scripts/ but belong in bin.
-    for f in aios-install aios-update aios-diag aios-theme aios-xterm aios-time; do
-        [[ -f "${SRE_AGENT_DIR}/$f" ]] || continue
-        sudo cp -f "${SRE_AGENT_DIR}/$f" "${BIN_DST}/$f"
-        sudo sed -i 's/\r$//' "${BIN_DST}/$f"
-        sudo chmod 755 "${BIN_DST}/$f"
-    done
-    for f in aios-keyboard aios-session; do
-        [[ -f "${SRE_AGENT_DIR}/scripts/$f" ]] || continue
-        sudo cp -f "${SRE_AGENT_DIR}/scripts/$f" "${BIN_DST}/$f"
-        sudo sed -i 's/\r$//' "${BIN_DST}/$f"
-        sudo chmod 755 "${BIN_DST}/$f"
-    done
-    sudo cp -f "${SRE_AGENT_DIR}/CHANGELOG.md" "${BIN_DST}/CHANGELOG.md"
-
-    # 4. There is ONE ISO: the model is NOT shipped, it is downloaded at setup.
-    #    Make sure no stale model is left in the tree (it would add ~6 GB).
-    local MODELS="${SQUASHFS_ROOT}/usr/local/share/aios/models"
-    if compgen -G "${MODELS}/*.gguf" > /dev/null; then
-        warn "Model found in the tree; removing it (one ISO downloads it instead)"
-        sudo rm -f "${MODELS}"/*.gguf
-    fi
-    sudo mkdir -p "${MODELS}"
-
-    ok "Agent deployed ($(ls -1 "${AGENT_DST}"/*.py | wc -l) .py files + scripts + wrappers)"
+    sudo mkdir -p "${SQUASHFS_ROOT}/usr/local/bin/aios-agent"
+    sudo cp "${SRE_AGENT_DIR}/setup.py" "${SQUASHFS_ROOT}/usr/local/bin/aios-agent/setup.py"
+    sudo cp "${SRE_AGENT_DIR}/aios-install" "${SQUASHFS_ROOT}/usr/local/bin/aios-install"
+    ok "Agent files deployed"
 }
 
 # Repack the squashfs root using zstd compression (xz is unsupported by the kernel)
 repack_squashfs() {
-    info "Unmounting any bind mounts left in the tree (they must not be packed)..."
-    for d in run sys dev proc; do
-        mountpoint -q "${SQUASHFS_ROOT}/$d" && sudo umount -l "${SQUASHFS_ROOT}/$d" 2>/dev/null || true
-    done
-
-    info "Clearing the sven package cache (regenerable, ~1 GB in the ISO)..."
-    sudo rm -rf "${SQUASHFS_ROOT}/var/cache/sven/pkgs"/* 2>/dev/null || true
-
     info "Repacking squashfs with zstd compression..."
     cd "${SQ_FINAL_DIR}"
     sudo rm -f "${SQUASHFS}"
@@ -153,7 +100,7 @@ repack_squashfs() {
 # Regenerate the bootable ISO from the AIOS directory
 regenerate_iso() {
     info "Regenerating ISO at ${FINAL_ISO}..."
-    sudo grub-mkrescue -iso-level 3 -o "${FINAL_ISO}" "${AIOS_DIR}"
+    sudo grub-mkrescue -o "${FINAL_ISO}" "${AIOS_DIR}"
     ok "ISO regenerated: ${FINAL_ISO}"
 }
 

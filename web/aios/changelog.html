@@ -54,6 +54,24 @@ h1{color:var(--bright);font-size:1.7rem;letter-spacing:.18em;margin:.4rem 0 .2re
     <div class="changelog">
 
 <div class="ver-block">
+<h2>v0.24.0 — 2026-09-12</h2>
+<div class="dl">↓ <a href="/aios/releases/aios.iso">one ISO · 1.6 GB</a> <span class="md5">deb5610269ab34c8968838b54b088de7</span></div>
+<h3>features</h3>
+<ul>
+<li><b>One ISO.</b> There is no longer a separate "with LLM" image: the same ISO carries the whole system and the local model is <b>downloaded during setup</b> (Qwen3.6-35B-A3B, 22.1 GB, no GPU needed). The image went from 7.3 GB to 1.6 GB.</li>
+<li><b>The local/cloud choice covers every case.</b> Both live mode and the disk installer ask the same question: run the model on your own computer, or use an external API. The hardware requirements are shown before downloading, together with a progress bar.</li>
+<li><b>Much shorter first-run setup.</b> What used to be ~18 questions is now ~8. Theme, voice, thinking and the date/time step are no longer asked: they are chat commands (<code>/theme</code>, <code>/voice</code>, <code>/think</code>) and the new <code>aios-time</code> command.</li>
+<li><b>New <code>aios-time</code> command</b> — timezone and NTP, the step that used to live inside the installer. Works interactively or as <code>aios-time zone Europe/Madrid</code>.</li>
+</ul>
+<h3>fixes</h3>
+<ul>
+<li><b>A wrong answer can no longer kick you out of the installer.</b> Ten places were audited and fixed: <code>_read_line</code> span forever on EOF, an empty password was accepted and silently skipped by <code>chpasswd</code> (leaving the factory password on the installed disk), the disk selector cancelled after three bad answers, and a typo in the wipe confirmation aborted the installation. Now they re-ask, and cancelling is explicit.</li>
+<li><b>Silent boot on the installed disk too</b>: GRUB menu hidden and the console cursor off, as in live mode.</li>
+<li><b>Real download of the AIOS local model</b> — resumes if interrupted, verifies the size, and reports decimal units (22.1 GB).</li>
+</ul>
+</div>
+
+<div class="ver-block">
 <h2>v0.18.5 — 2026-09-07 20:21</h2>
 <div class="dl">↓ <a href="/aios/releases/aios-v0.18.5.iso">no LLM</a> <span class="md5">6bade841ca07f8dda43d74efc93dbfc6</span> · <a href="/aios/releases/aios-withllm-v0.18.5.iso">with Qwen</a> <span class="md5">4f7d0ed2a08cf647f1b92519facd05b7</span></div>
 <h3>features</h3>
