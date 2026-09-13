@@ -1,11 +1,18 @@
 [Unit]
-Description=AIOS audio: detect analog card and write asound.conf
+Description=AIOS audio: detect the analog card, write asound.conf and fix mic gain
+# Do NOT start before the sound subsystem enumerated the cards: at boot this unit
+# ran ~2 s in, when only the HDMI card existed, and wrote plughw:0,0 (HDMI) ->
+# no sound, dead volume buttons, mic gain never fixed (STT broke).
+After=sound.target
+Wants=sound.target
 Before=aios-agent.service aios-llama.service
 
 [Service]
 Type=oneshot
+# The script waits (up to ~40 s) for the analog card, so a slow enumeration is
+# not a failure.
 ExecStart=/usr/bin/python3 /usr/local/bin/aios-agent/scripts/audio-detect.py
-RemainAfterExit=yes
+TimeoutStartSec=90
 
 [Install]
 WantedBy=multi-user.target

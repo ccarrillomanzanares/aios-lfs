@@ -1,0 +1,4 @@
+# AIOS: when a sound card is added, re-run the audio setup.
+# The service at boot can win the race and find no cards at all; this fires again
+# as soon as the kernel enumerates one, so asound.conf ends up on the analog card.
+ACTION=="add", SUBSYSTEM=="sound", TAG+="systemd", ENV{SYSTEMD_WANTS}+="aios-audio.service"
