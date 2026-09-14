@@ -20,17 +20,20 @@ AIOS keyboard shortcuts
 In the chat:
   SPACE                Skip the typewriter (write the pending text instantly)
   Tab                  Interrupt the agent to add more info (text)
-  Ctrl+G               Interrupt the agent to add more info (voice)
-  /sound               Toggle the typewriter sound
+  Ctrl+G               Interrupt the agent to add more info (voice) *
   /voice               Voice menu: output (TTS), input (STT) and language
   /voice on|off        Turn the spoken replies on/off directly
-  /mic                 Speak a message with the microphone
+  /mic                 Speak a message with the microphone *
+  Ctrl+C               Leave voice conversation (gemini-live engine)
   /theme               Change the color theme
   /think               Toggle thinking mode (local model; more precise, slower)
   /reset               Clear the conversation
   /health              Show system status
   /stats               Show session stats (messages / tokens)
   exit                 Leave the chat
+
+  * With the gemini-live voice engine the chat is a natural voice conversation:
+    just talk, no keys needed. /mic and Ctrl+G are for the other engines.
 
 In this list: press q (or Super+q) to close.
 (Super = the Windows key)
